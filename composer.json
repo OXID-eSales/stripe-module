@@ -1,0 +1,23 @@
+{
+  "name": "fatchip-gmbh/plugin-oxid6-stripe",
+  "description": "Stripe Payment Module for Oxid 6",
+  "type": "oxideshop-module",
+  "keywords": ["oxid", "modules", "eShop"],
+  "homepage": "https://stripe.com/",
+  "version": "1.0.0",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "extra": {
+    "oxideshop": {
+      "target-directory": "fc/stripe"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "FC\\Stripe\\": "./",
+      "Stripe\\": "./lib/stripe-php/lib/"
+    }
+  }
+}

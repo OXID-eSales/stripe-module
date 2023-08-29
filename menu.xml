@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<OX>
+    <OXMENU id="NAVIGATION_ESHOPADMIN">
+        <MAINMENU id="mxorders">
+            <SUBMENU id="mxdisplayorders" cl="admin_order" list="order_list">
+                <TAB id="STRIPE_ORDER_REFUND" cl="stripe_order_refund" />
+            </SUBMENU>
+        </MAINMENU>
+    </OXMENU>
+</OX>
