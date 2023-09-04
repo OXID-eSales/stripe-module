@@ -16,7 +16,7 @@
   },
   "autoload": {
     "psr-4": {
-      "FC\\Stripe\\": "./",
+      "FC\\stripe\\": "./",
       "Stripe\\": "./lib/stripe-php/lib/"
     }
   }
