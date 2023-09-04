@@ -9,8 +9,7 @@ on:
   schedule:
     - cron: '16 6 * * *'
   push:
-    tags:
-      - '**'
+    
   repository_dispatch:
     types: [docker-build]
 
