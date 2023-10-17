@@ -1,5 +1,5 @@
 {
-  "name": "fatchip-gmbh/plugin-oxid6-stripe",
+  "name": "oxid-esales/stripe-module",
   "description": "Stripe Payment Module for Oxid 6",
   "type": "oxideshop-module",
   "keywords": ["oxid", "modules", "eShop"],
