@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
@@ -20,34 +20,34 @@ $aModule = [
         'fr' => 'Stripe Payment'
     ],
     'description'   => [
-        'de' => 'Dieses Modul integriert STRIPE als Zahlungsanbieter in Ihren Oxid Shop.',
-        'en' => 'This module integrates STRIPE as payment provider in your Oxid Shop.',
+        'de' => 'Dieses Modul integriert STRIPE als Zahlungsanbieter in Ihren OXID Shop.',
+        'en' => 'This module integrates STRIPE as payment provider in your OXID Shop.',
     ],
-    'thumbnail'    => 'stripe_logo.png',
+    'thumbnail'     => 'stripe_logo.png',
     'version'       => '1.0.0',
-    'author'        => 'Fatchip GmbH',
-    'email'         => 'support@fatchip.de',
-    'url'          => 'https://stripe.com/',
+    'author'        => 'OXID eSales AG',
+    'url'           => 'https://www.oxid-esales.com',
+    'email'         => 'info@oxid-esales.com',
     'extend'        => [
-        \OxidEsales\Eshop\Application\Model\PaymentGateway::class => FC\stripe\extend\Application\Model\PaymentGateway::class,
-        \OxidEsales\Eshop\Application\Model\Order::class => FC\stripe\extend\Application\Model\Order::class,
-        \OxidEsales\Eshop\Application\Model\OrderArticle::class => FC\stripe\extend\Application\Model\OrderArticle::class,
-        \OxidEsales\Eshop\Application\Model\Payment::class => FC\stripe\extend\Application\Model\Payment::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class => FC\stripe\extend\Application\Controller\Admin\ModuleConfiguration::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\ModuleMain::class => FC\stripe\extend\Application\Controller\Admin\ModuleMain::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain::class => FC\stripe\extend\Application\Controller\Admin\PaymentMain::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\OrderMain::class => FC\stripe\extend\Application\Controller\Admin\OrderMain::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class => FC\stripe\extend\Application\Controller\Admin\OrderOverview::class,
-        \OxidEsales\Eshop\Application\Controller\PaymentController::class => FC\stripe\extend\Application\Controller\PaymentController::class,
-        \OxidEsales\Eshop\Application\Controller\OrderController::class => FC\stripe\extend\Application\Controller\OrderController::class,
-        \OxidEsales\Eshop\Core\Email::class => FC\stripe\extend\Core\Email::class,
-        \OxidEsales\Eshop\Core\Session::class => FC\stripe\extend\Core\Session::class,
+        \OxidEsales\Eshop\Application\Model\PaymentGateway::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\PaymentGateway::class,
+        \OxidEsales\Eshop\Application\Model\Order::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\Order::class,
+        \OxidEsales\Eshop\Application\Model\OrderArticle::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\OrderArticle::class,
+        \OxidEsales\Eshop\Application\Model\Payment::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\Payment::class,
+        \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleConfiguration::class,
+        \OxidEsales\Eshop\Application\Controller\Admin\ModuleMain::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleMain::class,
+        \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\PaymentMain::class,
+        \OxidEsales\Eshop\Application\Controller\Admin\OrderMain::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderMain::class,
+        \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderOverview::class,
+        \OxidEsales\Eshop\Application\Controller\PaymentController::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\PaymentController::class,
+        \OxidEsales\Eshop\Application\Controller\OrderController::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\OrderController::class,
+        \OxidEsales\Eshop\Core\Email::class => OxidSolutionCatalysts\Stripe\extend\Core\Email::class,
+        \OxidEsales\Eshop\Core\Session::class => OxidSolutionCatalysts\Stripe\extend\Core\Session::class,
     ],
     'controllers'   => [
-        'StripeWebhook' => FC\stripe\Application\Controller\StripeWebhook::class,
-        'StripeFinishPayment' => FC\stripe\Application\Controller\StripeFinishPayment::class,
-        'stripe_order_refund' => FC\stripe\Application\Controller\Admin\OrderRefund::class,
-        'StripeConnect' => \FC\stripe\Application\Controller\Admin\StripeConnect::class,
+        'StripeWebhook' => OxidSolutionCatalysts\Stripe\Application\Controller\StripeWebhook::class,
+        'StripeFinishPayment' => OxidSolutionCatalysts\Stripe\Application\Controller\StripeFinishPayment::class,
+        'stripe_order_refund' => OxidSolutionCatalysts\Stripe\Application\Controller\Admin\OrderRefund::class,
+        'StripeConnect' => \OxidSolutionCatalysts\Stripe\Application\Controller\Admin\StripeConnect::class,
     ],
     'templates'     => [
         'stripewebhook.tpl' => 'fc/stripe/Application/views/hook/tpl/stripewebhook.tpl',
@@ -63,8 +63,8 @@ $aModule = [
         'stripe_connect.tpl' => 'fc/stripe/Application/views/admin/tpl/stripe_connect.tpl',
     ],
     'events'        => [
-        'onActivate' => \FC\stripe\Core\Events::class.'::onActivate',
-        'onDeactivate' => \FC\stripe\Core\Events::class.'::onDeactivate',
+        'onActivate' => \OxidSolutionCatalysts\Stripe\Core\Events::class.'::onActivate',
+        'onDeactivate' => \OxidSolutionCatalysts\Stripe\Core\Events::class.'::onDeactivate',
     ],
     'blocks'        => [
         ['template' => 'module_config.tpl',                     'block' => 'admin_module_config_var',       'file' => 'stripe_module_config_var.tpl'],

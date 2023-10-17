@@ -1,18 +1,18 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\Application\Model\Payment;
+namespace OxidSolutionCatalysts\Stripe\Application\Model\Payment;
 
-use FC\stripe\Application\Model\PaymentConfig;
-use FC\stripe\Application\Model\Request\Card;
-use FC\stripe\Application\Model\Request\PaymentIntent;
-use FC\stripe\Application\Model\Request\PaymentMethod;
+use OxidSolutionCatalysts\Stripe\Application\Model\PaymentConfig;
+use OxidSolutionCatalysts\Stripe\Application\Model\Request\Card;
+use OxidSolutionCatalysts\Stripe\Application\Model\Request\PaymentIntent;
+use OxidSolutionCatalysts\Stripe\Application\Model\Request\PaymentMethod;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Order;
-use FC\stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 
 abstract class Base
 {
@@ -358,11 +358,11 @@ abstract class Base
     /**
      * Return the transaction status handler
      *
-     * @return \FC\stripe\Application\Model\TransactionHandler\Base
+     * @return \OxidSolutionCatalysts\Stripe\Application\Model\TransactionHandler\Base
      */
     public function getTransactionHandler()
     {
-        return new \FC\stripe\Application\Model\TransactionHandler\Payment();
+        return new \OxidSolutionCatalysts\Stripe\Application\Model\TransactionHandler\Payment();
     }
 
     /**

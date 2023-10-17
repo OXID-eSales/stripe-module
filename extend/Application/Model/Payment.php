@@ -1,12 +1,12 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\extend\Application\Model;
+namespace OxidSolutionCatalysts\Stripe\extend\Application\Model;
 
-use FC\stripe\Application\Helper\Payment as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
 
 class Payment extends Payment_parent
 {
@@ -23,7 +23,7 @@ class Payment extends Payment_parent
     /**
      * Return Stripe payment model
      *
-     * @return \FC\stripe\Application\Model\Payment\Base
+     * @return \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Base
      */
     public function getStripePaymentModel()
     {

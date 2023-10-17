@@ -1,12 +1,12 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\Application\Helper;
+namespace OxidSolutionCatalysts\Stripe\Application\Helper;
 
-use FC\stripe\Application\Model\Payment\Base;
+use OxidSolutionCatalysts\Stripe\Application\Model\Payment\Base;
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
@@ -27,14 +27,14 @@ class Payment
      * @var array
      */
     protected $aPaymentMethods = array(
-        'stripebancontact'      => array('title' => 'Stripe Bancontact',        'model' => \FC\stripe\Application\Model\Payment\Bancontact::class),
-        'stripecreditcard'      => array('title' => 'Stripe Credit Card',       'model' => \FC\stripe\Application\Model\Payment\Creditcard::class),
-        'stripeeps'             => array('title' => 'Stripe EPS Österreich',    'model' => \FC\stripe\Application\Model\Payment\Eps::class),
-        'stripegiropay'         => array('title' => 'Stripe Giropay',           'model' => \FC\stripe\Application\Model\Payment\Giropay::class),
-        'stripeideal'           => array('title' => 'Stripe iDeal',             'model' => \FC\stripe\Application\Model\Payment\Ideal::class),
-        'stripep24'             => array('title' => 'Stripe Przelewy24',        'model' => \FC\stripe\Application\Model\Payment\Przelewy24::class),
-//        'stripepaypal'          => array('title' => 'Stripe Paypal',            'model' => \FC\stripe\Application\Model\Payment\PayPal::class),   //Disabled because not working with Connect
-        'stripesofort'          => array('title' => 'Stripe Sofort',            'model' => \FC\stripe\Application\Model\Payment\Sofort::class),
+        'stripebancontact'      => array('title' => 'Stripe Bancontact',        'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Bancontact::class),
+        'stripecreditcard'      => array('title' => 'Stripe Credit Card',       'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Creditcard::class),
+        'stripeeps'             => array('title' => 'Stripe EPS Österreich',    'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Eps::class),
+        'stripegiropay'         => array('title' => 'Stripe Giropay',           'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Giropay::class),
+        'stripeideal'           => array('title' => 'Stripe iDeal',             'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Ideal::class),
+        'stripep24'             => array('title' => 'Stripe Przelewy24',        'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Przelewy24::class),
+//        'stripepaypal'          => array('title' => 'Stripe Paypal',            'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\PayPal::class),   //Disabled because not working with Connect
+        'stripesofort'          => array('title' => 'Stripe Sofort',            'model' => \OxidSolutionCatalysts\Stripe\Application\Model\Payment\Sofort::class),
     );
 
     /**

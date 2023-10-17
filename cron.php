@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
@@ -30,5 +30,5 @@ if (isset($argv[1]) && is_numeric($argv[1])) {
     $iShopId = $argv[1];
 }
 
-$oScheduler = oxNew(\FC\stripe\Application\Model\Cronjob\Scheduler::class);
+$oScheduler = oxNew(\OxidSolutionCatalysts\Stripe\Application\Model\Cronjob\Scheduler::class);
 $oScheduler->start($iShopId);

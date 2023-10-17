@@ -1,15 +1,15 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\extend\Application\Model;
+namespace OxidSolutionCatalysts\Stripe\extend\Application\Model;
 
-use FC\stripe\Application\Model\Request\PaymentIntent;
+use OxidSolutionCatalysts\Stripe\Application\Model\Request\PaymentIntent;
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
 use OxidEsales\Eshop\Core\Registry;
-use FC\stripe\Application\Helper\Payment as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
 
 class PaymentGateway extends PaymentGateway_parent
 {

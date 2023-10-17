@@ -1,10 +1,10 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\extend\Application\Controller\Admin;
+namespace OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin;
 
 class ModuleMain extends ModuleMain_parent
 {
@@ -20,7 +20,7 @@ class ModuleMain extends ModuleMain_parent
         if ($this->_sStripeNewestVersion === null) {
             $this->_sStripeNewestVersion = false;
 
-            $sComposerJson = file_get_contents("https://raw.githubusercontent.com/FATCHIP-GmbH/plugin-oxid6-stripe/master/composer.json"); // TODO VBFC fix after git push
+            $sComposerJson = file_get_contents("https://raw.githubusercontent.com/OXID-eSales/stripe-module/master/composer.json"); // TODO VBFC fix after git push
             if (!empty($sComposerJson)) {
                 $aComposerJson = json_decode($sComposerJson, true);
                 if (!empty($aComposerJson['version'])) {

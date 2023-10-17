@@ -1,13 +1,13 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\Application\Model\Payment;
+namespace OxidSolutionCatalysts\Stripe\Application\Model\Payment;
 
-use FC\stripe\Application\Helper\Payment;
-use FC\stripe\Application\Helper\User;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Application\Helper\User;
 use OxidEsales\Eshop\Application\Model\Order;
 
 class Creditcard extends Base

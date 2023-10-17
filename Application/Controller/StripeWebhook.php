@@ -1,12 +1,12 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\Application\Controller;
+namespace OxidSolutionCatalysts\Stripe\Application\Controller;
 
-use FC\stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;

@@ -3,20 +3,19 @@
   "description": "Stripe Payment Module for Oxid 6",
   "type": "oxideshop-module",
   "keywords": ["oxid", "modules", "eShop"],
-  "homepage": "https://stripe.com/",
+  "homepage": "https://www.oxid-esales.com",
   "version": "1.0.0",
   "license": [
-    "OSL-3.0",
-    "AFL-3.0"
+    "GPL-3.0"
   ],
   "extra": {
     "oxideshop": {
-      "target-directory": "fc/stripe"
+      "target-directory": "osc/stripe"
     }
   },
   "autoload": {
     "psr-4": {
-      "FC\\stripe\\": "./",
+      "OxidSolutionCatalysts\\Stripe\\": "./",
       "Stripe\\": "./lib/stripe-php/lib/"
     }
   }

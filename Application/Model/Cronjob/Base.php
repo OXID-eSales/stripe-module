@@ -1,12 +1,12 @@
 <?php
 /**
- * Copyright © FATCHIP GmbH. All rights reserved.
+ * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
 
-namespace FC\stripe\Application\Model\Cronjob;
+namespace OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 
-use FC\stripe\Application\Model\Cronjob;
+use OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 use OxidEsales\Eshop\Core\Registry;
 
 class Base
