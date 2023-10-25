@@ -2,29 +2,17 @@
 
 ## Installation
 
-In the root shop directory :
+- Open a shell and change to the root directory of the store (where the composer.json file is located).
 
-- Copy content of module repository into : **< shoproot >/source/modules/fc/stripe**
+   Example:
+ 
+   <code>cd /var/www/oxideshop/</code>
 
-- Edit <shoproot>/composer.json
-  - Add the section
-<pre>
-    "autoload": {
-      "psr-4": {
-        "FC\\": "./source/modules/fc"
-      }
-    },
-</pre>
-- Run command : <pre>composer require stripe/stripe-php</pre>
 
-- Run commands : 
-<pre>
-  vendor/bin/oe-console oe:module:install-configuration source/modules/fc/stripe
-  vendor/bin/oe-console oe:module:apply-configuration
-  vendor/bin/oe-console oe:module:activate stripe
-</pre>
+- Execute the following command:
 
-If class not found issue : <pre>composer dump-autoload</pre>
+  <code>composer require oxid-esales/stripe-module</code>
+   
 
 ## Configuration
 To use the module after activation : \
@@ -33,7 +21,7 @@ Navigate to : Admin > Extensions > Modules > Stripe Payment > Settings
 - Basic configuration :
   - Set up the operation mode
   - Use the according OnBoarding Button to connect to Stripe and fill automatically the token/ public key fields.
-  - Fill the Private Key field(s) to allow the mandatory creation of Webhook. **Here must be the connected account private key, not the onboarding main token.**
+  - Fill the Private Key field(s) to allow the mandatory creation of Webhook. **Here you have to enter the connected account private key, not the onboarding main token.**
 
 Save config at that point.
 
