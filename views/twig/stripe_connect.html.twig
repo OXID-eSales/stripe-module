@@ -1,0 +1,22 @@
+{% include "headitem.html.twig" with {title: "GENERAL_ADMIN_TITLE"|translate, box: "box"} %}
+
+<form name="transfer" id="transfer" action="{{ oViewConf.getSelfLink()|raw }}" method="post">
+    {{ oViewConf.getHiddenSid()|raw }}
+    <input type="hidden" name="cl" value="admin_start">
+    <input type="hidden" name="editlanguage" value="{{ editlanguage }}">
+    <div class="stripe-connect-message messagebox">
+        {% if blIsSuccess %}
+        <p class="success">{{ translate({ ident: "STRIPE_CONNECT_SUCCESS" }) }}</p>
+        {% else %}
+        <p class="error">{{ translate({ ident: "STRIPE_CONNECT_ERROR" }) }}</p>
+        {% endif %}
+    </div>
+
+    <p><input type="submit" class="btn btn-primary" value="{{ translate({ ident: "STRIPE_BTN_TO_ADMIN" }) }}" /></p>
+</form>
+
+{{ script({ include: "js/libs/jquery.min.js", dynamic: __oxid_include_dynamic }) }}
+{{ script({ include: "js/libs/jquery-ui.min.js", dynamic: __oxid_include_dynamic }) }}
+
+{% include "bottomnaviitem.html.twig" %}
+{% include "bottomitem.html.twig" %}

@@ -38,4 +38,5 @@ $aLang = [
     'STRIPE_ERROR_ORDER_CONFIG_PUBKEY'          => 'Please configure Stripe publishable key to use this payment method.',
     'STRIPE_WEBHOOK_CREATE_ERROR'               => 'The Webhook Endpoint could not be created.',
     'STRIPE_WEBHOOK_CREATE_ERROR_DELETE_FAILED' => 'The Webhook Endpoint could not be created. Deletion of existing WH Endpoint failed.',
+    'STRIPE_CREDIT_CARD'                        => 'Credit card',
 ];

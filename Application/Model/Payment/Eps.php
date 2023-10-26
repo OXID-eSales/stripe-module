@@ -33,7 +33,7 @@ class Eps extends Base
      *
      * @var string|bool
      */
-    protected $sCustomFrontendTemplate = 'stripeeps.tpl';
+    protected $sCustomFrontendTemplate = 'stripeeps';
 
     /**
      * @return array

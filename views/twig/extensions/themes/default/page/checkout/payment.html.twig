@@ -1,0 +1,22 @@
+{% extends "page/checkout/payment.html.twig" %}
+
+{% block select_payment %}
+    {% if attribute(paymentmethod, 'isStripePaymentMethod')  is defined and paymentmethod.isStripePaymentMethod() is same as(true) %}
+        {% set paymentModel = paymentmethod.getStripePaymentModel() %}
+        {% if (paymentModel and paymentModel.getCustomFrontendTemplate is not same as(false)) %}
+            {% include "@stripe/frontend/stripe_payment_custom.html.twig" %}
+        {% else %}
+            {% include "page/checkout/inc/payment_other.html.twig" %}
+        {% endif %}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% block checkout_payment_errors %}
+    {{ parent() }}
+
+    {% if oView.getPaymentError() == -50 %}
+        <div class="alert alert-danger">{{ oView.getPaymentErrorText() }}</div>
+    {% endif %}
+{% endblock %}

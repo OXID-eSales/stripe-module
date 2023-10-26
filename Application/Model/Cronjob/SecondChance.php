@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 
 class SecondChance extends Base
 {
@@ -40,7 +41,7 @@ class SecondChance extends Base
             $iLastRunTime = strtotime($this->getLastRunDateTime());
         }
 
-        $iDayDiff = (int)Registry::getConfig()->getShopConfVar('iStripeCronSecondChanceTimeDiff');
+        $iDayDiff = (int)Payment::getInstance()->getShopConfVar('iStripeCronSecondChanceTimeDiff');
         $iTriggerTimeDiff = 60 * 60 * 24 * $iDayDiff;
 
         $sTriggerMinDate = date('Y-m-d H:i:s', $iLastRunTime - $iTriggerTimeDiff - 10);

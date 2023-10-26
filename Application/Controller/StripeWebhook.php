@@ -19,7 +19,7 @@ class StripeWebhook extends FrontendController
     /**
      * @var string
      */
-    protected $_sThisTemplate = 'stripewebhook.tpl';
+    protected $_sThisTemplate = '@stripe/stripewebhook';
 
     /**
      * Method creating a webhook endpoint on Stripe connected account
@@ -45,8 +45,8 @@ class StripeWebhook extends FrontendController
 
         try {
             $oPaymentHelper = Payment::getInstance();
-            $sMode = Registry::getConfig()->getRequestEscapedParameter('mode') ?? '';
-            $sPrivateKey = $sMode == 'test' ? Registry::getConfig()->getConfigParam('sStripeTestKey') : Registry::getConfig()->getConfigParam('sStripeLiveKey');
+            $sMode = Registry::getRequest()->getRequestEscapedParameter('mode') ?? '';
+            $sPrivateKey = Payment::getInstance()->getStripeKey($sMode);
             $oApi = $oPaymentHelper->loadStripeApiWithToken($sPrivateKey);
             $sUrl = $oPaymentHelper->getWebhookUrl();
             $oWebhookEndpoint = $oApi->webhookEndpoints->create([
@@ -98,7 +98,7 @@ class StripeWebhook extends FrontendController
      */
     public function render()
     {
-        $sEndpointSecret = Registry::getConfig()->getConfigParam('sStripeWebhookEndpointSecret');
+        $sEndpointSecret = Payment::getInstance()->getWebhookEndpointSecret();
 
         $sPayload = @file_get_contents('php://input');
         $sSigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'];

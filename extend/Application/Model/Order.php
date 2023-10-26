@@ -62,7 +62,7 @@ class Order extends Order_parent
     public function stripeSetOrderNumber()
     {
         if (!$this->oxorder__oxordernr->value) {
-            $this->_setNumber();
+            $this->setNumber();
         }
     }
 
@@ -125,12 +125,12 @@ class Order extends Order_parent
                     $aParams['shipping'] = $aShipping;
 
                     $oResponse = $oApiEndpoint->paymentIntents->update($oStripeApiOrder->id, $aParams);
-                    $oRequestLog->logRequest($aParams, $oResponse, $this->getId(), $this->getConfig()->getShopId());
+                    $oRequestLog->logRequest($aParams, $oResponse, $this->getId(), Registry::getConfig()->getShopId());
                     DatabaseProvider::getDb()->Execute("UPDATE oxorder SET stripeshipmenthasbeenmarked = 1 WHERE oxid = ?", array($this->getId()));
                 }
             }
         } catch (\Exception $oEx) {
-            $oRequestLog->logExceptionResponse([], $oEx->getCode(), $oEx->getMessage(), $this->getId(), $this->getConfig()->getShopId());
+            $oRequestLog->logExceptionResponse([], $oEx->getCode(), $oEx->getMessage(), $this->getId(), Registry::getConfig()->getShopId());
         }
     }
 
@@ -156,7 +156,7 @@ class Order extends Order_parent
             }
         } catch (\Exception $exc) {
             $oRequestLog = oxNew(RequestLog::class);
-            $oRequestLog->logExceptionResponse([], $exc->getCode(), $exc->getMessage(), 'updateTracking', $this->getId(), $this->getConfig()->getShopId());
+            $oRequestLog->logExceptionResponse([], $exc->getCode(), $exc->getMessage(), 'updateTracking', $this->getId(), Registry::getConfig()->getShopId());
         }
     }
 
@@ -349,10 +349,10 @@ class Order extends Order_parent
      *
      * @return bool
      */
-    protected function _setNumber()
+    protected function setNumber()
     {
         if ($this->blStripeFinalizeReturnMode === false && $this->blStripeReinitializePaymentMode === false && $this->stripeTmpOrderNr === null) {
-            return parent::_setNumber();
+            return parent::setNumber();
         }
 
         if (!$this->oxorder__oxordernr instanceof Field) {
@@ -376,7 +376,7 @@ class Order extends Order_parent
         }
 
         if ($this->blStripeFinalizeReturnMode === false && $this->blStripeFinishOrderReturnMode === false) { // Stripe module has it's own folder management, so order should not be set to status NEW by oxid core
-            $this->oxorder__oxfolder = new Field(Registry::getConfig()->getShopConfVar('sStripeStatusPending'), Field::T_RAW);
+            $this->oxorder__oxfolder = new Field(PaymentHelper::getInstance()->getShopConfVar('sStripeStatusPending'), Field::T_RAW);
         }
     }
 
@@ -500,7 +500,7 @@ class Order extends Order_parent
     {
         parent::cancelOrder();
         if ($this->stripeIsStripePaymentUsed() === true) {
-            $sCancelledFolder = Registry::getConfig()->getShopConfVar('sStripeStatusCancelled');
+            $sCancelledFolder = PaymentHelper::getInstance()->getShopConfVar('sStripeStatusCancelled');
             if (!empty($sCancelledFolder)) {
                 $this->stripeSetFolder($sCancelledFolder);
             }
@@ -532,7 +532,7 @@ class Order extends Order_parent
      */
     public function stripeIsOrderInUnfinishedState()
     {
-        if ($this->oxorder__oxtransstatus->value == "NOT_FINISHED" && $this->oxorder__oxfolder->value == Registry::getConfig()->getShopConfVar('sStripeStatusProcessing')) {
+        if ($this->oxorder__oxtransstatus->value == "NOT_FINISHED" && $this->oxorder__oxfolder->value == PaymentHelper::getInstance()->getShopConfVar('sStripeStatusProcessing')) {
             return true;
         }
         return false;

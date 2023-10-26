@@ -9,6 +9,9 @@ namespace OxidSolutionCatalysts\Stripe\Application\Helper;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use Stripe\PaymentIntent;
 
 class Order
@@ -17,6 +20,11 @@ class Order
      * @var Order
      */
     protected static $oInstance = null;
+
+    /**
+     * @var ContainerInterface
+     */
+    protected $oContainer;
 
     /**
      * Create singleton instance of order helper
@@ -222,6 +230,47 @@ class Order
     {
         $oState = oxNew('oxState');
         return $oState->getTitleById($sRegionId);
+    }
+
+    /**
+     * Return the list of OXID order folders
+     *
+     * @return array
+     */
+    public function stripeGetOrderFolders()
+    {
+        return Registry::getConfig()->getConfigParam('aOrderfolder');
+    }
+
+    /**
+     * Returns DependencyInjection container
+     *
+     * @return ContainerInterface
+     */
+    protected function getContainer()
+    {
+        if ($this->oContainer === null) {
+            $this->oContainer = ContainerFactory::getInstance()->getContainer();
+        }
+        return $this->oContainer;
+    }
+
+    /**
+     * Returns config value
+     *
+     * @param  string $sVarName
+     * @return mixed|false
+     */
+    public function getShopConfVar($sVarName)
+    {
+        $moduleConfiguration = $this
+            ->getContainer()
+            ->get(ModuleConfigurationDaoBridgeInterface::class)
+            ->get("stripe");
+        if (!$moduleConfiguration->hasModuleSetting($sVarName)) {
+            return false;
+        }
+        return $moduleConfiguration->getModuleSetting($sVarName)->getValue();
     }
 
 }

@@ -89,21 +89,13 @@ class Events
     }
 
     /**
-     * Clear tmp dir and smarty cache.
+     * Clear cache.
      *
      * @return void
      */
     protected static function clearTmp()
     {
-        $sTmpDir = getShopBasePath() . "/tmp/";
-        $sSmartyDir = $sTmpDir . "smarty/";
-
-        foreach (glob($sTmpDir . "*.txt") as $sFileName) {
-            @unlink($sFileName);
-        }
-        foreach (glob($sSmartyDir . "*.php") as $sFileName) {
-            @unlink($sFileName);
-        }
+        $output = shell_exec(VENDOR_PATH . '/bin/oe-console oe:cache:clear');
     }
 
     /**

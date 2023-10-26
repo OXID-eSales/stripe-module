@@ -33,7 +33,7 @@ class Ideal extends Base
      *
      * @var string|bool
      */
-    protected $sCustomFrontendTemplate = 'stripeideal.tpl';
+    protected $sCustomFrontendTemplate = 'stripeideal';
 
     /**
      * @return array

@@ -6,11 +6,12 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Helper;
 
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidSolutionCatalysts\Stripe\Application\Model\Payment\Base;
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use Stripe\StripeClient;
 use Stripe\WebhookEndpoint;
 
@@ -43,6 +44,11 @@ class Payment
      * @var array|null
      */
     protected $aPaymentInfo = null;
+
+    /**
+     * @var ContainerInterface
+     */
+    protected $oContainer;
 
     /**
      * Create singleton instance of payment helper
@@ -106,7 +112,7 @@ class Payment
      */
     public function getStripeMode()
     {
-        return Registry::getConfig()->getShopConfVar('sStripeMode');
+        return $this->getShopConfVar('sStripeMode');
     }
 
     /**
@@ -118,9 +124,9 @@ class Payment
     public function getStripeToken($sMode = '')
     {
         if ($sMode == 'live') {
-            return Registry::getConfig()->getShopConfVar('sStripeLiveToken');
+            return $this->getShopConfVar('sStripeLiveToken');
         } elseif ($sMode == 'test') {
-            return Registry::getConfig()->getShopConfVar('sStripeTestToken');
+            return $this->getShopConfVar('sStripeTestToken');
         }
 
         return '';
@@ -135,9 +141,9 @@ class Payment
     public function getStripeKey($sMode = '')
     {
         if ($sMode == 'live') {
-            return Registry::getConfig()->getShopConfVar('sStripeLiveKey');
+            return $this->getShopConfVar('sStripeLiveKey');
         } elseif ($sMode == 'test') {
-            return Registry::getConfig()->getShopConfVar('sStripeTestKey');
+            return $this->getShopConfVar('sStripeTestKey');
         }
 
         return '';
@@ -152,9 +158,9 @@ class Payment
     public function getPublishableKey($sMode = '')
     {
         if ($sMode == 'live') {
-            return Registry::getConfig()->getShopConfVar('sStripeLivePk');
+            return $this->getShopConfVar('sStripeLivePk');
         } elseif ($sMode == 'test') {
-            return Registry::getConfig()->getShopConfVar('sStripeTestPk');
+            return $this->getShopConfVar('sStripeTestPk');
         }
 
         return '';
@@ -193,7 +199,7 @@ class Payment
      */
     public function isConnectionWithTokenSuccessful($sTokenConfVar)
     {
-        $sStripeToken = Registry::getConfig()->getShopConfVar($sTokenConfVar);
+        $sStripeToken = $this->getShopConfVar($sTokenConfVar);
         try {
             $aStripeInfo = $this->loadStripeApiWithToken($sStripeToken)->customers->all();
             if (empty($aStripeInfo)) {
@@ -320,7 +326,17 @@ class Payment
      */
     public function getWebhookEndpointId()
     {
-        return Registry::getConfig()->getConfigParam('sStripeWebhookEndpoint');
+        return $this->getShopConfVar('sStripeWebhookEndpoint');
+    }
+
+    /**
+     * Return the Stripe webhook secret
+     *
+     * @return string
+     */
+    public function getWebhookEndpointSecret()
+    {
+        return $this->getShopConfVar('sStripeWebhookEndpointSecret');
     }
 
     /**
@@ -369,5 +385,36 @@ class Payment
         $moduleSettingService = ContainerFactory::getInstance()->getContainer()->get(ModuleSettingBridgeInterface::class);
         $moduleSettingService->save('sStripeWebhookEndpoint', '', 'stripe');
         $moduleSettingService->save('sStripeWebhookEndpointSecret', '', 'stripe');
+    }
+
+    /**
+     * Returns DependencyInjection container
+     *
+     * @return ContainerInterface
+     */
+    protected function getContainer()
+    {
+        if ($this->oContainer === null) {
+            $this->oContainer = ContainerFactory::getInstance()->getContainer();
+        }
+        return $this->oContainer;
+    }
+
+    /**
+     * Returns config value
+     *
+     * @param  string $sVarName
+     * @return mixed|false
+     */
+    public function getShopConfVar($sVarName)
+    {
+        $moduleConfiguration = $this
+            ->getContainer()
+            ->get(ModuleConfigurationDaoBridgeInterface::class)
+            ->get("stripe");
+        if (!$moduleConfiguration->hasModuleSetting($sVarName)) {
+            return false;
+        }
+        return $moduleConfiguration->getModuleSetting($sVarName)->getValue();
     }
 }

@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 
 class FinishOrders extends Base
 {
@@ -35,7 +36,7 @@ class FinishOrders extends Base
     {
         $aOrders = [];
 
-        $sProcessingFolder = Registry::getConfig()->getShopConfVar('sStripeStatusProcessing');
+        $sProcessingFolder = Payment::getInstance()->getShopConfVar('sStripeStatusProcessing');
         $sTriggerDate = date('Y-m-d H:i:s', time() - (60 * 60 * 24));
         $sMinPaidDate = date('Y-m-d H:i:s', time() - (60 * 2)); // This will prevent finishing legit orders before the customer does
         $sQuery = " SELECT 

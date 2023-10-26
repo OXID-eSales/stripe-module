@@ -41,6 +41,10 @@ class PaymentController extends PaymentController_parent
         $oCountry = oxNew(Country::class);
         $oCountry->load($oUser->oxuser__oxcountryid->value);
 
+        if (!$oCountry->oxcountry__oxisoalpha2) {
+            return '';
+        }
+
         return $oCountry->oxcountry__oxisoalpha2->value;
     }
 
@@ -72,8 +76,8 @@ class PaymentController extends PaymentController_parent
     {
         $oPaymentHelper = PaymentHelper::getInstance();
         $sToken = $oPaymentHelper->getStripeToken($oPaymentHelper->getStripeMode());
-        $blRemoveByBillingCountry = (bool)Registry::getConfig()->getShopConfVar('blStripeRemoveByBillingCountry');
-        $blRemoveByBasketCurrency = (bool)Registry::getConfig()->getShopConfVar('blStripeRemoveByBasketCurrency');
+        $blRemoveByBillingCountry = (bool)PaymentHelper::getInstance()->getShopConfVar('blStripeRemoveByBillingCountry');
+        $blRemoveByBasketCurrency = (bool)PaymentHelper::getInstance()->getShopConfVar('blStripeRemoveByBasketCurrency');
         $oBasket = Registry::getSession()->getBasket();
         $sBillingCountryCode = $this->stripeGetBillingCountry($oBasket);
         $sCurrency = $oBasket->getBasketCurrency()->name;

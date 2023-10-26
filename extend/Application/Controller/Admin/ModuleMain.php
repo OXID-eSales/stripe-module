@@ -86,8 +86,8 @@ class ModuleMain extends ModuleMain_parent
      */
     protected function stripeGetCurrentModuleId()
     {
-        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter("moduleId")) {
-            $sModuleId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter("moduleId");
+        if (\OxidEsales\Eshop\Core\Registry::getRequest()->getRequestParameter("moduleId")) {
+            $sModuleId = \OxidEsales\Eshop\Core\Registry::getRequest()->getRequestParameter("moduleId");
         } else {
             $sModuleId = $this->getEditObjectId();
         }
@@ -96,7 +96,7 @@ class ModuleMain extends ModuleMain_parent
 
     /**
      * Executes parent method parent::render(),
-     * passes data to Smarty engine and returns name of template file "module_main.tpl".
+     * passes data to Twig engine and returns name of template file "module_main.html.twig".
      *
      * Extension: Return Stripe template if Stripe module was detected
      *
@@ -108,7 +108,7 @@ class ModuleMain extends ModuleMain_parent
 
         if ($this->stripeGetCurrentModuleId() == "stripe" && $this->stripeisModuleActive()) {
             // Return Stripe template
-            return "stripe_module_main.tpl";
+            return "@stripe/stripe_module_main";
         }
 
         return $sReturn;

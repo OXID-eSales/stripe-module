@@ -6,6 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 use OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 use OxidEsales\Eshop\Core\Registry;
 
@@ -146,7 +147,7 @@ class Base
      */
     public function isCronjobActivated()
     {
-        if ((bool)Registry::getConfig()->getShopConfVar($this->getActivityConfVarName()) === true) {
+        if ((bool)Payment::getInstance()->getShopConfVar($this->getActivityConfVarName()) === true) {
             return true;
         }
         return false;

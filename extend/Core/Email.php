@@ -11,7 +11,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Templating\TemplateRendererBrid
 
 class Email extends Email_parent
 {
-    protected $_sStripeSecondChanceTemplate = 'stripe_second_chance.tpl';
+    protected $_sStripeSecondChanceTemplate = '@stripe/stripe_second_chance';
 
     /**
      * Returns old or current template renderer
@@ -72,7 +72,7 @@ class Email extends Email_parent
         // Process view data array through oxOutput processor
         $this->_processViewArray();
 
-        $oConfig = $this->getConfig();
+        $oConfig = Registry::getConfig();
         $oConfig->setAdminMode(false);
 
         $this->setBody($this->stripeRenderTemplate($oRenderer, $this->_sStripeSecondChanceTemplate));

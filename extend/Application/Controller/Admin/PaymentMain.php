@@ -6,6 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin;
 
+use OxidSolutionCatalysts\Stripe\Application\Helper\Order;
 use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 use OxidSolutionCatalysts\Stripe\Application\Model\PaymentConfig;
 use OxidEsales\Eshop\Core\Registry;
@@ -34,7 +35,7 @@ class PaymentMain extends PaymentMain_parent
      */
     public function stripeGetOrderFolders()
     {
-        return Registry::getConfig()->getConfigParam('aOrderfolder');
+        return Order::getInstance()->stripeGetOrderFolders();
     }
 
     /**

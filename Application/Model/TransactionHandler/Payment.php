@@ -38,7 +38,7 @@ class Payment extends Base
 
                 if (abs($oTransaction->amount_received - PaymentHelper::getInstance()->priceInCent($oOrder->oxorder__oxtotalordersum->value)) < 0.01) {
                     $oOrder->stripeMarkAsPaid();
-                    $oOrder->stripeSetFolder(Registry::getConfig()->getShopConfVar('sStripeStatusProcessing'));
+                    $oOrder->stripeSetFolder(PaymentHelper::getInstance()->getShopConfVar('sStripeStatusProcessing'));
                 }
             }
             $blSuccess = true;

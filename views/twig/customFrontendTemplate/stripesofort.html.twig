@@ -1,0 +1,19 @@
+{% set aStripeSofortCountries = oView.stripeGetSofortCountries() %}
+<div id="stripe_sofort_error_box" class="form-group" style="display:none;">
+    <div class="col-lg-3"></div>
+    <div class="col-lg-9">
+        <div class="form-control" style="background-color:#ff5959" id="stripe_sofort_error">{{ translate({ ident: "ERROR" }) }}</div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="stripe_sofort_country" class="req control-label col-lg-3">{{ translate({ ident: "STRIPE_SOFORT_COUNTRY" }) }}</label>
+    <div class="col-lg-9">
+        <select id="stripe_sofort_country" name="dynvalue[stripe_sofort_country]" required="required">
+            <option value="">{{ translate({ ident: "PLEASE_CHOOSE" }) }}</option>
+            {% for countryCode in aStripeSofortCountries %}
+            <option value="{{ countryCode }}" {% if dynvalue.stripe_sofort_country == countryCode %}selected="selected"{% endif %}>{{ translate({ ident: "STRIPE_COUNTRY_"|cat(countryCode)|upper }) }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>

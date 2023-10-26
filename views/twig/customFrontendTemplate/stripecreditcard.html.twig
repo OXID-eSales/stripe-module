@@ -1,0 +1,58 @@
+{% set oPaymentModel = paymentmethod.getStripePaymentModel() %}
+
+<input type="hidden" name="dynvalue[stripe_token_id]" id="stripe_token_id">
+<div id="stripe_creditcard_error_box" class="form-group" style="display:none;">
+        <div class="col-lg-12"></div>
+        <div class="mb-3">
+        <div class="form-control" style="background-color:#ff5959" id="stripe_creditcard_error">{{ translate({ ident: "ERROR" }) }}</div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="stripe_card_holder" class="req control-label col-lg-3">{{ translate({ ident: "BANK_ACCOUNT_HOLDER" }) }}</label>
+        <div class="mb-3">
+        <input type="text" id="stripe_card_holder" class="form-control" name="dynvalue[stripe_card_holder]" required="required" />
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="req control-label col-lg-3">{{ translate({ ident: "STRIPE_CREDIT_CARD" }) }}</label>
+        <div class="mb-3">
+        <div id="stripeCardElement" class="form-control"></div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script type="text/javascript">
+    var pubKey = '{{ oPaymentModel.getPublishableKey() }}';
+    if (pubKey == '') {
+        document.getElementById('{{ sInputName }}_error').innerHTML = '{{ translate({ ident: "STRIPE_ERROR_ORDER_CONFIG_PUBKEY" }) }}';
+        document.getElementById('{{ sInputName }}_error_box').style.display = '';
+    } else {
+        if (!stripe) {
+            var stripe = Stripe(pubKey);
+        }
+        var elements = stripe.elements();
+        var cardElement = elements.create('card', {hidePostalCode: true});
+        cardElement.mount('#stripeCardElement');
+
+        let displayErrorBox = document.getElementById('stripe_creditcard_error_box');
+        let displayError = document.getElementById('stripe_creditcard_error');
+
+        cardElement.on('change', ({error}) => {
+            if (error) {
+                displayError.textContent = error.message;
+                displayErrorBox.style.display = 'block';
+            } else {
+                displayError.textContent = '';
+                displayErrorBox.style.display = 'none';
+            }
+        });
+
+        var paymentForm = document.getElementById('payment');
+        paymentForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            stripeSubmitPaymentForm(paymentForm);
+        });
+    }
+</script>

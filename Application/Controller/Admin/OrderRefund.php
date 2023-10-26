@@ -22,7 +22,7 @@ class OrderRefund extends AdminDetailsController
      *
      * @var string
      */
-    protected $_sTemplate = "stripe_order_refund.tpl";
+    protected $_sTemplate = "@stripe/stripe_order_refund";
 
     /**
      * Order object
@@ -98,7 +98,7 @@ class OrderRefund extends AdminDetailsController
                 $aParams['charge'] = $oStripeApiCharge->id;
                 $oResponse = $this->getStripeApiRequestModel()->refunds->create($aParams);
 
-                $oRequestLog->logRequest($aParams, $oResponse, $this->getOrder()->getId(), $this->getConfig()->getShopId());
+                $oRequestLog->logRequest($aParams, $oResponse, $this->getOrder()->getId(), Registry::getConfig()->getShopId());
                 $this->markOrderAsFullyRefunded();
                 $this->_blSuccessfulRefund = true;
             } else {
@@ -135,7 +135,7 @@ class OrderRefund extends AdminDetailsController
      */
     public function getFormatedPrice($dPrice)
     {
-        $oCurrency = $this->getConfig()->getCurrencyObject($this->getOrder()->oxorder__oxcurrency->value);
+        $oCurrency = Registry::getConfig()->getCurrencyObject($this->getOrder()->oxorder__oxcurrency->value);
 
         return Registry::getLang()->formatCurrency($dPrice, $oCurrency);
     }
@@ -322,7 +322,7 @@ class OrderRefund extends AdminDetailsController
             if ($this->_oStripeApiCharge === null || $blRefresh === true) {
 
                 $oApiOrder = $this->getStripeApiOrder($blRefresh);
-                $sLastChargeId = $oApiOrder->latest_charge;
+                $sLastChargeId = $oApiOrder ? $oApiOrder->latest_charge : null;
 
                 if (! $sLastChargeId) {
                     return null;

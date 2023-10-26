@@ -1,0 +1,8 @@
+{% set shop = oEmailView.getShop() %}
+{% set oViewConf = oEmailView.getViewConfig() %}
+
+{% include "email/html/header.html.twig" with {title: subject} %}
+
+{% include_content 'stripesecondchanceemail' %}<br/><br/>
+
+{% include "email/html/footer.html.twig" %}

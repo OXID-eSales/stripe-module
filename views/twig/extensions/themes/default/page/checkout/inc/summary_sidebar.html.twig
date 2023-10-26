@@ -1,0 +1,21 @@
+{% extends "page/checkout/inc/summary_sidebar.html.twig" %}
+
+{% block basket_btn_next_bottom %}
+    {{ parent() }}
+    {{ script({ include: oViewConf.getModuleUrl('stripe','js/stripe.js'), dynamic: __oxid_include_dynamic }) }}
+
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function(e) {
+            var paymentForm = document.getElementById('payment');
+            if (paymentForm) {
+                const stripePaymentNextButton = document.querySelector(".sticky-md-top button");
+                if (stripePaymentNextButton) {
+                    stripePaymentNextButton.onclick = function (e) {
+                        e.preventDefault();
+                        stripeSubmitPaymentForm(paymentForm);
+                    }
+                }
+            }
+        })
+    </script>
+{% endblock %}

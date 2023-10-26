@@ -1,0 +1,104 @@
+{% include "headitem.html.twig" with {title: "GENERAL_ADMIN_TITLE"|translate, box: "box"} %}
+
+{% if updatenav %}
+    {{ script({ add: "top.oxid.admin.reloadNavigation('" ~ shopid ~ "');", priority: 10, dynamic: __oxid_include_dynamic }) }}
+{% endif %}
+
+<form name="transfer" id="transfer" action="{{ oViewConf.getSelfLink()|raw }}" method="post">
+    {{ oViewConf.getHiddenSid()|raw }}
+    <input type="hidden" name="oxid" value="{{ oxid }}">
+    <input type="hidden" name="cl" value="module_main">
+    <input type="hidden" name="editlanguage" value="{{ editlanguage }}">
+</form>
+
+{{ script({ include: "js/libs/jquery.min.js", dynamic: __oxid_include_dynamic }) }}
+{{ script({ include: "js/libs/jquery-ui.min.js", dynamic: __oxid_include_dynamic }) }}
+
+{% if oModule %}
+    <table cellspacing="10" width="98%">
+        <tr>
+            <td width="245" valign="top">
+                {% if oModule.getInfo('thumbnail') %}
+                <img src="{{ oViewConf.getModuleUrl(oModule.getId(), oModule.getInfo('thumbnail')) }}" hspace="20" vspace="10"></td>
+            {% else %}
+                <img src="{{ oViewConf.getResourceUrl() }}bg/module.png" hspace="20" vspace="10">
+            {% endif %}
+            </td>
+            <td width="" valign="top">
+                <h1 style="color:#000;font-size:25px;">{{ oModule.getTitle() }}</h1>
+                <p>{{ oModule.getDescription()|raw }}</p>
+                <hr>
+
+                <dl class="moduleDesc clear">
+                    <dt>{{ translate({ ident: "MODULE_VERSION" }) }}</dt>
+                    <dd>{{ oModule.getInfo('version')|default(' - ') }} {% if oView.stripeShowOldVersionWarning() %} <span style="color:red;margin-left: 1rem;"><strong>{{ translate({ ident: "STRIPE_MODULE_VERSION_OUTDATED" }) }} {{ oView.stripeGetNewestReleaseVersion() }}</strong></span>{% endif %}</dd>
+
+                    <dt>{{ translate({ ident: "MODULE_AUTHOR" }) }}</dt>
+                    <dd>{{ oModule.getInfo('author')|raw|default(' - ') }}</dd>
+
+                    <dt>{{ translate({ ident: "GENERAL_EMAIL" }) }}</dt>
+                    <dd>
+                        {% if oModule.getInfo('email') %}
+                            <a href="mailto:{{ oModule.getInfo('email') }}">{{ oModule.getInfo('email') }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </dd>
+
+                    <dt>{{ translate({ ident: "GENERAL_URL" }) }}</dt>
+                    <dd>
+                        {% if oModule.getInfo('url') %}
+                            <a href="{{ oModule.getInfo('url') }}" target="_blank">{{ oModule.getInfo('url') }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </dd>
+                </dl>
+            </td>
+
+            <td width="25" style="border-right: 1px solid #ddd;">
+
+            </td>
+            <td width="260" valign="top">
+                {% if not oModule.hasMetadata() and not oModule.isRegistered() %}
+                    <div class="info">
+                        {{ translate({ ident: "MODULE_ENABLEACTIVATIONTEXT" }) }}
+                    </div>
+                {% endif %}
+                {% if not _sError %}
+                    {% if oModule.hasMetadata() or oModule.isRegistered() %}
+                        <form name="myedit" id="myedit" action="{{ oViewConf.getSelfLink()|raw }}" method="post">
+                            <div>
+                                {{ oViewConf.getHiddenSid()|raw }}
+                                <input type="hidden" name="cl" value="module_main">
+                                <input type="hidden" name="updatelist" value="1">
+                                <input type="hidden" name="oxid" value="{{ oModule.getId() }}">
+                                {% if not oView.isDemoShop() %}
+                                    {% if oModule.hasMetadata() %}
+                                        {% if oModule.isActive() %}
+                                            <input type="hidden" name="fnc" value="deactivateModule">
+                                            <div align="center">
+                                                <input type="submit" id="module_deactivate" class="saveButton" value="{{ translate({ ident: "MODULE_DEACTIVATE" }) }}">
+                                            </div>
+                                        {% else %}
+                                            <input type="hidden" name="fnc" value="activateModule">
+
+                                            <div align="center">
+                                                <input type="submit" id="module_activate" class="saveButton" value="{{ translate({ ident: "MODULE_ACTIVATE" }) }}">
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    {{ translate({ ident: "MODULE_ACTIVATION_NOT_POSSIBLE_IN_DEMOMODE" }) }}
+                                {% endif %}
+                            </div>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+{% endif %}
+
+{% include "bottomnaviitem.html.twig" %}
+{% include "bottomitem.html.twig" %}

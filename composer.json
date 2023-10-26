@@ -1,6 +1,6 @@
 {
   "name": "oxid-solution-catalysts/stripe-module",
-  "description": "Stripe Payment Module for Oxid 6",
+  "description": "Stripe Payment Module for Oxid 7",
   "type": "oxideshop-module",
   "keywords": ["oxid", "modules", "eShop"],
   "homepage": "https://www.oxid-esales.com",

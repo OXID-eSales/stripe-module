@@ -1,7 +1,0 @@
-[{if method_exists($paymentmethod, 'isStripePaymentMethod') && $paymentmethod->isStripePaymentMethod() === true}]
-    [{assign var="paymentModel" value=$paymentmethod->getStripePaymentModel()}]
-    [{if $paymentModel && $paymentModel->getCustomFrontendTemplate() !== false}]
-        [{include file=$paymentModel->getCustomFrontendTemplate()}]
-    [{/if}]
-[{/if}]
-[{$smarty.block.parent}]

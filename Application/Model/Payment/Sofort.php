@@ -33,7 +33,7 @@ class Sofort extends Base
      *
      * @var string|bool
      */
-    protected $sCustomFrontendTemplate = 'stripesofort.tpl';
+    protected $sCustomFrontendTemplate = 'stripesofort';
 
     /**
      * @return array

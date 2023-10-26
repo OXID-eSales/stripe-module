@@ -1,0 +1,59 @@
+{% extends "payment_main.html.twig" %}
+
+{% block admin_payment_main_form %}
+    {% if edit is not null and edit.isStripePaymentMethod() == 1 %}
+        {% set paymentModel = edit.getStripePaymentModel() %}
+        <tr>
+            <td class="edittext" colspan="2">
+                <b>{{ translate({ ident: "STRIPE_IS_STRIPE" }) }}</b>
+                <input type="hidden" name="stripe[api]" value="payment">
+            </td>
+        </tr>
+        {% if attribute(oView, 'stripeIsTokenConfigured') is defined and oView.stripeIsTokenConfigured() is same as(false ) %}
+            <tr>
+                <td class="edittext" colspan="2">
+                    <b style="color: red;">{{ translate({ ident: "STRIPE_TOKEN_NOT_CONFIGURED" }) }}</b>
+                </td>
+            </tr>
+        {% endif %}
+        <tr id="stripe_payment_description">
+            <td class="edittext" width="70">
+                {{ translate({ ident: "STRIPE_PAYMENT_DESCRIPTION" }) }}
+            </td>
+            <td class="edittext">
+                <input type="text" class="editinput" size="25" name="stripe[payment_description]" value="{{ paymentModel.getConfigParam('payment_description') }}" {{ readonly }}>
+                {% include "inputhelp.html.twig" with {'sHelpId': help_id("STRIPE_PAYMENT_DESCRIPTION_HELP"), 'sHelpText': help_text("STRIPE_PAYMENT_DESCRIPTION_HELP")} %}
+            </td>
+        </tr>
+        {% if paymentModel.getCustomConfigTemplate() != false %}
+            {% include paymentModel.getCustomConfigTemplate() %}
+        {% endif %}
+        <tr>
+            <td class="edittext" colspan="2">
+                &nbsp;<div style="display: none;" id="stripe_payment_min_max">
+                    {% set oFrom = paymentModel.getStripeFromAmount() %}
+                    {% set oTo = paymentModel.getStripeToAmount() %}
+                    {% if oFrom %}<br>
+                        {{ translate({ ident: "STRIPE_PAYMENT_LIMITATION" }) }}:<br>
+                        {{ translate({ ident: "STRIPE_PAYMENT_LIMITATION_FROM" }) }} {{ oFrom.value }} {{ oFrom.currency }} {{ translate({ ident: "STRIPE_PAYMENT_LIMITATION_TO" }) }}
+                        {% if oTo != false %}
+                            {{ oTo.value }} {{ oTo.currency }}
+                        {% else %}
+                            {{ translate({ ident: "STRIPE_PAYMENT_LIMITATION_UNLIMITED" }) }}
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <script>
+                    function appendMinMaxInfo() {
+                        var minMaxInfo = document.getElementById("stripe_payment_min_max");
+                        var clone = minMaxInfo.cloneNode(true);
+                        clone.style.display = "";
+                        document.getElementById("helpText_HELP_PAYMENT_MAIN_AMOUNT").parentNode.appendChild(clone);
+                    }
+                    setTimeout(appendMinMaxInfo, 100);
+                </script>
+            </td>
+        </tr>
+    {% endif %}
+    {{ parent() }}
+{% endblock %}

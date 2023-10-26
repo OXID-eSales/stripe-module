@@ -6,6 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin;
 
+use OxidSolutionCatalysts\Stripe\Application\Helper\Order;
 use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 use OxidEsales\Eshop\Core\Registry;
 use Stripe\WebhookEndpoint;
@@ -19,7 +20,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function stripeGetOrderFolders()
     {
-        return Registry::getConfig()->getConfigParam('aOrderfolder');
+        return Order::getInstance()->stripeGetOrderFolders();
     }
 
     /**
@@ -41,7 +42,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function stripeIsTestMode()
     {
-        return Registry::getConfig()->getShopConfVar('sStripeMode') == 'test';
+        return Payment::getInstance()->getShopConfVar('sStripeMode') == 'test';
     }
 
     /**
@@ -51,10 +52,10 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function stripeHasApiKeys()
     {
-        if (!empty(Registry::getConfig()->getShopConfVar('sStripeLiveToken'))) {
+        if (!empty(Payment::getInstance()->getShopConfVar('sStripeLiveToken'))) {
             return true;
         }
-        if (!empty(Registry::getConfig()->getShopConfVar('sStripeTestToken'))) {
+        if (!empty(Payment::getInstance()->getShopConfVar('sStripeTestToken'))) {
             return true;
         }
         return false;
@@ -128,7 +129,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     {
         $sMode = $sVarName == 'sStripeTestToken' ? 'test' : 'live';
         $redirectUrl = Registry::getConfig()->getSslShopUrl().'admin/index.php?cl=stripeConnect&fnc=stripeFinishOnBoarding';
-        $redirectUrl.= '&stoken=' . $this->getSession()->getSessionChallengeToken();
+        $redirectUrl.= '&stoken=' . Registry::getSession()->getSessionChallengeToken();
         $redirectUrl.= '&shop_param=' . $sMode;
 
         if ($sMode == 'test') {

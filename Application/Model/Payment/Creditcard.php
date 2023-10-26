@@ -38,7 +38,7 @@ class Creditcard extends Base
      *
      * @var string|bool
      */
-    protected $sCustomFrontendTemplate = 'stripecreditcard.tpl';
+    protected $sCustomFrontendTemplate = 'stripecreditcard';
 
     /**
      * @return array

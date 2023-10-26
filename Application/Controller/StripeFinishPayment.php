@@ -15,7 +15,7 @@ class StripeFinishPayment extends FrontendController
     /**
      * @var string
      */
-    protected $_sThisTemplate = 'stripewebhook.tpl';
+    protected $_sThisTemplate = '@stripe/stripewebhook';
 
     /**
      * Returns order or false if no id given or order not eligible

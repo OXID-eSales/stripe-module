@@ -1,0 +1,177 @@
+{% include "headitem.html.twig" with {title: "GENERAL_ADMIN_TITLE"|translate} %}
+
+<style>
+    .refundTable TD {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    TD.borderTop {
+        border-top: 1px solid black!important;
+    }
+    FIELDSET {
+        border-radius: 15px;
+        margin-bottom: 20px;
+        padding: 10px;
+    }
+    FIELDSET.fullRefund SPAN{
+        margin-left: 2px;
+    }
+    FIELDSET .refundSubmit {
+        margin-top: 15px;
+    }
+    .typeSelect {
+        margin-bottom: 10px;
+    }
+    FIELDSET.refundError {
+        background-color: #FF8282;
+        color: black;
+        border: 3px solid #F00000;
+    }
+    FIELDSET.refundNotice {
+        background-color: #ffeeb5;
+        border: 3px solid #FFE385;
+    }
+    FIELDSET.refundSuccess {
+        background-color: #7aff9e;
+        border: 3px solid #00b02f;
+    }
+    FIELDSET.message STRONG {
+        display: block;
+        margin-bottom: 10px;
+    }
+</style>
+
+{% if readonly %}
+    {% set readonly = "readonly disabled" %}
+{% else %}
+    {% set readonly = "" %}
+{% endif %}
+
+<form name="transfer" id="transfer" action="{{ oViewConf.getSelfLink()|raw }}" method="post">
+    {{ oViewConf.getHiddenSid()|raw }}
+    <input type="hidden" name="oxid" value="{{ oxid }}">
+    <input type="hidden" name="cl" value="stripe_order_refund">
+</form>
+{% if oView.isStripeOrder() is same as(true) %}
+    {% if oView.wasRefundSuccessful() == true %}
+        <fieldset class="refundSuccess message">
+            {{ translate({ ident: "STRIPE_REFUND_SUCCESSFUL" }) }}
+        </fieldset>
+    {% endif %}
+    {% if oView.getErrorMessage() != false %}
+        <fieldset class="refundError message">
+            <strong>Error</strong>
+            {{ oView.getErrorMessage() }}
+        </fieldset>
+    {% endif %}
+
+    {% set blIsOrderRefundable = oView.isOrderRefundable() %}
+
+    {% if blIsOrderRefundable == false %}
+        <fieldset class="refundNotice message">
+            <strong>{{ translate({ ident: "STRIPE_NOTICE" }) }}</strong>
+            {{ translate({ ident: "STRIPE_ORDER_NOT_REFUNDABLE" }) }}
+        </fieldset>
+    {% endif %}
+
+    {% set order = oView.getOrder() %}
+    {% set paymentType = order.getPaymentType() %}
+    {% set paymentExtraInfo = order.stripeGetExtraInfo() %}
+    <fieldset>
+        <legend>{{ translate({ ident: "STRIPE_PAYMENT_DETAILS" }) }}</legend>
+        <table>
+            <tr>
+                <td class="edittext">
+                    {{ translate({ ident: "STRIPE_PAYMENT_TYPE" }) }}:
+                </td>
+                <td class="edittext">
+                    {{ paymentType.oxpayments__oxdesc.value }}
+                </td>
+                <td class="edittext"></td>
+            </tr>
+            <tr>
+                <td class="edittext">
+                    {{ translate({ ident: "STRIPE_TRANSACTION_ID" }) }}:
+                </td>
+                <td class="edittext">
+                    {{ order.oxorder__oxtransid.value }}
+                </td>
+                <td class="edittext"></td>
+            </tr>
+            {% if order.oxorder__stripeexternaltransid.value != "" %}
+                <tr>
+                    <td class="edittext">
+                        {{ translate({ ident: "STRIPE_EXTERNAL_TRANSACTION_ID" }) }}:
+                    </td>
+                    <td class="edittext">
+                        {{ order.oxorder__stripeexternaltransid.value }}
+                    </td>
+                    <td class="edittext"></td>
+                </tr>
+            {% endif %}
+            {% if paymentExtraInfo != "" %}
+                <tr>
+                    <td class="edittext">
+                        {{ translate({ ident: "STRIPE_ORDER_EXTRA_INFO" }) }}:
+                    </td>
+                    <td class="edittext">
+                        {{ paymentExtraInfo }}
+                    </td>
+                    <td class="edittext"></td>
+                </tr>
+            {% endif %}
+        </table>
+    </fieldset>
+
+    {% if order.stripeIsEligibleForPaymentFinish() %}
+        <fieldset>
+            <legend>{{ translate({ ident: "STRIPE_SUBSEQUENT_ORDER_COMPLETION" }) }}</legend>
+            {{ translate({ ident: "STRIPE_ORDER_PAYMENT_URL" }) }}: <a href="{{ order.stripeGetPaymentFinishUrl() }}" target="_blank" style="text-decoration: underline;">{{ order.stripeGetPaymentFinishUrl() }}</a><br><br>
+            <form action="{{ oViewConf.getSelfLink()|raw }}" method="post">
+                {{ oViewConf.getHiddenSid()|raw }}
+                <input type="hidden" name="cl" value="stripe_order_refund">
+                <input type="hidden" name="oxid" value="{{ oxid }}">
+                <input type="hidden" name="fnc" value="sendSecondChanceEmail">
+                <input type="submit" value="{{ translate({ ident: "STRIPE_SEND_SECOND_CHANCE_MAIL" }) }}">
+                {% if order.oxorder__stripesecondchancemailsent.value != "0000-00 - 00 00:00:00" %}
+                    <span style="color: crimson;">{{ translate({ ident: "STRIPE_SECOND_CHANCE_MAIL_ALREADY_SENT" }) }} ( {{ order.oxorder__stripesecondchancemailsent.value }} )</span>
+                {% endif %}
+            </form>
+        </fieldset>
+    {% endif %}
+
+    {% if blIsOrderRefundable == true %}
+        <fieldset class="fullRefund">
+            <legend>{{ translate({ ident: "STRIPE_FULL_REFUND" }) }}</legend>
+            <form name="search" id="search" action="{{ oViewConf.getSelfLink()|raw }}" method="post">
+                {{ oViewConf.getHiddenSid()|raw }}
+                <input type="hidden" name="cl" value="stripe_order_refund">
+                <input type="hidden" name="oxid" value="{{ oxid }}">
+                <input type="hidden" name="fnc" value="fullRefund">
+                {% set blIsFullRefundAvailable = oView.isFullRefundAvailable() %}
+                {% if blIsFullRefundAvailable == true %}
+                    <span>{{ translate({ ident: "STRIPE_FULL_REFUND_TEXT" }) }}: {{ oView.getFormatedPrice(edit.oxorder__oxtotalordersum.value) }} <small>{{ edit.oxorder__oxcurrency.value }}</small></span><br><br>
+                {% else %}
+                    <input type="hidden" name="refundRemaining" value="1">
+                    <span>{{ translate({ ident: "STRIPE_REFUND_REMAINING" }) }}: {{ oView.getFormatedPrice(oView.getRemainingRefundableAmount()) }} <small>{{ edit.oxorder__oxcurrency.value }}</small></span><br><br>
+                {% endif %}
+                <span><label for="refund_reason">{{ translate({ ident: "STRIPE_REFUND_REASON" }) }}:</label></span>
+                <select id="refund_reason" name="refund_reason">
+                    <option value="">{{ translate({ ident: "STRIPE_PLEASE_SELECT" }) }}</option>
+                    <option value="duplicate">{{ translate({ ident: "STRIPE_REFUND_DUPLICATE" }) }}</option>
+                    <option value="requested_by_customer">{{ translate({ ident: "STRIPE_REFUND_CUSTOMER" }) }}</option>
+                    <option value="fraudulent">{{ translate({ ident: "STRIPE_REFUND_FRAUD" }) }}</option>
+                </select><br/>
+                <span><label for="refund_description">{{ translate({ ident: "STRIPE_REFUND_DESCRIPTION" }) }}:</label></span>
+                <input type="text" name="refund_description" value="" placeholder="{{ translate({ ident: "STRIPE_REFUND_DESCRIPTION_PLACEHOLDER" }) }}" maxlength="140" size="120"><br>
+                <input type="submit" value="{{ translate({ ident: "STRIPE_REFUND_SUBMIT" }) }}" class="refundSubmit">
+            </form>
+        </fieldset>
+    {% endif %}
+{% else %}
+    <p>{{ translate({ ident: "STRIPE_IS_NOT_STRIPE_ORDER" }) }}</p>
+{% endif %}
+
+{% include "bottomnaviitem.html.twig" %}
+</table>
+{% include "bottomitem.html.twig" %}

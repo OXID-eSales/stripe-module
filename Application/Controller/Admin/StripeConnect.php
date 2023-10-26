@@ -15,7 +15,7 @@ use OxidEsales\Eshop\Core\Registry;
 class StripeConnect extends AdminController
 {
     /** @var string */
-    protected $_sThisTemplate = "stripe_connect.tpl";
+    protected $_sThisTemplate = "@stripe/stripe_connect";
 
     /** @var ModuleSettingBridge */
     private ModuleSettingBridge $moduleSettingService;
@@ -37,9 +37,9 @@ class StripeConnect extends AdminController
         if (!Registry::getSession()->checkSessionChallenge()) {
             return false;
         }
-        $sAccessToken = Registry::getConfig()->getRequestEscapedParameter('access_token');
-        $sPublishableKey = Registry::getConfig()->getRequestEscapedParameter('publishable_key');
-        $sMode = Registry::getConfig()->getRequestEscapedParameter('shop_param');
+        $sAccessToken = Registry::getRequest()->getRequestEscapedParameter('access_token');
+        $sPublishableKey = Registry::getRequest()->getRequestEscapedParameter('publishable_key');
+        $sMode = Registry::getRequest()->getRequestEscapedParameter('shop_param');
 
         $blSuccess = true;
         if (empty($sAccessToken) || empty($sMode) || ($sMode != 'test' && $sMode != 'live')) {

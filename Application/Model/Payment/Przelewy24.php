@@ -33,7 +33,7 @@ class Przelewy24 extends Base
      *
      * @var string|bool
      */
-    protected $sCustomFrontendTemplate = 'stripep24.tpl';
+    protected $sCustomFrontendTemplate = 'stripep24';
 
     /**
      * @return array

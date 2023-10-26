@@ -167,7 +167,10 @@ abstract class Base
      */
     public function getCustomFrontendTemplate()
     {
-        return $this->sCustomFrontendTemplate;
+        if (!empty($this->sCustomFrontendTemplate)) {
+            return "@stripe/customFrontendTemplate/".$this->sCustomFrontendTemplate.".html.twig";
+        }
+        return false;
     }
 
     /**

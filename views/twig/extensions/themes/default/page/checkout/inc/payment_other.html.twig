@@ -1,0 +1,11 @@
+{% extends "page/checkout/inc/payment_other.html.twig" %}
+
+{% block checkout_payment_longdesc %}
+    {% if attribute(paymentmethod, 'isStripePaymentMethod') is defined and paymentmethod.isStripePaymentMethod() is same as(true) %}
+        {% set paymentModel = paymentmethod.getStripePaymentModel() %}
+        {% if paymentModel and paymentModel.getCustomFrontendTemplate() is not same as(false) %}
+            {% include paymentModel.getCustomFrontendTemplate() %}
+        {% endif %}
+    {% endif %}
+    {{ parent() }}
+{% endblock %}
