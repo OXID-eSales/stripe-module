@@ -12,6 +12,7 @@
 - Execute the following command:
 
   <code>composer require oxid-esales/stripe-module</code>
+  <code>composer require stripe/stripe-php</code>
    
 
 ## Configuration
