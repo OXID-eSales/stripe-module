@@ -1,19 +1,29 @@
-<h1 style="text-align: center">Stripe for OXID eShop</h1>
+# Stripe for OXID eShop
 
 ## Installation
 
 - Open a shell and change to the root directory of the store (where the composer.json file is located).
 
    Example:
- 
+
    <code>cd /var/www/oxideshop/</code>
 
 
 - Execute the following command:
 
-  <code>composer require oxid-esales/stripe-module</code>  
+  <code>composer require oxid-esales/stripe-module</code>
   <code>composer require stripe/stripe-php</code>
-   
+
+## Activation
+
+You have two options to activate the module:
+
+- via Shell:\
+    <code>vendor/bin/oe-console oe:module:install source/modules/osc/unzer</code> \
+    <code>vendor/bin/oe-console oe:module:activate osc-unzer</code>
+
+- via Admin:\
+Navigate to : Admin > Extensions > Modules > Stripe Payment > Klick "activate"
 
 ## Configuration
 To use the module after activation : \
@@ -31,6 +41,5 @@ Save config at that point.
 
 
 - Status Mapping, Cronjob and other unmentioned configuration are optional and self-explanatory.
-
 
 Payment methods can be then activated as any other Oxid payment method.
