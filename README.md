@@ -19,8 +19,8 @@
 You have two options to activate the module:
 
 - via Shell:\
-    <code>vendor/bin/oe-console oe:module:install source/modules/osc/unzer</code> \
-    <code>vendor/bin/oe-console oe:module:activate osc-unzer</code>
+    <code>vendor/bin/oe-console oe:module:install source/modules/osc/stripe</code> \
+    <code>vendor/bin/oe-console oe:module:activate stripe</code>
 
 - via Admin:\
 Navigate to : Admin > Extensions > Modules > Stripe Payment > Klick "activate"
