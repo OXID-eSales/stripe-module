@@ -4,7 +4,6 @@
   "type": "oxideshop-module",
   "keywords": ["oxid", "modules", "eShop"],
   "homepage": "https://www.oxid-esales.com",
-  "version": "1.0.0",
   "license": [
     "GPL-3.0"
   ],
@@ -12,6 +11,12 @@
     "oxideshop": {
       "target-directory": "osc/stripe"
     }
+  },
+  "conflicts": {
+    "oxid-esales/oxideshop-ce": "<6.10 | ^7.0"
+  },
+  "require": {
+    "stripe/stripe-php": "^13"
   },
   "autoload": {
     "psr-4": {
