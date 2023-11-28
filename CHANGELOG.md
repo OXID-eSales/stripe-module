@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - split version for OXID 7
 
-## [1.0.0] - 2022-11-03
+## [1.0.0] - 2023-11-03
 
 ### Changed
 - initial release
