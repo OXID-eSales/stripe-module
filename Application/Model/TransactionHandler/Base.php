@@ -29,7 +29,7 @@ abstract class Base
     protected function logResult($aResult)
     {
         if ((bool)Registry::getConfig()->getShopConfVar('blStripeLogTransactionInfo') === true) {
-            $sMessage = date("Y-m-d h:i:s")." Transaction handled: ".print_r($aResult, true)." \n";
+            $sMessage = (new \DateTimeImmutable())->format('Y-m-d H:i:s')." Transaction handled: ".print_r($aResult, true)." \n";
 
             $sLogFilePath = getShopBasePath().'/log/'.$this->sLogFileName;
             $oLogFile = fopen($sLogFilePath, "a");

@@ -138,6 +138,7 @@ class PaymentController extends PaymentController_parent
                 }
             }
         } catch (\Exception $oEx) {
+            Registry::getLogger()->error($oEx->getTraceAsString());
             $mRet = 'payment';
         }
 

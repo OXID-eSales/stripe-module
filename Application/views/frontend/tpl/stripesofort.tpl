@@ -17,4 +17,3 @@
         </select>
     </div>
 </div>
-[{oxstyle include=$oViewConf->getModuleUrl('stripe','out/src/css/stripe.css')}]
