@@ -207,7 +207,7 @@ class Order extends Order_parent
     }
 
     /**
-     * Mark order as paid
+     * Mark order's reminder email as sent
      *
      * @return void
      */
