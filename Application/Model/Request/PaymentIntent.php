@@ -8,6 +8,7 @@ namespace OxidSolutionCatalysts\Stripe\Application\Model\Request;
 
 use OxidSolutionCatalysts\Stripe\Application\Helper\Order as OrderHelper;
 use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Application\Helper\User as UserHelper;
 use OxidSolutionCatalysts\Stripe\Application\Model\RequestLog;
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
 
@@ -39,9 +40,14 @@ class PaymentIntent extends Base
 
         $oCoreUser = $oOrder->getUser();
         $sStripeCustomerId = $this->getCustomerId($oCoreUser);
+        if (!UserHelper::getInstance()->isValidCustomerId($sStripeCustomerId)) {
+            $sStripeCustomerId = UserHelper::getInstance()->createStripeUser($oCoreUser);
+        }
+
         if (!empty($sStripeCustomerId)) {
             $this->addParameter('customer', $sStripeCustomerId);
         }
+
         $this->addParameter('receipt_email', $this->getCustomerEmail($oCoreUser));
 
         if ($oPaymentModel->isRedirectUrlNeeded($oOrder) === true) {
