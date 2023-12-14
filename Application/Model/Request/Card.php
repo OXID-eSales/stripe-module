@@ -23,10 +23,12 @@ class Card extends Base
      */
     public function addRequestParameters($sStripeCardToken, CoreUser $oUser)
     {
-        if (empty($this->getCustomerId($oUser))) {
-            UserHelper::getInstance()->createStripeUser($oUser);
+        $sStripeCustomerId = $this->getCustomerId($oUser);
+        if (!UserHelper::getInstance()->isValidCustomerId($sStripeCustomerId)) {
+            $sStripeCustomerId = UserHelper::getInstance()->createStripeUser($oUser);
         }
-        $this->sStripeCustomerId = $this->getCustomerId($oUser);
+
+        $this->sStripeCustomerId = $sStripeCustomerId;
         $this->addParameter('source', $sStripeCardToken);
     }
 

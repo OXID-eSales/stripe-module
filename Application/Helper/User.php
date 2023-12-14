@@ -31,9 +31,10 @@ class User
 
     /**
      * Creates Stripe API user and adds customerId to user model
+     * Returns customerId for direct usage
      *
      * @param  CoreUser $oUser
-     * @return void
+     * @return string
      */
     public function createStripeUser(CoreUser &$oUser)
     {
@@ -46,5 +47,28 @@ class User
             $oUser->oxuser__stripecustomerid = new Field($oResponse->id);
             $oUser->save();
         }
+
+        return $oUser->oxuser__stripecustomerid->value;
+    }
+
+    /**
+     * Checks if given CustomerId is still valid on Stripe account side
+     *
+     * @param string $sStripeCustomerId
+     * @return bool
+     */
+    public function isValidCustomerId($sStripeCustomerId)
+    {
+        if (empty($sStripeCustomerId)) {
+             return false;
+        }
+
+        $oResponse = Payment::getInstance()->loadStripeApi()->customers->retrieve($sStripeCustomerId);
+
+        if ($oResponse->deleted) {
+            return false;
+        }
+
+        return !empty($oResponse->email);
     }
 }

@@ -22,7 +22,6 @@
     </div>
 </div>
 
-[{oxstyle include=$oViewConf->getModuleUrl('stripe','out/src/css/stripe.css')}]
 [{oxscript include="https://js.stripe.com/v3/"}]
 [{capture name="stripeComponentsLoad"}]
     var pubKey = '[{$oPaymentModel->getPublishableKey()}]';
