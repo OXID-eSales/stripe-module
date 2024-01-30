@@ -131,6 +131,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         $redirectUrl = Registry::getConfig()->getSslShopUrl().'admin/index.php?cl=stripeConnect&fnc=stripeFinishOnBoarding';
         $redirectUrl.= '&stoken=' . Registry::getSession()->getSessionChallengeToken();
         $redirectUrl.= '&shop_param=' . $sMode;
+        $redirectUrl.= '&shp=' . Registry::getConfig()->getShopId();
 
         if ($sMode == 'test') {
             return 'https://dev-osm.oxid-esales.com/stripe-connect?shop_redirect_url=' . rawurlencode($redirectUrl);
