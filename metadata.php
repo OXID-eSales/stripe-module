@@ -24,7 +24,7 @@ $aModule = [
         'en' => 'This module integrates STRIPE as payment provider in your OXID Shop.',
     ],
     'thumbnail'     => 'img/stripe_logo.png',
-    'version'       => '2.0.2-rc.1',
+    'version'       => '2.0.2',
     'author'        => 'OXID eSales AG',
     'url'           => 'https://www.oxid-esales.com',
     'email'         => 'info@oxid-esales.com',
