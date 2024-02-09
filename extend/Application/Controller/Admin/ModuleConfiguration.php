@@ -128,7 +128,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     public function stripeGetConnectUrl($sVarName)
     {
         $sMode = $sVarName == 'sStripeTestToken' ? 'test' : 'live';
-        $redirectUrl = Registry::getConfig()->getSslShopUrl().'admin/index.php?cl=stripeConnect&fnc=stripeFinishOnBoarding';
+        $redirectUrl = Registry::getConfig()->getShopUrl(0,true).'admin/index.php?cl=stripeConnect&fnc=stripeFinishOnBoarding';
         $redirectUrl.= '&stoken=' . Registry::getSession()->getSessionChallengeToken();
         $redirectUrl.= '&shop_param=' . $sMode;
         $redirectUrl.= '&shp=' . Registry::getConfig()->getShopId();
