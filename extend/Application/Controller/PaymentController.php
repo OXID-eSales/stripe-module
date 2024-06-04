@@ -14,6 +14,8 @@ use OxidEsales\Eshop\Core\Registry;
 
 class PaymentController extends PaymentController_parent
 {
+    protected ?array $aStripeUsedCards = null;
+
     /**
      * Delete sess_challenge from session to trigger the creation of a new order when needed
      */
@@ -151,5 +153,35 @@ class PaymentController extends PaymentController_parent
     public function stripeGetSofortCountries()
     {
         return ['AT','BE','DE','ES','IT','NL'];
+    }
+
+    /**
+     * Template variable getter. Returns possible used cards
+     *
+     * @return null|array
+     */
+    public function getUsedCards(): ?array
+    {
+        if (is_null($this->aStripeUsedCards)) {
+            $this->aStripeUsedCards = [];
+            $oUser = $this->getUser();
+            $sStripeCustomerId = $oUser->getFieldData('stripecustomerid');
+            if ($sStripeCustomerId) {
+                $oPaymentCollection = PaymentHelper::getInstance()->loadStripeApi()->customers->all([
+                    'customer' => $sStripeCustomerId,
+                    'type' => 'card'
+                ]);
+                if (isset($oPaymentCollection->data) && count($oPaymentCollection->data)) {
+                    foreach($oPaymentCollection->data as $oPaymentMethod) {
+                        $this->aStripeUsedCards[] = [
+                            'id'     => $oPaymentMethod->id,
+                            'card'   => 'XXXX XXXX XXXX ' . $oPaymentMethod->card->last4,
+                            'expiry' => $oPaymentMethod->card->exp_month . '/' . $oPaymentMethod->card->exp_year
+                        ];
+                    }
+                }
+            }
+        }
+        return count($this->aStripeUsedCards) ? $this->aStripeUsedCards : null;
     }
 }
