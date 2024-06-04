@@ -8,6 +8,21 @@
     </div>
 </div>
 
+[{if $oView->getUsedCards()}]
+    <div class="form-group">
+        <label for="stripe_used_cards" class="req control-label col-lg-3">[{oxmultilang ident="STRIPE_CARDS_USED"}]</label>
+        <div class="col-lg-9">
+            <select class="form-control" id="stripe_used_cards" name="dynvalue[stripe_used_cards]" required="required">
+                <option value="">[{oxmultilang ident="STRIPE_PLEASE_SELECT"}]</option>
+                [{foreach from=$oView->getUsedCards() item=card}]
+                    <option value="[{$card->id}]">[{$card->title}] ([{$card->expire}])</option>
+                [{/foreach}]
+                <option value="new">[{oxmultilang ident="STRIPE_NEW_CARD"}]</option>
+            </select>
+        </div>
+    </div>
+[{/if}]
+
 <div class="form-group">
     <label for="stripe_card_holder" class="req control-label col-lg-3">[{oxmultilang ident="BANK_ACCOUNT_HOLDER"}]</label>
     <div class="col-lg-9">
