@@ -122,13 +122,19 @@ class PaymentController extends PaymentController_parent
             $oBasket = Registry::getSession()->getBasket();
             $oStripePaymentModel = PaymentHelper::getInstance()->getStripePaymentModel($sPaymentId);
 
-            if ($sPaymentId == 'stripecreditcard') {
+            if ($sPaymentId === 'stripecreditcard') {
                 $sStripeTokenId =  $this->getDynValue()['stripe_token_id'];
-                $oStripeCardRequest = $oStripePaymentModel->getCardRequest();
-                $oStripeCardRequest->addRequestParameters($sStripeTokenId, $oBasket->getUser());
-                $oCard = $oStripeCardRequest->execute();
-                if (!empty($oCard->id)) {
-                    Registry::getSession()->setVariable('stripe_current_payment_method_id', $oCard->id);
+                $sStripeCard = $this->getDynValue()['stripe_used_card'];
+
+                if(!$sStripeCard || $sStripeCard === 'new') {
+                    $oStripeCardRequest = $oStripePaymentModel->getCardRequest();
+                    $oStripeCardRequest->addRequestParameters($sStripeTokenId, $oBasket->getUser());
+
+                    $oCard = $oStripeCardRequest->execute();
+                    $sStripeCard = $oCard->id ?? '';
+                }
+                if ($sStripeCard) {
+                    Registry::getSession()->setVariable('stripe_current_payment_method_id', $sStripeCard);
                 }
             } else {
                 $oStripePaymentMethodRequest = $oStripePaymentModel->getPaymentMethodRequest();
@@ -160,14 +166,14 @@ class PaymentController extends PaymentController_parent
      *
      * @return null|array
      */
-    public function getUsedCards(): ?array
+    public function stripeGetUsedCards(): ?array
     {
         if (is_null($this->aStripeUsedCards)) {
             $this->aStripeUsedCards = [];
             $oUser = $this->getUser();
             $sStripeCustomerId = $oUser->getFieldData('stripecustomerid');
             if ($sStripeCustomerId) {
-                $oPaymentCollection = PaymentHelper::getInstance()->loadStripeApi()->customers->all([
+                $oPaymentCollection = PaymentHelper::getInstance()->loadStripeApi()->paymentMethods->all([
                     'customer' => $sStripeCustomerId,
                     'type' => 'card'
                 ]);
@@ -175,8 +181,9 @@ class PaymentController extends PaymentController_parent
                     foreach($oPaymentCollection->data as $oPaymentMethod) {
                         $this->aStripeUsedCards[] = [
                             'id'     => $oPaymentMethod->id,
-                            'card'   => 'XXXX XXXX XXXX ' . $oPaymentMethod->card->last4,
-                            'expiry' => $oPaymentMethod->card->exp_month . '/' . $oPaymentMethod->card->exp_year
+                            'title'  => 'XXXX XXXX XXXX ' . $oPaymentMethod->card->last4,
+                            'expire' => $oPaymentMethod->card->exp_month . '/' . $oPaymentMethod->card->exp_year,
+                            'holder' => $oPaymentMethod->billing_details->name
                         ];
                     }
                 }
