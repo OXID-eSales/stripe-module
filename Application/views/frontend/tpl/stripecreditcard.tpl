@@ -44,23 +44,20 @@
 
 [{oxscript include="https://js.stripe.com/v3/"}]
 [{capture name="stripeComponentsLoad"}]
-    [{if false}]<script>[{/if}]
     const pubKey = '[{$oPaymentModel->getPublishableKey()}]';
     if (pubKey === '') {
         document.getElementById('[{$sInputName}]_error').innerHTML = '[{oxmultilang ident="STRIPE_ERROR_ORDER_CONFIG_PUBKEY"}]';
         document.getElementById('[{$sInputName}]_error_box').style.display = '';
     } else {
-        [{if $oView->stripeGetUsedCards()}]
         $("#stripe_used_card").change(function() {
-            var val = $(this).val();
-            if(val === "new") {
+            const val = $(this).val();
+            if (val === "new") {
                 $("#stripe_new_card").show();
             }
             else {
                 $("#stripe_new_card").hide();
             }
         });
-        [{/if}]
 
         if (!stripe) {
             var stripe = Stripe(pubKey);
@@ -97,7 +94,7 @@
             if (paymentForm.elements['payment_stripecreditcard'].checked === true) {
                 event.preventDefault();
 
-                holder = document.getElementById('stripe_card_holder').value;
+                const holder = document.getElementById('stripe_card_holder').value;
                 if (!holder && stripeUsedCard && stripeUsedCard !== 'new') {
                     paymentForm.submit();
                 }
@@ -117,6 +114,5 @@
             }
         });
     }
-    [{if false}]</script>[{/if}]
 [{/capture}]
 [{oxscript add=$smarty.capture.stripeComponentsLoad}]
