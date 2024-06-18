@@ -14,6 +14,8 @@ use OxidEsales\Eshop\Core\Registry;
 
 class PaymentController extends PaymentController_parent
 {
+    protected ?array $aStripeUsedCards = null;
+
     /**
      * Delete sess_challenge from session to trigger the creation of a new order when needed
      */
@@ -120,13 +122,19 @@ class PaymentController extends PaymentController_parent
             $oBasket = Registry::getSession()->getBasket();
             $oStripePaymentModel = PaymentHelper::getInstance()->getStripePaymentModel($sPaymentId);
 
-            if ($sPaymentId == 'stripecreditcard') {
+            if ($sPaymentId === 'stripecreditcard') {
                 $sStripeTokenId =  $this->getDynValue()['stripe_token_id'];
-                $oStripeCardRequest = $oStripePaymentModel->getCardRequest();
-                $oStripeCardRequest->addRequestParameters($sStripeTokenId, $oBasket->getUser());
-                $oCard = $oStripeCardRequest->execute();
-                if (!empty($oCard->id)) {
-                    Registry::getSession()->setVariable('stripe_current_payment_method_id', $oCard->id);
+                $sStripeCard = $this->getDynValue()['stripe_used_card'];
+
+                if(!$sStripeCard || $sStripeCard === 'new') {
+                    $oStripeCardRequest = $oStripePaymentModel->getCardRequest();
+                    $oStripeCardRequest->addRequestParameters($sStripeTokenId, $oBasket->getUser());
+
+                    $oCard = $oStripeCardRequest->execute();
+                    $sStripeCard = $oCard->id ?? '';
+                }
+                if ($sStripeCard) {
+                    Registry::getSession()->setVariable('stripe_current_payment_method_id', $sStripeCard);
                 }
             } else {
                 $oStripePaymentMethodRequest = $oStripePaymentModel->getPaymentMethodRequest();
@@ -151,5 +159,36 @@ class PaymentController extends PaymentController_parent
     public function stripeGetSofortCountries()
     {
         return ['AT','BE','DE','ES','IT','NL'];
+    }
+
+    /**
+     * Template variable getter. Returns possible used cards
+     *
+     * @return null|array
+     */
+    public function stripeGetUsedCards(): ?array
+    {
+        if (is_null($this->aStripeUsedCards)) {
+            $this->aStripeUsedCards = [];
+            $oUser = $this->getUser();
+            $sStripeCustomerId = $oUser->getFieldData('stripecustomerid');
+            if ($sStripeCustomerId) {
+                $oPaymentCollection = PaymentHelper::getInstance()->loadStripeApi()->paymentMethods->all([
+                    'customer' => $sStripeCustomerId,
+                    'type' => 'card'
+                ]);
+                if (isset($oPaymentCollection->data) && count($oPaymentCollection->data)) {
+                    foreach($oPaymentCollection->data as $oPaymentMethod) {
+                        $this->aStripeUsedCards[] = [
+                            'id'     => $oPaymentMethod->id,
+                            'title'  => 'XXXX XXXX XXXX ' . $oPaymentMethod->card->last4,
+                            'expire' => $oPaymentMethod->card->exp_month . '/' . $oPaymentMethod->card->exp_year,
+                            'holder' => $oPaymentMethod->billing_details->name
+                        ];
+                    }
+                }
+            }
+        }
+        return count($this->aStripeUsedCards) ? $this->aStripeUsedCards : null;
     }
 }

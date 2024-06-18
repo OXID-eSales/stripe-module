@@ -28,6 +28,8 @@ $aLang = [
     'STRIPE_COUNTRY_ES'                         => 'Spanien',
     'STRIPE_COUNTRY_IT'                         => 'Italien',
     'STRIPE_COUNTRY_NL'                         => 'Niederlande',
+    'STRIPE_CARDS_USED'                         => 'genutzte Kreditkarten',
+    'STRIPE_NEW_CARD'                           => 'neue Karte',
 
     'STRIPE_ERROR_ORDER_NOT_FOUND'              => 'Bestellung konnte nicht gefunden werden',
     'STRIPE_ERROR_TRANSACTIONID_NOT_FOUND'      => 'Transaktions-Id konnte nicht gefunden werden',
