@@ -50,7 +50,6 @@
         document.getElementById('[{$sInputName}]_error').innerHTML = '[{oxmultilang ident="STRIPE_ERROR_ORDER_CONFIG_PUBKEY"}]';
         document.getElementById('[{$sInputName}]_error_box').style.display = '';
     } else {
-        [{if $oView->stripeGetUsedCards()}]
         $("#stripe_used_card").change(function() {
             const val = $(this).val();
             if (val === "new") {
@@ -60,10 +59,9 @@
                 $("#stripe_new_card").hide();
             }
         });
-        [{/if}]
 
         if (!stripe) {
-            var stripe = Stripe(pubKey);
+            let stripe = Stripe(pubKey);
         }
 
         const elements = stripe.elements(),
