@@ -60,9 +60,7 @@
             }
         });
 
-        if (!stripe) {
-            let stripe = Stripe(pubKey);
-        }
+        let stripe = Stripe(pubKey);
 
         const elements = stripe.elements(),
             cardElement = elements.create('card', {hidePostalCode: true}),
