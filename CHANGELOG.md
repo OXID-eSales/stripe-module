@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.4] - 2024-07-09
+
+### Fixed
+
+- [0007692](https://bugs.oxid-esales.com/view.php?id=7692): When switching to the OXID summary page (OrderController), a message appears briefly: Card number incomplete
+
 ## [1.0.3] - 2024-06-27
 
 ### NEW

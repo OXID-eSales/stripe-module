@@ -7,6 +7,39 @@
 /**
  * Metadata version
  */
+
+use OxidEsales\Eshop\Application\Model\PaymentGateway as OxPaymentGateway;
+use OxidEsales\Eshop\Application\Model\Order as OxOrder;
+use OxidEsales\Eshop\Application\Model\OrderArticle as OxOrderArticle;
+use OxidEsales\Eshop\Application\Model\Payment as OxPayment;
+use OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration as OxModuleConfiguration;
+use OxidEsales\Eshop\Application\Controller\Admin\ModuleMain as OxModuleMain;
+use OxidEsales\Eshop\Application\Controller\Admin\PaymentMain as OxPaymentMain;
+use OxidEsales\Eshop\Application\Controller\Admin\OrderMain as OxOrderMain;
+use OxidEsales\Eshop\Application\Controller\Admin\OrderOverview as OxOrderOverView;
+use OxidEsales\Eshop\Application\Controller\PaymentController as OxPaymentController;
+use OxidEsales\Eshop\Application\Controller\OrderController as OxOrderController;
+use OxidEsales\Eshop\Core\Email as OxEmail;
+use OxidEsales\Eshop\Core\Session as OxSession;
+use OxidSolutionCatalysts\Stripe\Application\Controller\StripeWebhook;
+use OxidSolutionCatalysts\Stripe\Application\Controller\StripeFinishPayment;
+use OxidSolutionCatalysts\Stripe\Application\Controller\Admin\OrderRefund;
+use OxidSolutionCatalysts\Stripe\Application\Controller\Admin\StripeConnect;
+use OxidSolutionCatalysts\Stripe\Core\Events;
+use OxidSolutionCatalysts\Stripe\extend\Application\Model\PaymentGateway;
+use OxidSolutionCatalysts\Stripe\extend\Application\Model\Order;
+use OxidSolutionCatalysts\Stripe\extend\Application\Model\OrderArticle;
+use OxidSolutionCatalysts\Stripe\extend\Application\Model\Payment;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleConfiguration;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleMain;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\PaymentMain;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderMain;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderOverview;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\PaymentController;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\OrderController;
+use OxidSolutionCatalysts\Stripe\extend\Core\Email;
+use OxidSolutionCatalysts\Stripe\extend\Core\Session;
+
 $sMetadataVersion = '2.1';
 
 /**
@@ -24,30 +57,30 @@ $aModule = [
         'en' => 'This module integrates STRIPE as payment provider in your OXID Shop.',
     ],
     'thumbnail'     => 'stripe_logo.png',
-    'version'       => '1.0.3',
+    'version'       => '1.0.4',
     'author'        => 'OXID eSales AG',
     'url'           => 'https://www.oxid-esales.com',
     'email'         => 'info@oxid-esales.com',
     'extend'        => [
-        \OxidEsales\Eshop\Application\Model\PaymentGateway::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\PaymentGateway::class,
-        \OxidEsales\Eshop\Application\Model\Order::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\Order::class,
-        \OxidEsales\Eshop\Application\Model\OrderArticle::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\OrderArticle::class,
-        \OxidEsales\Eshop\Application\Model\Payment::class => OxidSolutionCatalysts\Stripe\extend\Application\Model\Payment::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleConfiguration::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\ModuleMain::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleMain::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\PaymentMain::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\OrderMain::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderMain::class,
-        \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderOverview::class,
-        \OxidEsales\Eshop\Application\Controller\PaymentController::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\PaymentController::class,
-        \OxidEsales\Eshop\Application\Controller\OrderController::class => OxidSolutionCatalysts\Stripe\extend\Application\Controller\OrderController::class,
-        \OxidEsales\Eshop\Core\Email::class => OxidSolutionCatalysts\Stripe\extend\Core\Email::class,
-        \OxidEsales\Eshop\Core\Session::class => OxidSolutionCatalysts\Stripe\extend\Core\Session::class,
+        OxPaymentGateway::class => PaymentGateway::class,
+        OxOrder::class => Order::class,
+        OxOrderArticle::class => OrderArticle::class,
+        OxPayment::class => Payment::class,
+        OxModuleConfiguration::class => ModuleConfiguration::class,
+        OxModuleMain::class => ModuleMain::class,
+        OxPaymentMain::class => PaymentMain::class,
+        OxOrderMain::class => OrderMain::class,
+        OxOrderOverView::class => OrderOverview::class,
+        OxPaymentController::class => PaymentController::class,
+        OxOrderController::class => OrderController::class,
+        OxEmail::class => Email::class,
+        OxSession::class => Session::class,
     ],
     'controllers'   => [
-        'StripeWebhook' => OxidSolutionCatalysts\Stripe\Application\Controller\StripeWebhook::class,
-        'StripeFinishPayment' => OxidSolutionCatalysts\Stripe\Application\Controller\StripeFinishPayment::class,
-        'stripe_order_refund' => OxidSolutionCatalysts\Stripe\Application\Controller\Admin\OrderRefund::class,
-        'StripeConnect' => \OxidSolutionCatalysts\Stripe\Application\Controller\Admin\StripeConnect::class,
+        'StripeWebhook' => StripeWebhook::class,
+        'StripeFinishPayment' => StripeFinishPayment::class,
+        'stripe_order_refund' => OrderRefund::class,
+        'StripeConnect' => StripeConnect::class,
     ],
     'templates'     => [
         'stripewebhook.tpl' => 'osc/stripe/Application/views/hook/tpl/stripewebhook.tpl',
@@ -63,8 +96,8 @@ $aModule = [
         'stripe_connect.tpl' => 'osc/stripe/Application/views/admin/tpl/stripe_connect.tpl',
     ],
     'events'        => [
-        'onActivate' => \OxidSolutionCatalysts\Stripe\Core\Events::class.'::onActivate',
-        'onDeactivate' => \OxidSolutionCatalysts\Stripe\Core\Events::class.'::onDeactivate',
+        'onActivate' => Events::class.'::onActivate',
+        'onDeactivate' => Events::class.'::onDeactivate',
     ],
     'blocks'        => [
         ['template' => 'module_config.tpl',                     'block' => 'admin_module_config_var',       'file' => 'stripe_module_config_var.tpl'],

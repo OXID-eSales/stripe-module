@@ -100,7 +100,7 @@
 
                 stripe.createToken(cardElement, {name: holder})
                 .then(function(result) {
-                    if (result.error) {
+                    if (result.error && (!stripeUsedCard || stripeUsedCard === 'new')) {
                         displayError.textContent = result.error.message;
                         displayErrorBox.style.display = 'block';
                     } else {
