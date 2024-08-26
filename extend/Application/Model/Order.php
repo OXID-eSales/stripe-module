@@ -522,7 +522,7 @@ class Order extends Order_parent
      */
     public function stripeGetPaymentFinishUrl()
     {
-        return Registry::getConfig()->getSslShopUrl()."?cl=stripeFinishPayment&id=".$this->getId();
+        return Registry::getConfig()->getCurrentShopUrl()."index.php?cl=stripeFinishPayment&id=".$this->getId()."&shp=" . Registry::getConfig()->getShopId();
     }
 
     /**
