@@ -54,7 +54,7 @@ class OrderController extends OrderController_parent
     {
         Registry::getSession()->setVariable('payerror', -50);
         Registry::getSession()->setVariable('payerrortext', Registry::getLang()->translateString($sErrorLangIdent));
-        Registry::getUtils()->redirect(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=payment');
+        Registry::getUtils()->redirect(Registry::getConfig()->getCurrentShopUrl().'index.php?cl=payment&shp=' . Registry::getConfig()->getShopId());
         return false; // execution ends with redirect - return used for unit tests
     }
 
