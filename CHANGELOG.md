@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.5] - 2024-??-??
+
+### Fixed
+
+- [0007694](https://bugs.oxid-esales.com/view.php?id=7694): Fix Webhook generation for multi-shops
+
 ## [1.0.4] - 2024-07-09
 
 ### Fixed
