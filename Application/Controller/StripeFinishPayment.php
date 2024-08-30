@@ -40,12 +40,13 @@ class StripeFinishPayment extends FrontendController
      */
     public function render()
     {
-        $sRedirectUrl = Registry::getConfig()->getSslShopUrl()."?cl=basket";
+        $config = Registry::getConfig();
+        $sRedirectUrl = $config->getCurrentShopUrl() . 'index.php?cl=basket&shp=' . $config->getShopId();
 
         $oOrder = $this->getOrder();
         if ($oOrder !== false) {
             $oOrder->stripeReinitializePayment();
-            $sRedirectUrl = Registry::getConfig()->getSslShopUrl()."?cl=success";
+            $sRedirectUrl = $config->getCurrentShopUrl() . 'index.php?cl=success&shp=' . $config->getShopId();
         }
 
         Registry::getUtils()->redirect($sRedirectUrl);
