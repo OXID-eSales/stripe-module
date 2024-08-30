@@ -78,7 +78,8 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function stripeGetWebhookCreateUrl()
     {
-        return Registry::getConfig()->getCurrentShopUrl().'index.php?cl=stripeWebhook&fnc=createWebhookEndpoint&shp=' . Registry::getConfig()->getShopId();
+        $config = Registry::getConfig();
+        return $config->getCurrentShopUrl().'index.php?cl=stripeWebhook&fnc=createWebhookEndpoint&shp=' . $config->getShopId();
     }
 
     /**

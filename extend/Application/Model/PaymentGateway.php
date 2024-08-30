@@ -85,9 +85,8 @@ class PaymentGateway extends PaymentGateway_parent
      */
     protected function getRedirectUrl()
     {
-        $sBaseUrl = Registry::getConfig()->getCurrentShopUrl().'index.php?cl=order&fnc=handleStripeReturn&shp=' . Registry::getConfig()->getShopId();
-
-        return $sBaseUrl.$this->stripeGetAdditionalParameters();
+        $config = Registry::getConfig();
+        return $config->getCurrentShopUrl() . 'index.php?cl=order&fnc=handleStripeReturn&shp=' . $config->getShopId() . $this->stripeGetAdditionalParameters();
     }
 
     /**

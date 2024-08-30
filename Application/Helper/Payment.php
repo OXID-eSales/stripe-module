@@ -310,7 +310,8 @@ class Payment
      */
     public function getWebhookUrl()
     {
-        return Registry::getConfig()->getCurrentShopUrl(false).'index.php?cl=stripeWebhook&shp=' . Registry::getConfig()->getShopId();
+        $config = Registry::getConfig();
+        return $config->getCurrentShopUrl(false).'index.php?cl=stripeWebhook&shp=' . $config->getShopId();
     }
 
     /**
