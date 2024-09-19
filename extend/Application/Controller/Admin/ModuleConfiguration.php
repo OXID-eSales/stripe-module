@@ -41,7 +41,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function stripeIsTestMode()
     {
-        return Registry::getConfig()->getShopConfVar('sStripeMode') == 'test';
+        return Registry::getConfig()->getShopConfVar('sStripeMode') === 'test';
     }
 
     /**
@@ -79,7 +79,19 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     public function stripeGetWebhookCreateUrl()
     {
         $config = Registry::getConfig();
-        return $config->getCurrentShopUrl().'index.php?cl=stripeWebhook&fnc=createWebhookEndpoint&shp=' . $config->getShopId();
+        return $config->getShopUrl(null,false)
+            . 'index.php?cl=stripeWebhook&fnc=createWebhookEndpoint&shp='
+            . $config->getShopId();
+    }
+
+    public function stripeGetAdminUrl()
+    {
+        $myConfig = Registry::getConfig();
+        $adminSslUrl = $myConfig->getConfigParam('sAdminSSLURL');
+        $url = $adminSslUrl ?
+            trim($adminSslUrl, '/') :
+            trim($myConfig->getConfigParam('sShopURL'), '/') . '/admin';
+        return $url . '/';
     }
 
     /**
@@ -118,7 +130,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function stripeIsStripe()
     {
-        return $this->getEditObjectId() == 'stripe';
+        return $this->getEditObjectId() === 'stripe';
     }
 
     /**
@@ -127,13 +139,13 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function stripeGetConnectUrl($sVarName)
     {
-        $sMode = $sVarName == 'sStripeTestToken' ? 'test' : 'live';
-        $redirectUrl = Registry::getConfig()->getCurrentShopUrl().'/index.php?cl=stripeConnect&fnc=stripeFinishOnBoarding';
-        $redirectUrl.= '&stoken=' . $this->getSession()->getSessionChallengeToken();
+        $sMode = $sVarName === 'sStripeTestToken' ? 'test' : 'live';
+        $redirectUrl = $this->stripeGetAdminUrl() . '/index.php?cl=stripeConnect&fnc=stripeFinishOnBoarding';
+        $redirectUrl.= '&stoken=' . Registry::getSession()->getSessionChallengeToken();
         $redirectUrl.= '&shop_param=' . $sMode;
         $redirectUrl.= '&shp=' . Registry::getConfig()->getShopId();
 
-        if ($sMode == 'test') {
+        if ($sMode === 'test') {
             return 'https://dev-osm.oxid-esales.com/stripe-connect?shop_redirect_url=' . rawurlencode($redirectUrl);
         }
         return 'https://osm.oxid-esales.com/stripe-connect?shop_redirect_url=' . rawurlencode($redirectUrl);
@@ -145,7 +157,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     public function stripeIsWebhookReady()
     {
         $oPaymentHelper = Payment::getInstance();
-        if (!$oPaymentHelper->stripeIsWebhookConfigured()) {
+        if (!$oPaymentHelper && !$oPaymentHelper->stripeIsWebhookConfigured()) {
             return false;
         }
 
