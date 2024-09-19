@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - [0007694](https://bugs.oxid-esales.com/view.php?id=7694): Fix Webhook generation for multi-shops
+- [0007722](https://bugs.oxid-esales.com/view.php?id=7722): Correct Webhook-Return-URL in multi-shop-systems
 
 ## [1.0.4] - 2024-07-09
 
