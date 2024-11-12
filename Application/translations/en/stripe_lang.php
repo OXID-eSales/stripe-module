@@ -36,6 +36,7 @@ $aLang = [
     'STRIPE_ERROR_SOMETHING_WENT_WRONG'         => 'An unknown error occured',
     'STRIPE_ERROR_ORDER_CANCELED'               => 'Payment was canceled, please try again',
     'STRIPE_ERROR_ORDER_FAILED'                 => 'Payment failed, please try again',
+    'STRIPE_ERROR_CARD_DECLINED'                => 'Payment failed, card was declined',
     'STRIPE_SECOND_CHANCE_MAIL_SUBJECT'         => 'Completion of your order at',
     'STRIPE_ERROR_ORDER_CONFIG_PUBKEY'          => 'Please configure Stripe publishable key to use this payment method.',
     'STRIPE_WEBHOOK_CREATE_ERROR'               => 'The Webhook Endpoint could not be created.',
