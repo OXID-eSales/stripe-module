@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.6] - 2024-11-15
+
+### Fixed
+
+- [0007731](https://bugs.oxid-esales.com/view.php?id=7731): If a credit card is declined, the payment page throws now a error-message instead of only reload the page
+
 ## [1.0.5] - 2024-09-20
 
 ### Fixed
