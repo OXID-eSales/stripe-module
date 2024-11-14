@@ -11,6 +11,7 @@ use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
+use Stripe\Exception\CardException;
 
 class PaymentController extends PaymentController_parent
 {
@@ -145,7 +146,17 @@ class PaymentController extends PaymentController_parent
                     Registry::getSession()->setVariable('stripe_current_payment_method_id', $oPaymentMethod->id);
                 }
             }
-        } catch (\Exception $oEx) {
+        }
+        catch (CardException $stripeCardException){
+            Registry::getLogger()->error($stripeCardException->getTraceAsString());
+
+           if("card_declined" ===  $stripeCardException->getStripeCode()){
+               Registry::getUtilsView()->addErrorToDisplay('STRIPE_ERROR_CARD_DECLINED');
+           }
+
+            $mRet = 'payment';
+        }
+        catch (\Exception $oEx) {
             Registry::getLogger()->error($oEx->getTraceAsString());
             $mRet = 'payment';
         }
