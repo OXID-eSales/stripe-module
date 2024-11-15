@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - [0007731](https://bugs.oxid-esales.com/view.php?id=7731): If a credit card is declined, the payment page throws now a error-message instead of only reload the page
+- Activating card details form after load if stripe card is selected
 
 ## [1.0.5] - 2024-09-20
 
