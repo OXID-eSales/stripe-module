@@ -113,6 +113,15 @@
             }
         });
     }
+
+    //Activating card details form after load if stripe card is selected
+    document.addEventListener('DOMContentLoaded', function() {
+        $('#payment_stripecreditcard').is(':checked') && !$('#payment_stripecreditcard').parents('dt').next('dd').is(':visible') ?
+            $('#payment_stripecreditcard').trigger('click')
+            : false;
+    });
+
+
     [{if false}]</script>[{/if}]
 [{/capture}]
 [{oxscript add=$smarty.capture.stripeComponentsLoad}]
