@@ -148,12 +148,19 @@ class PaymentController extends PaymentController_parent
             }
         }
         catch (CardException $stripeCardException){
+            $errors = [
+                'card_declined' => 'STRIPE_ERROR_CARD_DECLINED',
+                'expired_card' => 'STRIPE_ERROR_CARD_EXPIRED',
+                'incorrect_cvc' => 'STRIPE_ERROR_INCORRECT_CVC',
+                'processing_error' => 'STRIPE_ERROR_PROCESSING_ERROR',
+                'incorrect_number' => 'STRIPE_ERROR_INCORRECT_NUMBER'
+            ];
+            //use specific error translation ident or card_declined as default
+            $errorTranslationIdent = isset($errors[$stripeCardException->getStripeCode()]) ?
+                $errors[$stripeCardException->getStripeCode()] : $errors['card_declined'];
+
+            Registry::getUtilsView()->addErrorToDisplay($errorTranslationIdent);
             Registry::getLogger()->error($stripeCardException->getTraceAsString());
-
-           if("card_declined" ===  $stripeCardException->getStripeCode()){
-               Registry::getUtilsView()->addErrorToDisplay('STRIPE_ERROR_CARD_DECLINED');
-           }
-
             $mRet = 'payment';
         }
         catch (\Exception $oEx) {
