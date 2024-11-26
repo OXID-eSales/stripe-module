@@ -68,7 +68,7 @@
 
         let displayErrorBox = document.getElementById('stripe_creditcard_error_box');
         let displayError = document.getElementById('stripe_creditcard_error');
-
+debugger
         cardElement.mount('#stripeCardElement');
         cardElement.on('change', ({error}) => {
             let stripeUsedCard = '';
@@ -109,16 +109,32 @@
                         document.getElementById('stripe_token_id').value = result.token.id;
                         paymentForm.submit();
                     }
-                });
+                })
+                    .catch(function(error) {
+                        console.error('Stripe token creation failed:', error);
+                        displayError.textContent = 'Payment processing failed. Please try again.';
+                        displayErrorBox.style.display = 'block';
+                    });
+                ;
             }
         });
     }
 
     //Activating card details form after load if stripe card is selected
     document.addEventListener('DOMContentLoaded', function() {
-        $('#payment_stripecreditcard').is(':checked') && !$('#payment_stripecreditcard').parents('dt').next('dd').is(':visible') ?
-            $('#payment_stripecreditcard').trigger('click')
-            : false;
+        const $stripeRadio = $('#payment_stripecreditcard');
+        const $stripeCardDD = $stripeRadio.parents('dt').next('dd');
+        const $stripeUsedCardSelect = $stripeCardDD.find('#stripe_used_card');
+
+        // Ensure Stripe credit card payment option is expanded if selected
+        if ($stripeRadio.is(':checked') && !$stripeCardDD.is(':visible')) {
+            $stripeRadio.trigger('click');
+        }
+
+        // Reset used card selection when Stripe is selected
+        if ($stripeRadio.is(':checked')) {
+            $stripeUsedCardSelect.prop('selectedIndex', 0);
+        }
     });
 
 
