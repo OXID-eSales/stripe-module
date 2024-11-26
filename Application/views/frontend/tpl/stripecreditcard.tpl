@@ -68,7 +68,7 @@
 
         let displayErrorBox = document.getElementById('stripe_creditcard_error_box');
         let displayError = document.getElementById('stripe_creditcard_error');
-debugger
+
         cardElement.mount('#stripeCardElement');
         cardElement.on('change', ({error}) => {
             let stripeUsedCard = '';
