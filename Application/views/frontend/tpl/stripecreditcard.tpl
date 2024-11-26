@@ -109,7 +109,13 @@
                         document.getElementById('stripe_token_id').value = result.token.id;
                         paymentForm.submit();
                     }
-                });
+                })
+                    .catch(function(error) {
+                        console.error('Stripe token creation failed:', error);
+                        displayError.textContent = 'Payment processing failed. Please try again.';
+                        displayErrorBox.style.display = 'block';
+                    });
+                ;
             }
         });
     }
