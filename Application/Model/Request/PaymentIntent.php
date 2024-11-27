@@ -6,6 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Model\Request;
 
+use OxidEsales\EshopCommunity\Core\Registry;
 use OxidSolutionCatalysts\Stripe\Application\Helper\Order as OrderHelper;
 use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
 use OxidSolutionCatalysts\Stripe\Application\Helper\User as UserHelper;
@@ -48,7 +49,10 @@ class PaymentIntent extends Base
             $this->addParameter('customer', $sStripeCustomerId);
         }
 
-        $this->addParameter('receipt_email', $this->getCustomerEmail($oCoreUser));
+        //task STRIP-47, overriding customer email only if module setting is enabled
+        if (Registry::getConfig()->getShopConfVar('sStripeCustomerEmailOverride')) {
+            $this->addParameter('receipt_email', $this->getCustomerEmail($oCoreUser));
+        }
 
         if ($oPaymentModel->isRedirectUrlNeeded($oOrder) === true) {
             $this->addParameter('return_url', $sReturnUrl);
