@@ -38,6 +38,7 @@ $aLang = array(
     'SHOP_MODULE_sStripeCronSecureKey'                  => 'Cronjob Sicherheits-Schlüssel',
     'SHOP_MODULE_GROUP_STRIPE_WEBHOOKS'                 => 'Webhooks',
     'SHOP_MODULE_sStripeWebhookEndpoint'                => 'Webhook Endpoint',
+    'SHOP_MODULE_sStripeCustomerEmailOverride'          => 'Ersetzen Sie die E-Mail-Adresse des Kunden durch die Adresse aus dem Geschäft',
 
     'HELP_SHOP_MODULE_sStripeTestKey'                   => 'Geben Sie Ihren persönlichen privaten TEST-API-Schlüssel ein, der zum Einrichten des Webhook-Endpunkts verwendet wird.',
     'HELP_SHOP_MODULE_sStripeLiveKey'                   => 'Geben Sie Ihren persönlichen privaten LIVE-API-Schlüssel ein, der zum Einrichten des Webhook-Endpunkts verwendet wird.',
@@ -52,6 +53,7 @@ $aLang = array(
     'HELP_SHOP_MODULE_sStripeCronSecondChanceActive'    => 'Damit dieser Cronjob arbeitet, m&uuml;ssen Sie zus&auml;tzlich zu dieser Checkbox noch sicherstellen dass der Stripe Cronjob eingerichtet ist. Mehr dazu erfahren Sie in der README.md Datei des Moduls.',
     'HELP_SHOP_MODULE_sStripeCronOrderShipmentActive'   => 'Dieser Cronjob ist nur notwendig, wenn der Versandstatus in Ihrem Shop &uuml;ber ein externes System gesetzt wird und NICHT &uuml;ber den "Jetzt versenden" Button im Oxid-Admin. Damit dieser Cronjob arbeitet, m&uuml;ssen Sie zus&auml;tzlich zu dieser Checkbox noch sicherstellen dass der Stripe Cronjob eingerichtet ist. Mehr dazu erfahren Sie in der README.md Datei des Moduls.',
     'HELP_SHOP_MODULE_sStripeCronSecureKey'             => 'Diese Option ben&ouml;tigen Sie nur, wenn Sie den Cronjob per URL aufrufen m&uuml;ssen anstelle von dem Aufruf über die php cli. Konfigurieren Sie hier einen Sicherheitsschlüssel, den Sie über den GET-Parameter "secureKey" an den Aufruf des Cronjobs anf&uuml;gen. Bsp.: https://YOUR-SHOP-URL-HERE/modules/fc/stripe/cron.php?secureKey=YOUR-SECURE-KEY',
+    'HELP_SHOP_MODULE_sStripeCustomerEmailOverride'     => 'Wenn diese Option aktiviert ist, überschreibt der Shop die Stripe-Kunden-E-Mail mit der im Konto des Shops angegebenen Adresse. Die Benachrichtigungen von Stripe werden an diese Adresse gesendet.',
 
     'STRIPE_YES'                                        => 'Ja',
     'STRIPE_NO'                                         => 'Nein',
