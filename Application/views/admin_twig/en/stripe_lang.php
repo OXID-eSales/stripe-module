@@ -38,7 +38,7 @@ $aLang = array(
     'SHOP_MODULE_sStripeCronSecureKey'                  => 'Cronjob secure key',
     'SHOP_MODULE_GROUP_STRIPE_WEBHOOKS'                 => 'Webhooks',
     'SHOP_MODULE_sStripeWebhookEndpoint'                => 'Webhook Endpoint',
-    'SHOP_MODULE_sStripeCustomerEmailOverride'          => 'Replace customer email address with store address',
+    'SHOP_MODULE_blStripeProvideCustomerEmailAddress'   => 'Send customer email address to Stripe',
 
     'HELP_SHOP_MODULE_sStripeTestKey'                   => 'Fill in your personal TEST private API key that will be used to set up the webhook endpoint.',
     'HELP_SHOP_MODULE_sStripeLiveKey'                   => 'Fill in your personal LIVE private API key that will be used to set up the webhook endpoint.',
@@ -53,7 +53,7 @@ $aLang = array(
     'HELP_SHOP_MODULE_sStripeCronSecondChanceActive'    => 'For this cronjob to work, in addition to this checkbox you have to ensure that the Stripe cronjob is set up properly. You can find information on how to set up the cronjob in the README.md of this module.',
     'HELP_SHOP_MODULE_sStripeCronOrderShipmentActive'   => 'This cronjob is only needed if the shipping status in your shop is set by an external service and NOT by the "Ship Now" button. For this cronjob to work, in addition to this checkbox you have to ensure that the Stripe cronjob is set up properly. You can find information on how to set up the cronjob in the README.md of this module.',
     'HELP_SHOP_MODULE_sStripeCronSecureKey'             => 'This option is only needed if you have to call the cronjob via URL instead of the php cli. Configure your secure key here, which you have to add to the cronjob call as the GET parameter "secureKey". Example: https://YOUR-SHOP-URL-HERE/modules/fc/stripe/cron.php?secureKey=YOUR-SECURE-KEY',
-    'HELP_SHOP_MODULE_sStripeCustomerEmailOverride'     => 'With this option enabled the Shop will override the Stripe customer email with the address given in the shop\'s account. The notifications from Stripe will be sent to that address.',
+    'HELP_SHOP_MODULE_blStripeProvideCustomerEmailAddress' => 'If this option is activated, the customer email address will also be passed on for a Stripe order. This overwrites the standard email settings in the Stripe account for this order. This means that notifications for this order are sent to the customer email address instead of to the Stripe account email address.',
 
     'STRIPE_YES'                                        => 'Yes',
     'STRIPE_NO'                                         => 'No',
