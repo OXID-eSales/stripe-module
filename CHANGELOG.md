@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - [0007731](https://bugs.oxid-esales.com/view.php?id=7731): More Errorcodes
+- Submitting the customer email address is optional
 
 ## [1.0.6] - 2024-11-15
 

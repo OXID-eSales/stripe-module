@@ -50,7 +50,7 @@ class PaymentIntent extends Base
         }
 
         //task STRIP-47, overriding customer email only if module setting is enabled
-        if (Registry::getConfig()->getShopConfVar('sStripeCustomerEmailOverride')) {
+        if (Registry::getConfig()->getShopConfVar('blStripeProvideCustomerEmailAddress')) {
             $this->addParameter('receipt_email', $this->getCustomerEmail($oCoreUser));
         }
 
