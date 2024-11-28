@@ -116,9 +116,24 @@
 
     //Activating card details form after load if stripe card is selected
     document.addEventListener('DOMContentLoaded', function() {
-        $('#payment_stripecreditcard').is(':checked') && !$('#payment_stripecreditcard').parents('dt').next('dd').is(':visible') ?
-            $('#payment_stripecreditcard').trigger('click')
-            : false;
+        const $stripeRadio = $('#payment_stripecreditcard');
+        const $stripeCardDD = $stripeRadio.parents('dt').next('dd');
+        const $stripeUsedCardSelect = $stripeCardDD.find('#stripe_used_card');
+
+        // Ensure Stripe credit card payment option is expanded if selected
+        if ($stripeRadio.is(':checked') && !$stripeCardDD.is(':visible')) {
+            $stripeRadio.trigger('click');
+        }
+
+        //this is a dirty fix for selecting firs card selection element so the card UI not stuck when customer
+        // uses the browsers history back
+        setTimeout(function (){
+            // Reset used card selection when Stripe is selected
+            if ($stripeRadio.is(':checked')) {
+                $stripeUsedCardSelect.prop('selectedIndex', 0);
+            }
+
+        }, 200);
     });
 
 
