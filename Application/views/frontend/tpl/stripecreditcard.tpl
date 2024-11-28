@@ -125,10 +125,18 @@
             $stripeRadio.trigger('click');
         }
 
-        // Reset used card selection when Stripe is selected
-        if ($stripeRadio.is(':checked')) {
-            $stripeUsedCardSelect.prop('selectedIndex', 0);
-        }
+        //this is a dirty fix for selecting firs card selection element so the card UI not stuck when customer
+        // uses the browsers history back
+        setTimeout(function (){
+            const $stripeCardDD = $stripeRadio.parents('dt').next('dd');
+            const $stripeUsedCardSelect = $stripeCardDD.find('#stripe_used_card');
+
+            // Reset used card selection when Stripe is selected
+            if ($stripeRadio.is(':checked')) {
+                $stripeUsedCardSelect.prop('selectedIndex', 0);
+            }
+
+        }, 200);
     });
 
 
