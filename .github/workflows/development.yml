@@ -95,8 +95,8 @@ jobs:
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
           docker compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
-          
-            - name: Install demodata
+
+      - name: Install demodata
         run: |
           docker compose exec -T \
             php composer config repositories.oxid-esales/oxideshop-demodata-ce \
