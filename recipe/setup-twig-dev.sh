@@ -12,6 +12,7 @@ set -e  # Stops script on any error
 
 
 edition='EE'
+branch='b-7.4.x'
 while getopts e: flag; do
   case "${flag}" in
   e) edition=${OPTARG} ;;
@@ -45,36 +46,17 @@ make file=services/adminer.yml addservice
 echo "module root is $MODULE_ROOT"
 cd "$PROJECT_ROOT" || exit 1
 
-$MODULE_ROOT/recipe/parts/shared/prepare_shop_package.sh" -e"${edition}" -b"${branch}" || exit 1
-$MODULE_ROOT/recipe/parts/shared/require_twig_components.sh" -e"${edition}" -b"${branch}"
-$MODULE_ROOT/recipe/parts/shared/require_theme_dev.sh" -t"apex" -b"${branch}"
-$MODULE_ROOT/recipe/shared/require_demodata_package.sh" -e"${edition}" -b"${branch}"
+$MODULE_ROOT/recipe/parts/shared/prepare_shop_package.sh -e"${edition}" -b"${branch}" || exit 1
+$MODULE_ROOT/recipe/parts/shared/require_twig_components.sh -e"${edition}" -b"${branch}"
+$MODULE_ROOT/recipe/parts/shared/require_theme_dev.sh -t"apex" -b"${branch}"
+$MODULE_ROOT/recipe/parts/shared/require_demodata_package.sh -e"${edition}" -b"${branch}"
 
 mkdir -p "$PROJECT_ROOT"/source/extensions || exit 1
-cp -r "$MODULE_ROOT" "$PROJECT_ROOT"/source/extensions/ || exit 1
+cp -r "$MODULE_ROOT" "$PROJECT_ROOT"/source/extensions/stripe || exit 1
 
 mkdir -p ./source/var/configuration/environment/shops/1/modules
 cp $MODULE_ROOT/recipe/environment/1.yaml ./source/var/configuration/environment/shops/1/modules/stripe.yaml
 
-
-# Require demodata package
-docker compose exec -T \
-  php composer config repositories.oxid-esales/oxideshop-demodata-ce \
-  --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ce"}'
-docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-b-7.4.x --no-update
-
-# Require demodata package
-docker compose exec -T \
-  php composer config repositories.oxid-esales/oxideshop-demodata-pe \
-  --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_pe"}'
-docker compose exec -T php composer require oxid-esales/oxideshop-demodata-pe:dev-b-7.4.x --no-update
-
-
-# Require demodata package
-docker compose exec -T \
-  php composer config repositories.oxid-esales/oxideshop-demodata-ee \
-  --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ee"}'
-docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ee:dev-b-7.4.x --no-update
 
 echo "composer require symfony/dotenv"
 docker compose exec -T php composer require symfony/dotenv --no-interaction --no-update
@@ -82,7 +64,7 @@ docker compose exec -T php composer require symfony/dotenv --no-interaction --no
 echo "composer update"
 docker compose exec -T php composer update --no-interaction
 
-$PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/setup_database.sh
+$PROJECT_ROOT/source/extensions/stripe/recipe/parts/shared/setup_database.sh
 
 
 # Configure module in composer
