@@ -45,16 +45,17 @@ make file=services/adminer.yml addservice
 echo "module root is $MODULE_ROOT"
 cd "$PROJECT_ROOT" || exit 1
 
-$MODULE_ROOT/recipe/parts/b-7.4.x/start_shop.sh -e"${edition}" -u"false" || exit 1
+$MODULE_ROOT/recipe/parts/shared/prepare_shop_package.sh" -e"${edition}" -b"${branch}" || exit 1
+$MODULE_ROOT/recipe/parts/shared/require_twig_components.sh" -e"${edition}" -b"${branch}"
+$MODULE_ROOT/recipe/parts/shared/require_theme_dev.sh" -t"apex" -b"${branch}"
+$MODULE_ROOT/recipe/shared/require_demodata_package.sh" -e"${edition}" -b"${branch}"
 
 mkdir -p "$PROJECT_ROOT"/source/extensions || exit 1
 cp -r "$MODULE_ROOT" "$PROJECT_ROOT"/source/extensions/ || exit 1
 
 mkdir -p ./source/var/configuration/environment/shops/1/modules
-cp $MODULE_ROOT/recipe/environment/1.yaml ./source/var/configuration/environment/shops/1/modules/osc_paypal.yaml
+cp $MODULE_ROOT/recipe/environment/1.yaml ./source/var/configuration/environment/shops/1/modules/stripe.yaml
 
-
-$PROJECT_ROOT/source/extensions/paypal/recipe/parts/b-7.4.x/require_twig_components.sh -e"${edition}" -t"apex" || exit 1
 
 # Require demodata package
 docker compose exec -T \
@@ -107,7 +108,7 @@ echo -e "\033[1;37m\033[1;42mYou can now access your shop at http://localhost.lo
 echo -e "\033[1;37m\033[1;42mShop admin at http://localhost.local/admin\033[0m\n"
 echo -e "\033[1;37m\033[1;42mYou can access the Adminer at http://localhost.local:8080/\033[0m\n"
 
-rm -rf "$MODULE_ROOT"
+#rm -rf "$MODULE_ROOT"
 
 cp $PROJECT_ROOT/source/extensions/stripe/tests/.env.dist $PROJECT_ROOT/source/extensions/stripe/tests/.env
 
