@@ -102,7 +102,7 @@ jobs:
             php composer config repositories.oxid-esales/oxideshop-demodata-ce \
             --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ce"}'
           docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-master --no-update
-          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.4.x --no-update
 
       - name: Install datagen
         run: |
