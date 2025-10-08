@@ -355,13 +355,6 @@ jobs:
           npm install
           npx playwright install
 
-      - name: Creating the playwright user in the shop
-        run: |
-          docker compose exec -T php  bin/oe-console datagen:shop:create_user \
-            --user-email ${{ secrets.SHOP_USER_EMAIL }} \
-            --user-password ${{ secrets.SHOP_USER_PASSWORD }} 
-
-
       - name: Run Playwright tests
         working-directory: source/test-module/tests/e2e/playwright
         run: |
