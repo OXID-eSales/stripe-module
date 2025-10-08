@@ -104,12 +104,6 @@ jobs:
           docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-master --no-update
           docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.0.x --no-update
 
-      - name: Install datagen
-        run: |
-          docker compose exec -T \
-            php composer config repositories.oxid-esales/datagen \
-              --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
-          docker compose exec -T php composer require oxid-esales/datagen:dev-b-7.4.x --no-update
 
       - name: Install dependencies and reset shop
         run: |
