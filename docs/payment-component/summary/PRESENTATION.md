@@ -186,30 +186,15 @@ Increase conversion by **30%**
 
 ### Today's Reality
 
-- ❌ **3-4 months** per provider integration
-- ❌ **$50K cost** per payment module
+- ❌ **up to 24 months** per provider integration
+- ❌ **more than $500K cost** per payment module
 - ❌ Inconsistent behavior across providers
 - ❌ Tight coupling = maintenance nightmare
-- ❌ **€345K annual fraud losses** (avg)
 - ❌ **15-30% cart abandonment**
 - ❌ No AI/automation support
 
 </div>
 
-<div class="stat-box">
-<h3>€345K</h3>
-<p>Annual fraud losses</p>
-</div>
-
-<div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-<h3>116 hours</h3>
-<p>Per provider integration</p>
-</div>
-
-</div>
-
-<div class="highlight">
-<strong>The cost of maintaining multiple payment providers is unsustainable</strong>
 </div>
 
 ---
@@ -244,7 +229,8 @@ Increase conversion by **30%**
 - **⚡ Event-Driven:** PSR-14, thin controllers, decoupled logic
 - **🔄 Provider-Agnostic:** Stripe, PayPal, Adyen, Amazon Pay
 - **🔒 Security-First:** PCI-DSS, client-side encryption
-- **🤖 AI-Powered:** ML fraud detection, MCP protocol ready
+- **🤖 AI-Protection:** ML fraud detection & risk scoring
+- **🤖 Agentic Ready:** MCP protocol support for agentic and programmatic buying
 
 ---
 
@@ -405,71 +391,6 @@ Subscribers
 </div>
 
 </div>
-
----
-
-## 🚀 Competitive Advantages
-
-| Aspect | Traditional | SaaS | **Payment Component** |
-|--------|-------------|------|----------------------|
-| **Integration Time** | 3-4 months | 1-2 weeks | **1-2 days** |
-| **Transaction Fees** | 0% | 0.3-1% | **0%** |
-| **Code Reuse** | 0% | N/A | **95%** |
-| **Vendor Lock-in** | Medium | High | **None** |
-| **AI Ready** | No | Limited | **Yes (MCP)** |
-| **Full Control** | Yes | No | **Yes** |
-
-<div class="success">
-Best of Both Worlds: Flexibility of custom + Speed of SaaS
-</div>
-
----
-
-## 📅 Implementation Roadmap
-
-<div class="grid-3">
-
-<div class="feature-box">
-<h3>Phase 1</h3>
-<p><strong>4 weeks</strong></p>
-<ul>
-<li>Extract component</li>
-<li>Create package</li>
-<li>Refactor PayPal</li>
-<li>Validate tests</li>
-</ul>
-</div>
-
-<div class="feature-box">
-<h3>Phase 2</h3>
-<p><strong>6 weeks</strong></p>
-<ul>
-<li>Build Stripe module</li>
-<li>Build Adyen module</li>
-<li>Validate reusability</li>
-<li>Document guide</li>
-</ul>
-</div>
-
-<div class="feature-box">
-<h3>Phase 3</h3>
-<p><strong>8 weeks</strong></p>
-<ul>
-<li>One-Page Checkout</li>
-<li>AI Fraud Prevention</li>
-<li>MCP Protocol</li>
-<li>Multi-channel ops</li>
-</ul>
-</div>
-
-</div>
-
-### Total: 18 weeks to production-ready system
-
-<div class="highlight">
-ROI positive in 3 months · Break-even after 2 provider integrations
-</div>
-
 ---
 
 ## 📊 Success Metrics
@@ -484,7 +405,7 @@ ROI positive in 3 months · Break-even after 2 provider integrations
 - **Dev Time Reduction:** 83%
 - **DB Query Reduction:** 50-70%
 - **Test Coverage:** 90%+
-- **Provider Integration:** 1-2 days
+- **Provider Integration:** 5-10 days instead 5-10 months
 
 </div>
 
@@ -495,7 +416,8 @@ ROI positive in 3 months · Break-even after 2 provider integrations
 - **Fraud Reduction:** 80%
 - **Conversion Increase:** +30%
 - **Chargeback Reduction:** 40-60%
-- **Maintenance Cost:** -60%
+- **Maintenance Cost for OXID:** -60%
+- **Maintenance Cost for Merchant:** -80% 
 
 </div>
 
@@ -567,14 +489,14 @@ ROI positive in 3 months · Break-even after 2 provider integrations
 
 <div class="feature-box">
 <h3>💰 Fraud Explosion</h3>
-<p>€345K average annual loss</p>
-<p><strong>We reduce by 80%</strong></p>
+<p>Every single merchant with the annual revenue from 100K monthly was subject to payment fraud in the last 5 years</p>
+<p><strong>We can reduce risks by 99%</strong></p>
 </div>
 
 <div class="feature-box">
 <h3>⚡ Speed Matters</h3>
 <p>One-Page = +30% conversion</p>
-<p><strong>We deliver in days</strong></p>
+<p><strong>Less clicks, less abandoned carts</strong></p>
 </div>
 
 </div>
