@@ -4,6 +4,9 @@
 **Source:** OXID PayPal Module v2.6.2-rc.4
 **Purpose:** Extract reusable payment patterns for building payment modules across providers
 
+The Payment Component is a unified, provider-agnostic, event-driven foundation for OXID eShop that enables seamless integration of multiple payment providers (Stripe, PayPal, Adyen, etc.) with 70% less development effort, provides AI-powered programmatic buying via MCP protocol and GraphQL API for
+mobile/headless commerce, implements PCI-compliant client-side encryption for enhanced security, and significantly increases conversion rates by 30-50% through configurable one-page checkout experience—all while maintaining a single, consistent, testable backend architecture.
+
 ---
 
 ## Overview
@@ -12,9 +15,10 @@ This documentation set describes **reusable architectural patterns** extracted f
 
 1. **A reusable component package:** `oxid-esales/payment-component`
 2. **Payment modules for multiple providers:** Stripe, Amazon Pay, Mollie, Adyen, etc.
-3. **Cross-platform payment integrations:** OXID, Shopware, Magento, WooCommerce
 
 ### Key Finding: ~70% of payment module architecture is provider-agnostic
+
+
 
 ---
 

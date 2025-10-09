@@ -1,0 +1,548 @@
+@startuml Event-Driven Capture & Refund Flow (Standard Pattern)
+
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 10
+skinparam sequenceMessageAlign center
+
+title Event-Driven Capture & Refund Flow - Standard Pattern\n(100% Reusable - Multi-Channel Architecture)
+
+actor Admin
+actor "AI Agent\n(MCP)" as BOT
+participant "Admin UI\n(GraphQL)" as UI #E3F2FD
+participant "MCP Endpoint" as MCP_EP #E3F2FD
+participant "WebhookController" as WC #F3E5F5
+participant "EventDispatcher" as ED #C5E1A5
+participant "CaptureHandler" as CH #FFF3E0
+participant "RefundHandler" as RH #FFF3E0
+participant "EventContext\n(Request Cache)" as EC #FFE082
+participant "PaymentService" as PS #FFE082
+participant "OrderRepository" as OR #FFE082
+participant "Provider API" as API #E0F2F1
+database "Database" as DB
+queue "Event Bus" as EB #C5E1A5
+
+== Capture Flow: Webhook-Triggered (Automatic) ==
+
+note right of API
+  **Provider completes capture**
+  (e.g., auto-capture after 3 days)
+end note
+
+API -> WC : Webhook:\nPAYMENT_INTENT.SUCCEEDED
+activate WC
+
+note right of WC
+  **Webhook is THIN**
+  Only verifies & emits event
+  NO business logic!
+end note
+
+WC -> WC : Verify signature:\n- HMAC-SHA256\n- Timestamp check\n- Replay prevention
+
+WC -> ED : **Emit** PaymentCapturedEvent(\n  providerOrderId: "pi_3ABC...",\n  amount: 99.99,\n  idempotencyKey: "evt_123"\n)
+activate ED
+
+note right of ED
+  **Event dispatched**
+  Business logic happens here
+end note
+
+ED -> EB : Dispatch event
+activate EB
+EB -> CH : handle(PaymentCapturedEvent)
+deactivate EB
+activate CH
+
+note right of CH
+  **Event Handler contains business logic**
+  Webhook doesn't touch DB or services!
+end note
+
+CH -> OR : getOrderByProviderOrderId(\n  "pi_3ABC..."\n)
+activate OR
+OR -> DB : SELECT * FROM osc_transaction\nWHERE provider_order_id = ?
+activate DB
+DB --> OR : Transaction record
+deactivate DB
+OR -> DB : SELECT * FROM oxorder\nWHERE oxid = ?
+activate DB
+DB --> OR : Order record (state: AUTHORIZED)
+deactivate DB
+OR --> CH : Order object
+deactivate OR
+
+CH -> CH : Validate state:\n- Order must be AUTHORIZED\n- Not already captured
+
+CH -> CH : Check idempotency:\n- Query osc_transaction\n- Look for duplicate capture\n- Return if already processed
+
+alt Not already captured
+
+  CH -> DB : INSERT INTO osc_transaction\n(\n  order_id: 'ORD-123',\n  provider_transaction_id: 'ch_3XYZ...',\n  transaction_type: 'capture',\n  status: 'CAPTURED',\n  amount: 99.99,\n  idempotency_key: 'evt_123',\n  triggered_by: 'webhook'\n)
+  activate DB
+  DB --> CH : Transaction saved
+  deactivate DB
+
+  CH -> DB : UPDATE oxorder\nSET oxtransstatus = 'CAPTURED',\n    oxpaid = NOW()
+  activate DB
+  DB --> CH : Order updated
+  deactivate DB
+
+  CH -> ED : **Emit** CaptureCompletedEvent(\n  orderId: 'ORD-123',\n  amount: 99.99\n)
+  activate ED
+
+  note right of ED
+    **Multiple subscribers**
+    can react:
+    - Email notification
+    - Inventory release
+    - Revenue recognition
+    - Audit log
+  end note
+
+  ED -> EB : Notify subscribers
+  activate EB
+  EB -> EB : OrderStatusSubscriber\nEmailSubscriber\nInventorySubscriber\nAccountingSubscriber
+  deactivate EB
+
+  ED --> CH : Event processed
+  deactivate ED
+
+else Already captured (idempotent)
+
+  note right of CH
+    **Idempotency protection**
+    Webhook may be retried
+    Safe to ignore duplicate
+  end note
+
+  CH -> CH : Skip processing\nReturn success
+
+end
+
+CH --> EB : Handler complete
+deactivate CH
+
+EB --> ED : Done
+ED --> WC : Events processed
+deactivate ED
+
+WC --> API : 200 OK
+deactivate WC
+
+note right of API
+  **Event-Driven Benefits:**
+  - Webhook emits event
+  - Multiple handlers react
+  - Idempotent by design
+  - No tight coupling
+end note
+
+== Capture Flow: Admin-Triggered (Manual) ==
+
+note right of Admin
+  **Admin decision**
+  Order ready to ship
+  Manually capture payment
+end note
+
+Admin -> UI : Click "Capture Payment"\nfor Order ORD-456
+activate UI
+
+note right of UI
+  **UI Controller is THIN**
+  Only validates & emits event
+  NO business logic!
+end note
+
+UI -> UI : Validate:\n- User session\n- Admin permissions\n- CSRF token
+
+UI -> EC : Create EventContext
+activate EC
+note right of EC
+  **Request Data Cached Once**
+  - Order (DB query)
+  - User (DB query)
+  - Session data
+  - Configuration
+
+  Cached for all event handlers
+  50-70% fewer DB queries
+end note
+EC -> DB : Fetch order, user\n(ONE TIME ONLY)
+activate DB
+DB --> EC : Order (AUTHORIZED), User
+deactivate DB
+EC --> UI : EventContext ready
+deactivate EC
+
+UI -> ED : **Emit** CaptureRequestedEvent(\n  orderId: 'ORD-456',\n  amount: 149.99,\n  reason: "Order ready to ship",\n  triggeredBy: "admin",\n  userId: "admin-123",\n  idempotencyKey: "admin-456-20251009-143022"\n)
+activate ED
+
+note right of ED
+  **Event dispatched**
+  Business logic happens here
+end note
+
+ED -> EB : Dispatch event
+activate EB
+EB -> CH : handle(CaptureRequestedEvent)
+deactivate EB
+activate CH
+
+note right of CH
+  **Event Handler contains business logic**
+  Controller doesn't touch provider API!
+end note
+
+CH -> EC : getOrder() // From cache
+activate EC
+EC --> CH : Order (cached, state: AUTHORIZED)
+deactivate EC
+
+CH -> CH : Validate:\n- Order state = AUTHORIZED\n- Amount ≤ authorized amount\n- Not already captured
+
+CH -> CH : Check idempotency:\n- Query osc_transaction\n- Look for duplicate capture\n- Return if already processed
+
+alt Valid capture request
+
+  CH -> PS : capturePayment(\n  providerOrderId: "pi_3DEF...",\n  amount: 149.99\n)
+  activate PS
+
+  note right of PS
+    **PaymentService**
+    Provider-agnostic orchestration
+    (Stripe, PayPal, Adyen, etc.)
+  end note
+
+  PS -> PS : Get provider client\nfrom ServiceFactory
+
+  PS -> API : POST /v1/payment_intents/pi_3DEF.../capture\n{\n  "amount_to_capture": 14999\n}
+  activate API
+
+  API -> API : Move funds:\nhold → captured
+
+  API --> PS : {\n  "id": "pi_3DEF...",\n  "status": "succeeded",\n  "amount_captured": 14999\n}
+  deactivate API
+
+  note right of API
+    **Provider confirms capture**
+    Funds moved from authorization hold
+  end note
+
+  PS -> PS : Track transaction
+
+  PS -> DB : INSERT INTO osc_transaction\n(\n  order_id: 'ORD-456',\n  provider_transaction_id: 'ch_3GHI...',\n  transaction_type: 'capture',\n  status: 'CAPTURED',\n  amount: 149.99,\n  idempotency_key: 'admin-456-...',\n  triggered_by: 'admin',\n  reason: 'Order ready to ship'\n)
+  activate DB
+  DB --> PS : Transaction saved
+  deactivate DB
+
+  PS --> CH : Capture result
+  deactivate PS
+
+  CH -> DB : UPDATE oxorder\nSET oxtransstatus = 'CAPTURED',\n    oxpaid = NOW()
+  activate DB
+  DB --> CH : Order updated
+  deactivate DB
+
+  CH -> ED : **Emit** CaptureCompletedEvent(\n  orderId: 'ORD-456',\n  captureId: 'ch_3GHI...',\n  amount: 149.99\n)
+  activate ED
+
+  ED -> EB : Notify subscribers
+  activate EB
+  EB -> EB : OrderStatusSubscriber\nEmailSubscriber\nInventorySubscriber\nAccountingSubscriber\nAuditLogSubscriber
+  deactivate EB
+
+  ED --> CH : Event processed
+  deactivate ED
+
+else Invalid or duplicate
+
+  note right of CH
+    Return error:
+    - Invalid state
+    - Already captured
+    - Amount too high
+  end note
+
+  CH -> CH : Create error result
+
+end
+
+CH --> EB : Handler complete
+deactivate CH
+
+EB --> ED : Done
+ED --> UI : Event result
+deactivate ED
+
+UI --> Admin : Show result:\n"Payment captured successfully"\n(or error message)
+deactivate UI
+
+note right of Admin
+  **Key Difference:**
+  UI emitted event,
+  Handler did ALL the work
+end note
+
+== Capture Flow: MCP-Triggered (AI Agent) ==
+
+note right of BOT
+  **AI Agent monitors orders**
+  Auto-capture before authorization expires
+  (e.g., 3-day rule)
+end note
+
+BOT -> BOT : Analyze orders:\n"3 days passed since auth,\nauto-capture to prevent expiry"
+
+BOT -> MCP_EP : MCP Tool Call:\ncapture_payment(\n  order_id: 'ORD-789',\n  reason: 'Auto-capture after 3 days',\n  idempotency_key: 'bot-789-auto'\n)
+activate MCP_EP
+
+note right of MCP_EP
+  **MCP Endpoint is THIN**
+  Only validates & emits event
+  NO business logic!
+end note
+
+MCP_EP -> MCP_EP : Validate:\n- MCP credentials\n- Bot permissions\n- Order exists
+
+MCP_EP -> ED : **Emit** CaptureRequestedEvent(\n  orderId: 'ORD-789',\n  reason: "Auto-capture after 3 days",\n  triggeredBy: "mcp",\n  botId: "bot-auto-capture",\n  idempotencyKey: "bot-789-auto"\n)
+activate ED
+
+ED -> EB : Dispatch event
+activate EB
+EB -> CH : handle(CaptureRequestedEvent)
+deactivate EB
+activate CH
+
+note right of CH
+  **Same Handler**
+  Works for webhook, admin, API, MCP!
+  Only trigger source differs
+end note
+
+CH -> OR : getOrderById('ORD-789')
+activate OR
+OR -> DB : SELECT order
+activate DB
+DB --> OR : Order (AUTHORIZED)
+deactivate DB
+OR --> CH : Order object
+deactivate OR
+
+CH -> CH : Validate & check idempotency
+
+CH -> PS : capturePayment(...)
+activate PS
+PS -> API : POST /capture
+activate API
+API --> PS : Success
+deactivate API
+PS -> DB : Track transaction
+activate DB
+DB --> PS : Saved
+deactivate DB
+PS --> CH : Result
+deactivate PS
+
+CH -> DB : UPDATE order status
+activate DB
+DB --> CH : Updated
+deactivate DB
+
+CH -> ED : **Emit** CaptureCompletedEvent
+activate ED
+ED -> EB : Notify subscribers
+activate EB
+EB -> EB : (All subscribers react)
+deactivate EB
+ED --> CH : Done
+deactivate ED
+
+CH --> EB : Handler complete
+deactivate CH
+
+EB --> ED : Done
+ED --> MCP_EP : Event result
+deactivate ED
+
+MCP_EP --> BOT : {\n  "success": true,\n  "captureId": "ch_3JKL...",\n  "order_status": "CAPTURED"\n}
+deactivate MCP_EP
+
+BOT -> BOT : Log action:\n"Auto-captured ORD-789\nReason: 3-day rule"
+
+note right of BOT
+  **MCP Benefits:**
+  - Autonomous operation
+  - Prevents authorization expiry
+  - 24/7 monitoring
+  - Same backend as admin/webhook
+end note
+
+== Refund Flow: Admin-Triggered (Manual) ==
+
+note right of Admin
+  **Customer requests refund**
+  Admin reviews and approves
+end note
+
+Admin -> UI : Click "Refund Payment"\nfor Order ORD-123\nAmount: €50.00 (partial)\nReason: "Partial return (2 items)"
+activate UI
+
+UI -> UI : Validate:\n- User session\n- Admin permissions\n- CSRF token
+
+UI -> EC : Create EventContext
+activate EC
+EC -> DB : Fetch order, user
+activate DB
+DB --> EC : Order (COMPLETED, €99.99), User
+deactivate DB
+EC --> UI : EventContext ready
+deactivate EC
+
+UI -> ED : **Emit** RefundRequestedEvent(\n  orderId: 'ORD-123',\n  amount: 50.00,\n  reason: "Partial return (2 items)",\n  triggeredBy: "admin",\n  userId: "admin-123",\n  idempotencyKey: "admin-refund-123"\n)
+activate ED
+
+ED -> EB : Dispatch event
+activate EB
+EB -> RH : handle(RefundRequestedEvent)
+deactivate EB
+activate RH
+
+note right of RH
+  **RefundHandler contains business logic**
+  Similar pattern to CaptureHandler
+end note
+
+RH -> EC : getOrder() // From cache
+activate EC
+EC --> RH : Order (cached, state: COMPLETED)
+deactivate EC
+
+RH -> RH : Validate:\n- Order state = COMPLETED\n- Amount ≤ captured amount\n- Not fully refunded\n- Check previous refunds
+
+RH -> DB : SELECT * FROM osc_transaction\nWHERE order_id = 'ORD-123'\n  AND transaction_type = 'refund'\nSUM(amount) AS total_refunded
+activate DB
+DB --> RH : €0 refunded so far
+deactivate DB
+
+RH -> RH : Calculate:\nAllowed refund = €99.99 - €0 = €99.99\nRequested = €50.00 ✓
+
+RH -> RH : Check idempotency
+
+alt Valid refund request
+
+  RH -> PS : refundPayment(\n  providerOrderId: "pi_3ABC...",\n  amount: 50.00,\n  reason: "Partial return (2 items)"\n)
+  activate PS
+
+  PS -> API : POST /v1/refunds\n{\n  "payment_intent": "pi_3ABC...",\n  "amount": 5000,\n  "reason": "requested_by_customer"\n}
+  activate API
+
+  API -> API : Process refund:\ncaptured → refunded
+
+  API --> PS : {\n  "id": "re_3MNO...",\n  "status": "succeeded",\n  "amount": 5000\n}
+  deactivate API
+
+  note right of API
+    **Provider processes refund**
+    Money returned to customer
+  end note
+
+  PS -> DB : INSERT INTO osc_transaction\n(\n  order_id: 'ORD-123',\n  provider_transaction_id: 're_3MNO...',\n  transaction_type: 'refund',\n  status: 'REFUNDED',\n  amount: 50.00,\n  idempotency_key: 'admin-refund-123',\n  triggered_by: 'admin',\n  reason: 'Partial return (2 items)'\n)
+  activate DB
+  DB --> PS : Transaction saved
+  deactivate DB
+
+  PS --> RH : Refund result
+  deactivate PS
+
+  RH -> DB : UPDATE oxorder\nSET oxtransstatus = 'PARTIALLY_REFUNDED'
+  activate DB
+  DB --> RH : Order updated
+  deactivate DB
+
+  RH -> ED : **Emit** RefundCompletedEvent(\n  orderId: 'ORD-123',\n  refundId: 're_3MNO...',\n  amount: 50.00,\n  remainingAmount: 49.99\n)
+  activate ED
+
+  note right of ED
+    **Multiple subscribers**
+    can react:
+    - Email notification
+    - Inventory restore
+    - Credit memo (accounting)
+    - Audit log
+  end note
+
+  ED -> EB : Notify subscribers
+  activate EB
+  EB -> EB : OrderStatusSubscriber\nEmailSubscriber\nInventorySubscriber\nAccountingSubscriber\nAuditLogSubscriber
+  deactivate EB
+
+  ED --> RH : Event processed
+  deactivate ED
+
+else Invalid or duplicate
+
+  note right of RH
+    Return error:
+    - Invalid state
+    - Already refunded
+    - Amount too high
+  end note
+
+  RH -> RH : Create error result
+
+end
+
+RH --> EB : Handler complete
+deactivate RH
+
+EB --> ED : Done
+ED --> UI : Event result
+deactivate ED
+
+UI --> Admin : Show result:\n"€50.00 refunded successfully"\n"Remaining: €49.99"
+deactivate UI
+
+note right of Admin
+  **Refund Benefits:**
+  - Partial/full refunds
+  - Reason tracking
+  - Audit trail
+  - Inventory restoration
+  - Accounting integration
+end note
+
+== Summary: Multi-Channel Convergence ==
+
+note over Admin, BOT
+  **All 4 Trigger Channels Converge on Same Handlers:**
+
+  Webhook (automatic) → EventDispatcher → CaptureHandler/RefundHandler
+  Admin (manual) → GraphQL → EventDispatcher → CaptureHandler/RefundHandler
+  API (programmatic) → GraphQL → EventDispatcher → CaptureHandler/RefundHandler
+  MCP (AI agent) → MCP Tools → EventDispatcher → CaptureHandler/RefundHandler
+
+  **Same business logic, validation, provider integration!**
+end note
+
+note right of ED
+  **Event-Driven Flow:**
+
+  Entry Point → Emit Event → Handler executes →
+  Call services → Emit completion event →
+  Multiple subscribers react
+
+  **Benefits:**
+  - Controllers 95% generic (thin)
+  - Business logic in handlers (fat)
+  - Easy to extend (add subscribers)
+  - Multi-channel by design
+  - Idempotent operations
+  - Request data cached (fast!)
+  - Same pattern: webhook + admin + API + MCP
+
+  **Reusability: 100%**
+  All channels use same code!
+end note
+
+@enduml

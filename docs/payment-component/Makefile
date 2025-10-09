@@ -1,11 +1,10 @@
 svg:
-	docker run --rm -v $$(pwd):/workspace plantuml/plantuml -tsvg /workspace/puml/*.puml -o /workspace/svg/
-
+	docker run --rm -v $$(pwd):/workspace plantuml/plantuml -tsvg /workspace/puml/*.puml -o /workspace/_generated/
 
 .PHONY: svg clean
 
 clean:
-	rm -f SVG/*.svg
+	rm -f _generated/*.svg
 
 help:
 	@echo "Available targets:"

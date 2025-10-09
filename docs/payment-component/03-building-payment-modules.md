@@ -1,12 +1,16 @@
 # Building Payment Modules on Top of the Component
 
 **Guide for implementing provider-specific payment modules**
+**Version:** 2.0.0
+**Visual Diagram:** [puml/07-building-on-component.puml](puml/07-building-on-component.puml)
 
 ---
 
 ## Overview
 
 This guide explains how to build payment modules (Stripe, PayPal, Adyen, etc.) on top of the payment component, and why this approach is dramatically faster and more maintainable than building from scratch.
+
+**📊 See Visual Architecture:** [puml/07-building-on-component.puml](puml/07-building-on-component.puml) showing how Stripe, PayPal, and Adyen modules build on the component foundation.
 
 ---
 

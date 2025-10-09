@@ -1,0 +1,1072 @@
+@startuml Event-Driven Capture & Refund Operations
+!theme vibrant
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 10
+
+title Event-Driven Capture & Refund Operations\n(Multi-Channel Triggers - One Backend)
+
+' =====================================
+' TRIGGER CHANNELS
+' =====================================
+package "Trigger Channels" as CHANNELS #E8EAF6 {
+
+  ' Webhook
+  actor "Payment Provider\n(Stripe/PayPal)" as PROVIDER #90CAF9
+  component "Webhook\n/webhook/stripe" as WEBHOOK #64B5F6 {
+    component [Signature Verification] as SIG_VERIFY
+  }
+
+  ' Backend Admin
+  actor "Shop Admin\n(Backend)" as ADMIN #81C784
+  component "Admin Panel\n/admin/order/123" as ADMIN_UI #66BB6A {
+    component [Capture Button] as BTN_CAPTURE
+    component [Refund Button] as BTN_REFUND
+  }
+
+  ' API (GraphQL)
+  actor "Third-Party System\n(ERP/Mobile)" as API_CLIENT #FFA726
+  component "GraphQL API\n/graphql" as GRAPHQL #FF9800 {
+    component [capturePayment] as GQL_CAPTURE
+    component [refundPayment] as GQL_REFUND
+  }
+
+  ' MCP (AI Agent)
+  actor "AI Agent\n(MCP Bot)" as MCP_BOT #FF7043
+  component "MCP Endpoint\n/mcp/tools" as MCP #FF5722 {
+    component [capture_payment] as MCP_CAPTURE
+    component [refund_payment] as MCP_REFUND
+  }
+}
+
+' =====================================
+' EVENT LAYER
+' =====================================
+package "Event Layer (PSR-14)" as EVENT_LAYER #FFF9C4 {
+  component "Event Dispatcher" as DISPATCHER #FFEB3B
+
+  component "Request Events" as REQ_EVENTS #FDD835 {
+    component [CaptureRequestedEvent] as EVT_CAPTURE_REQ
+    component [RefundRequestedEvent] as EVT_REFUND_REQ
+  }
+
+  component "Completion Events" as COMP_EVENTS #FFB300 {
+    component [PaymentCapturedEvent] as EVT_CAPTURED
+    component [RefundCompletedEvent] as EVT_REFUNDED
+  }
+}
+
+' =====================================
+' HANDLERS (BUSINESS LOGIC)
+' =====================================
+package "Event Handlers" as HANDLERS #E8F5E9 {
+
+  component "PaymentCaptureHandler" as CAPTURE_HANDLER #A5D6A7 {
+    note right
+      **handle(CaptureRequestedEvent):**
+
+      1. Load order from DB
+      2. Validate state (AUTHORIZED)
+      3. Check idempotency key
+      4. Call provider API
+      5. Update osc_transaction
+      6. Emit PaymentCapturedEvent
+    end note
+  }
+
+  component "PaymentRefundHandler" as REFUND_HANDLER #81C784 {
+    note right
+      **handle(RefundRequestedEvent):**
+
+      1. Load order from DB
+      2. Validate state (COMPLETED)
+      3. Validate amount ≤ captured
+      4. Check idempotency key
+      5. Call provider API
+      6. Update osc_transaction
+      7. Emit RefundCompletedEvent
+    end note
+  }
+}
+
+' =====================================
+' SERVICES & DATA
+' =====================================
+package "Services & Data" as SERVICES #E1F5FE {
+
+  component "PaymentService" as PAYMENT_SVC #4FC3F7 {
+    component [capturePayment()] as SVC_CAPTURE
+    component [refundPayment()] as SVC_REFUND
+    component [trackTransaction()] as SVC_TRACK
+  }
+
+  component "OrderRepository" as ORDER_REPO #29B6F6
+
+  database "osc_transaction" as DB #0288D1 {
+    note right
+      Tracks all operations:
+      - Authorizations
+      - Captures (full/partial)
+      - Refunds (full/partial)
+      - Idempotency keys
+    end note
+  }
+}
+
+' =====================================
+' SUBSCRIBERS (REACTIONS)
+' =====================================
+package "Event Subscribers" as SUBSCRIBERS #E8F5E9 {
+
+  component "OrderStatusSubscriber" as SUB_STATUS #66BB6A {
+    note bottom
+      Updates order status:
+      - AUTHORIZED → CAPTURED
+      - CAPTURED → REFUNDED
+    end note
+  }
+
+  component "EmailSubscriber" as SUB_EMAIL #4CAF50 {
+    note bottom
+      Sends emails:
+      - "Payment captured"
+      - "Refund processed"
+    end note
+  }
+
+  component "LogSubscriber" as SUB_LOG #388E3C {
+    note bottom
+      Audit trail:
+      - Who triggered
+      - When
+      - Reason
+    end note
+  }
+
+  component "InventorySubscriber" as SUB_INVENTORY #2E7D32 {
+    note bottom
+      Inventory updates:
+      - Release on capture
+      - Restore on refund
+    end note
+  }
+
+  component "AccountingSubscriber" as SUB_ACCOUNTING #1B5E20 {
+    note bottom
+      Accounting entries:
+      - Revenue recognition
+      - Credit memos
+    end note
+  }
+}
+
+' =====================================
+' EXTERNAL PROVIDERS
+' =====================================
+cloud "Payment Providers" as PROVIDERS #E0F2F1 {
+  component [Stripe API\n/v1/payment_intents/:id/capture] as STRIPE
+  component [PayPal API\n/v2/payments/captures/:id] as PAYPAL
+  component [Adyen API\n/capture] as ADYEN
+}
+
+' =====================================
+' FLOW: WEBHOOK TRIGGERED
+' =====================================
+PROVIDER --> WEBHOOK : POST /webhook\npayment_intent.succeeded
+WEBHOOK --> SIG_VERIFY : Verify HMAC-SHA256
+SIG_VERIFY --> DISPATCHER : Valid ✓
+
+note on link
+  **Webhook Payload (Stripe):**
+  {
+    "type": "payment_intent.succeeded",
+    "data": {
+      "object": {
+        "id": "pi_3ABC...",
+        "amount_captured": 9999,
+        "status": "succeeded"
+      }
+    }
+  }
+end note
+
+' =====================================
+' FLOW: BACKEND TRIGGERED
+' =====================================
+ADMIN --> BTN_CAPTURE : Click "Capture"
+BTN_CAPTURE --> GRAPHQL : GraphQL Mutation
+BTN_REFUND --> GRAPHQL : GraphQL Mutation
+
+note on link
+  **Admin UI → GraphQL:**
+
+  mutation {
+    capturePayment(input: {
+      orderId: "ORD-123"
+      idempotencyKey: "admin-capture-123-20251009"
+    }) {
+      success
+      captureId
+    }
+  }
+end note
+
+' =====================================
+' FLOW: API TRIGGERED
+' =====================================
+API_CLIENT --> GQL_CAPTURE : GraphQL Mutation\n+ JWT Token
+API_CLIENT --> GQL_REFUND : GraphQL Mutation\n+ JWT Token
+
+note on link
+  **ERP System Flow:**
+
+  1. Order ships in ERP
+  2. ERP calls GraphQL API
+  3. Capture triggered
+  4. Payment captured
+end note
+
+' =====================================
+' FLOW: MCP TRIGGERED
+' =====================================
+MCP_BOT --> MCP_CAPTURE : MCP Tool Call
+MCP_BOT --> MCP_REFUND : MCP Tool Call
+
+note on link
+  **AI Agent Flow:**
+
+  POST /mcp/tools
+  {
+    "tool": "capture_payment",
+    "parameters": {
+      "order_id": "ORD-123",
+      "reason": "Auto-capture after 3 days"
+    }
+  }
+end note
+
+' =====================================
+' ALL CHANNELS → DISPATCHER
+' =====================================
+WEBHOOK --> EVT_CAPTURED : Webhook emits\nPaymentCapturedEvent
+GQL_CAPTURE --> EVT_CAPTURE_REQ : GraphQL emits\nCaptureRequestedEvent
+GQL_REFUND --> EVT_REFUND_REQ : GraphQL emits\nRefundRequestedEvent
+MCP_CAPTURE --> EVT_CAPTURE_REQ : MCP emits\nCaptureRequestedEvent
+MCP_REFUND --> EVT_REFUND_REQ : MCP emits\nRefundRequestedEvent
+
+' =====================================
+' DISPATCHER → HANDLERS
+' =====================================
+DISPATCHER --> REQ_EVENTS : Route events
+DISPATCHER --> COMP_EVENTS : Route events
+
+EVT_CAPTURE_REQ --> CAPTURE_HANDLER : handle()
+EVT_REFUND_REQ --> REFUND_HANDLER : handle()
+
+note right of DISPATCHER
+  **Key: Same Dispatcher**
+  All channels emit events to same dispatcher
+
+  Dispatcher routes to appropriate handlers
+  based on event type
+end note
+
+' =====================================
+' HANDLERS → SERVICES → PROVIDERS
+' =====================================
+CAPTURE_HANDLER --> ORDER_REPO : getById()
+REFUND_HANDLER --> ORDER_REPO : getById()
+
+CAPTURE_HANDLER --> SVC_CAPTURE : capturePayment()
+REFUND_HANDLER --> SVC_REFUND : refundPayment()
+
+SVC_CAPTURE --> STRIPE : POST /capture
+SVC_CAPTURE --> PAYPAL : POST /capture
+SVC_CAPTURE --> ADYEN : POST /capture
+
+SVC_REFUND --> STRIPE : POST /refund
+SVC_REFUND --> PAYPAL : POST /refund
+SVC_REFUND --> ADYEN : POST /refund
+
+note bottom of PAYMENT_SVC
+  **Provider-Agnostic Service:**
+
+  Same service interface for all providers
+  Provider chosen based on order.provider_name
+end note
+
+CAPTURE_HANDLER --> SVC_TRACK : trackTransaction()
+REFUND_HANDLER --> SVC_TRACK : trackTransaction()
+
+SVC_TRACK --> DB : INSERT/UPDATE
+
+' =====================================
+' HANDLERS → EMIT COMPLETION EVENTS
+' =====================================
+CAPTURE_HANDLER --> EVT_CAPTURED : Success ✓\nEmit event
+REFUND_HANDLER --> EVT_REFUNDED : Success ✓\nEmit event
+
+' =====================================
+' COMPLETION EVENTS → SUBSCRIBERS
+' =====================================
+EVT_CAPTURED --> SUB_STATUS : Update status
+EVT_CAPTURED --> SUB_EMAIL : Send email
+EVT_CAPTURED --> SUB_LOG : Audit log
+EVT_CAPTURED --> SUB_INVENTORY : Release inventory
+EVT_CAPTURED --> SUB_ACCOUNTING : Revenue entry
+
+EVT_REFUNDED --> SUB_STATUS : Update status
+EVT_REFUNDED --> SUB_EMAIL : Send email
+EVT_REFUNDED --> SUB_LOG : Audit log
+EVT_REFUNDED --> SUB_INVENTORY : Restore inventory
+EVT_REFUNDED --> SUB_ACCOUNTING : Credit memo
+
+note bottom of SUBSCRIBERS
+  **Multiple Subscribers:**
+
+  Each subscriber reacts independently
+  Easy to add new subscribers
+  Decoupled from handlers
+end note
+
+' =====================================
+' IDEMPOTENCY
+' =====================================
+note as IDEMPOTENCY #FFFFCC
+  **Idempotency Protection:**
+
+  All capture/refund operations require idempotency key:
+  - Webhook: provider_event_id
+  - Backend: user_id + timestamp + order_id
+  - API: client-provided key (UUID)
+  - MCP: bot_id + timestamp + order_id
+
+  **Check before processing:**
+  SELECT * FROM osc_transaction
+  WHERE order_id = ?
+    AND idempotency_key = ?
+    AND transaction_type = 'capture';
+
+  If exists → skip operation (already processed)
+  If not exists → proceed with capture
+
+  **Benefits:**
+  ✅ Safe retries on network failures
+  ✅ No duplicate charges
+  ✅ Consistent state
+end note
+
+' =====================================
+' CHANNEL COMPARISON
+' =====================================
+note as COMPARISON #E1F5FE
+  **Channel Comparison:**
+
+  | Channel | Trigger | Use Case | Auth |
+  |---------|---------|----------|------|
+  | **Webhook** | Provider | Auto capture/refund | HMAC |
+  | **Backend** | Admin | Manual operations | Session |
+  | **API** | System | Programmatic | JWT |
+  | **MCP** | AI Agent | Autonomous | MCP Auth |
+
+  **All channels:**
+  ✅ Use same event-driven backend
+  ✅ Same business logic
+  ✅ Same validation rules
+  ✅ Same audit trail
+  ✅ Same idempotency protection
+
+  **Benefits:**
+  ✅ No code duplication
+  ✅ Consistent behavior
+  ✅ Easy to test
+  ✅ Easy to extend
+end note
+
+' =====================================
+' STATE TRANSITIONS
+' =====================================
+note as STATES #C8E6C9
+  **Order State Transitions:**
+
+  **Capture Flow:**
+  AUTHORIZED → CAPTURED → COMPLETED
+      ↓            ↓
+   (hold)    (money moved)
+
+  **Partial Capture:**
+  AUTHORIZED → PARTIALLY_CAPTURED → CAPTURED
+      ↓              ↓                  ↓
+   (hold)      (partial moved)    (all moved)
+
+  **Refund Flow:**
+  COMPLETED → REFUND_REQUESTED → REFUNDED
+      ↓              ↓                ↓
+  (received)    (processing)    (returned)
+
+  **Partial Refund:**
+  COMPLETED → PARTIALLY_REFUNDED
+      ↓              ↓
+  (received)   (some returned)
+
+  **Events trigger state changes:**
+  - PaymentCapturedEvent → CAPTURED
+  - RefundCompletedEvent → REFUNDED
+end note
+
+' =====================================
+' DATABASE TRACKING
+' =====================================
+note bottom of DB
+  **Example Transactions:**
+
+  -- Authorization
+  INSERT INTO osc_transaction VALUES (
+    order_id: 'ORD-123',
+    provider_name: 'stripe',
+    provider_order_id: 'pi_3ABC...',
+    transaction_type: 'authorization',
+    status: 'AUTHORIZED',
+    amount: 99.99
+  );
+
+  -- Capture (triggered by webhook)
+  INSERT INTO osc_transaction VALUES (
+    order_id: 'ORD-123',
+    provider_name: 'stripe',
+    provider_transaction_id: 'ch_3XYZ...',
+    transaction_type: 'capture',
+    status: 'CAPTURED',
+    amount: 99.99,
+    idempotency_key: 'evt_stripe_payment_intent_succeeded_123',
+    triggered_by: 'webhook'
+  );
+
+  -- Refund (triggered by admin)
+  INSERT INTO osc_transaction VALUES (
+    order_id: 'ORD-123',
+    provider_name: 'stripe',
+    provider_transaction_id: 're_3DEF...',
+    transaction_type: 'refund',
+    status: 'REFUNDED',
+    amount: 99.99,
+    idempotency_key: 'admin-123-20251009-143022',
+    triggered_by: 'admin',
+    reason: 'Customer requested refund'
+  );
+end note
+
+@enduml
+
+' =====================================
+' SEQUENCE DIAGRAM: CAPTURE FLOWS
+' =====================================
+@startuml Capture Operations - Multi-Channel Flow (Sequence)
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title Capture Operations - Multi-Channel Triggers (Sequence View)\nWebhook | Backend | API | MCP → Event-Driven Backend
+
+' =====================================
+' FLOW 1: WEBHOOK-TRIGGERED CAPTURE
+' =====================================
+
+participant "Stripe API" as STRIPE #90CAF9
+participant "WebhookController\n/webhook/stripe" as WEBHOOK #64B5F6
+participant "SignatureVerifier" as SIG #42A5F5
+participant "EventDispatcher" as ED #FFEB3B
+participant "CaptureHandler" as HANDLER #A5D6A7
+participant "OrderRepository" as REPO #81C784
+participant "PaymentService" as SVC #66BB6A
+database "Database" as DB #64B5F6
+
+== Webhook-Triggered Capture (Automatic) ==
+
+STRIPE -> WEBHOOK : POST /webhook/stripe\n\n{\n  "type": "payment_intent.succeeded",\n  "data": {\n    "object": {\n      "id": "pi_3ABC...",\n      "status": "succeeded",\n      "amount_captured": 9999\n    }\n  }\n}
+activate WEBHOOK
+
+note right of STRIPE
+  **Provider Webhook:**
+  Payment captured at provider
+  Provider notifies shop
+  Shop must update order status
+end note
+
+WEBHOOK -> SIG : Verify signature
+activate SIG
+SIG -> SIG : Compare HMAC-SHA256\nusing secret key
+SIG --> WEBHOOK : Valid ✓
+deactivate SIG
+
+note right of SIG
+  **Security Check:**
+  Prevents fake webhooks
+  Ensures request from Stripe
+  Required for production
+end note
+
+WEBHOOK -> ED : **Emit** PaymentCapturedEvent(\n  orderId: "ORD-123",\n  captureId: "pi_3ABC...",\n  amount: 99.99,\n  idempotencyKey: "evt_stripe_123"\n)
+activate ED
+deactivate WEBHOOK
+
+ED -> HANDLER : handle(PaymentCapturedEvent)
+activate HANDLER
+
+HANDLER -> REPO : getById("ORD-123")
+activate REPO
+REPO -> DB : SELECT * FROM osc_order WHERE id = ?
+activate DB
+DB --> REPO : Order data
+deactivate DB
+REPO --> HANDLER : Order object
+deactivate REPO
+
+HANDLER -> HANDLER : Validate state\n(must be AUTHORIZED)
+
+note right of HANDLER
+  **Idempotency Check:**
+  Check if already captured
+  Prevent duplicate processing
+  Safe for webhook retries
+end note
+
+HANDLER -> DB : Check idempotency
+activate DB
+DB --> HANDLER : Not processed yet ✓
+deactivate DB
+
+HANDLER -> SVC : trackTransaction(\n  orderId: "ORD-123",\n  type: "capture",\n  status: "CAPTURED",\n  idempotencyKey: "evt_stripe_123"\n)
+activate SVC
+SVC -> DB : INSERT INTO osc_transaction
+activate DB
+DB --> SVC : Transaction saved
+deactivate DB
+SVC --> HANDLER : Success
+deactivate SVC
+
+HANDLER -> ED : **Emit** CaptureCompletedEvent
+activate ED
+ED --> HANDLER : (subscribers: status, email, log, inventory, accounting)
+deactivate ED
+
+HANDLER --> ED : Success
+deactivate HANDLER
+deactivate ED
+
+note right of HANDLER
+  **Webhook Flow Benefits:**
+  ✅ Automatic (no human action)
+  ✅ Real-time updates
+  ✅ Idempotent (safe retries)
+  ✅ Audit trail complete
+end note
+
+@enduml
+
+' =====================================
+' SEQUENCE DIAGRAM: BACKEND ADMIN CAPTURE
+' =====================================
+@startuml Backend Admin Capture Flow (Manual)
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title Backend Admin Capture Flow (Manual Trigger)\nAdmin → GraphQL → Event-Driven Backend
+
+actor "Shop Admin" as ADMIN #81C784
+participant "Admin Panel\n/admin/order/123" as UI #66BB6A
+participant "GraphQL API\n/graphql" as GQL #FFEB3B
+participant "Auth Middleware" as AUTH #FDD835
+participant "EventDispatcher" as ED #FFB300
+participant "CaptureHandler" as HANDLER #A5D6A7
+participant "OrderRepository" as REPO #81C784
+participant "PaymentService" as SVC #66BB6A
+participant "Stripe API" as STRIPE #90CAF9
+database "Database" as DB #64B5F6
+
+== Admin-Triggered Capture (Manual) ==
+
+ADMIN -> UI : View order details
+activate UI
+UI -> UI : Show order status:\nAUTHORIZED
+UI --> ADMIN : Display "Capture Payment" button
+deactivate UI
+
+note right of UI
+  **Admin Decision:**
+  Order ready to ship
+  Admin clicks "Capture"
+  Money will be moved
+end note
+
+ADMIN -> UI : Click "Capture Payment"
+activate UI
+
+UI -> GQL : **GraphQL Mutation**\nPOST /graphql\n+ Session Cookie\n\nmutation {\n  capturePayment(input: {\n    orderId: "ORD-123"\n    amount: 99.99\n    reason: "Order ready to ship"\n    idempotencyKey: "admin-123-20251009-143022"\n  }) {\n    success\n    captureId\n    newStatus\n  }\n}
+activate GQL
+
+GQL -> AUTH : Verify session
+activate AUTH
+AUTH -> AUTH : Check admin permissions
+AUTH --> GQL : Valid admin ✓
+deactivate AUTH
+
+note right of AUTH
+  **Authorization:**
+  Only admins can capture
+  Permission: "PAYMENT_CAPTURE"
+  Audit trail (who captured)
+end note
+
+GQL -> ED : **Emit** CaptureRequestedEvent(\n  orderId: "ORD-123",\n  amount: 99.99,\n  reason: "Order ready to ship",\n  triggeredBy: "admin",\n  userId: "admin-123"\n)
+activate ED
+
+ED -> HANDLER : handle(CaptureRequestedEvent)
+activate HANDLER
+
+HANDLER -> REPO : getById("ORD-123")
+activate REPO
+REPO -> DB : SELECT * FROM osc_order
+activate DB
+DB --> REPO : Order data
+deactivate DB
+REPO --> HANDLER : Order object (AUTHORIZED)
+deactivate REPO
+
+HANDLER -> HANDLER : Validate state\nValidate amount
+
+note right of HANDLER
+  **Business Logic:**
+  Order must be AUTHORIZED
+  Amount ≤ authorized amount
+  Idempotency check
+end note
+
+HANDLER -> DB : Check idempotency
+activate DB
+DB --> HANDLER : Not processed yet ✓
+deactivate DB
+
+HANDLER -> SVC : capturePayment(\n  providerOrderId: "pi_3ABC...",\n  amount: 99.99\n)
+activate SVC
+
+SVC -> STRIPE : POST /v1/payment_intents/pi_3ABC.../capture\n{\n  "amount_to_capture": 9999\n}
+activate STRIPE
+STRIPE --> SVC : {\n  "id": "pi_3ABC...",\n  "status": "succeeded",\n  "amount_captured": 9999\n}
+deactivate STRIPE
+
+note right of STRIPE
+  **Provider API Call:**
+  Actually capture the money
+  Funds move from hold → captured
+  Provider confirms success
+end note
+
+SVC -> SVC : trackTransaction()
+SVC -> DB : INSERT INTO osc_transaction
+activate DB
+DB --> SVC : Transaction saved
+deactivate DB
+
+SVC --> HANDLER : Capture result
+deactivate SVC
+
+HANDLER -> ED : **Emit** PaymentCapturedEvent
+activate ED
+ED --> HANDLER : (subscribers: status, email, log, inventory)
+deactivate ED
+
+HANDLER --> ED : Success
+deactivate HANDLER
+
+ED --> GQL : Result
+deactivate ED
+
+GQL --> UI : GraphQL Response:\n{\n  "success": true,\n  "captureId": "ch_3XYZ...",\n  "newStatus": "CAPTURED"\n}
+deactivate GQL
+
+UI -> UI : Update UI:\n"Payment captured ✓"
+UI --> ADMIN : Show success message
+deactivate UI
+
+note right of ADMIN
+  **Admin Flow Benefits:**
+  ✅ Manual control
+  ✅ Capture when ready to ship
+  ✅ Full audit trail
+  ✅ Reason tracking
+end note
+
+@enduml
+
+' =====================================
+' SEQUENCE DIAGRAM: API & MCP FLOWS
+' =====================================
+@startuml API & MCP Capture Flows (Programmatic)
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title API & MCP Capture Flows (Programmatic Triggers)\nERP System | AI Agent → Event-Driven Backend
+
+actor "ERP System" as ERP #FFA726
+actor "AI Agent" as BOT #FF7043
+participant "GraphQL API\n/graphql" as GQL #FFEB3B
+participant "MCP Endpoint\n/mcp/tools" as MCP #FF5722
+participant "Auth" as AUTH #FDD835
+participant "EventDispatcher" as ED #FFB300
+participant "CaptureHandler" as HANDLER #A5D6A7
+participant "PaymentService" as SVC #66BB6A
+participant "Stripe API" as STRIPE #90CAF9
+database "Database" as DB #64B5F6
+
+== API-Triggered Capture (ERP Integration) ==
+
+ERP -> ERP : Order shipped in ERP\nTrigger payment capture
+
+note right of ERP
+  **ERP Workflow:**
+  1. Order ships from warehouse
+  2. ERP system notified
+  3. ERP auto-captures payment
+  4. Invoice generated
+end note
+
+ERP -> GQL : **GraphQL Mutation**\nPOST /graphql\n+ JWT Token\n\nmutation {\n  capturePayment(input: {\n    orderId: "ORD-123"\n    idempotencyKey: "erp-ship-123-20251009"\n  })\n}
+activate GQL
+
+GQL -> AUTH : Verify JWT token
+activate AUTH
+AUTH -> AUTH : Validate signature\nCheck scopes
+AUTH --> GQL : Valid API client ✓
+deactivate AUTH
+
+GQL -> ED : **Emit** CaptureRequestedEvent
+activate ED
+ED -> HANDLER : handle(CaptureRequestedEvent)
+activate HANDLER
+
+HANDLER -> HANDLER : Load order\nValidate state\nCheck idempotency
+
+HANDLER -> SVC : capturePayment()
+activate SVC
+SVC -> STRIPE : POST /capture
+activate STRIPE
+STRIPE --> SVC : Success
+deactivate STRIPE
+SVC -> DB : Track transaction
+activate DB
+DB --> SVC : Saved
+deactivate DB
+SVC --> HANDLER : Result
+deactivate SVC
+
+HANDLER -> ED : **Emit** PaymentCapturedEvent
+activate ED
+ED --> HANDLER : (subscribers react)
+deactivate ED
+
+HANDLER --> ED : Success
+deactivate HANDLER
+
+ED --> GQL : Result
+deactivate ED
+
+GQL --> ERP : {\n  "success": true,\n  "captureId": "ch_3XYZ...",\n  "timestamp": "2025-10-09T14:30:22Z"\n}
+deactivate GQL
+
+ERP -> ERP : Generate invoice\nUpdate ERP status
+
+note right of ERP
+  **API Flow Benefits:**
+  ✅ Automated workflow
+  ✅ Ship → Capture (automatic)
+  ✅ No manual intervention
+  ✅ Reduced errors
+end note
+
+== MCP-Triggered Capture (AI Agent) ==
+
+BOT -> BOT : Analyze order:\n"3 days passed since authorization,\nauto-capture to prevent expiry"
+
+note right of BOT
+  **AI Decision:**
+  Bot monitors all authorized orders
+  Captures before authorization expires
+  Prevents lost sales
+  Autonomous operation
+end note
+
+BOT -> MCP : **MCP Tool Call**\nPOST /mcp/tools\n\n{\n  "tool": "capture_payment",\n  "parameters": {\n    "order_id": "ORD-123",\n    "reason": "Auto-capture after 3 days",\n    "idempotency_key": "bot-auto-capture-123"\n  }\n}
+activate MCP
+
+MCP -> AUTH : Verify MCP credentials
+activate AUTH
+AUTH --> MCP : Valid bot ✓
+deactivate AUTH
+
+MCP -> ED : **Emit** CaptureRequestedEvent
+activate ED
+ED -> HANDLER : handle(CaptureRequestedEvent)
+activate HANDLER
+
+HANDLER -> HANDLER : Load order\nValidate state\nCheck idempotency
+
+HANDLER -> SVC : capturePayment()
+activate SVC
+SVC -> STRIPE : POST /capture
+activate STRIPE
+STRIPE --> SVC : Success
+deactivate STRIPE
+SVC -> DB : Track transaction
+activate DB
+DB --> SVC : Saved
+deactivate DB
+SVC --> HANDLER : Result
+deactivate SVC
+
+HANDLER -> ED : **Emit** PaymentCapturedEvent
+activate ED
+ED --> HANDLER : (subscribers react)
+deactivate ED
+
+HANDLER --> ED : Success
+deactivate HANDLER
+
+ED --> MCP : Result
+deactivate ED
+
+MCP --> BOT : {\n  "success": true,\n  "captureId": "ch_3ABC...",\n  "order_status": "CAPTURED"\n}
+deactivate MCP
+
+BOT -> BOT : Log action:\n"Auto-captured ORD-123\nReason: 3-day rule"
+
+note right of BOT
+  **MCP Flow Benefits:**
+  ✅ Autonomous operation
+  ✅ Prevents authorization expiry
+  ✅ AI-driven decisions
+  ✅ 24/7 monitoring
+  ✅ Future of automation
+end note
+
+== All Four Channels Converge ==
+
+note over ED, HANDLER
+  **Key Architecture Benefit:**
+
+  Webhook (Provider) → EventDispatcher → CaptureHandler
+  Backend (Admin) → GraphQL → EventDispatcher → CaptureHandler
+  API (ERP) → GraphQL → EventDispatcher → CaptureHandler
+  MCP (Bot) → MCP Tools → EventDispatcher → CaptureHandler
+
+  **Same handler for all four channels!**
+  - Same business logic
+  - Same validation rules
+  - Same provider integration
+  - Same database tracking
+  - Same audit trail
+  - Same subscriber reactions
+
+  **Only difference:** Trigger source and authentication method
+  **Result:** 70% less code, consistent behavior, easy to test
+end note
+
+@enduml
+
+' =====================================
+' SEQUENCE DIAGRAM: REFUND FLOWS
+' =====================================
+@startuml Refund Operations - Multi-Channel Flow (Sequence)
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title Refund Operations - Multi-Channel Triggers (Sequence View)\nBackend | API | MCP | Webhook → Event-Driven Backend
+
+actor "Shop Admin" as ADMIN #81C784
+actor "AI Agent" as BOT #FF7043
+participant "Admin UI\n/admin/order/123" as UI #66BB6A
+participant "GraphQL API\n/graphql" as GQL #FFEB3B
+participant "MCP Endpoint\n/mcp/tools" as MCP #FF5722
+participant "EventDispatcher" as ED #FFB300
+participant "RefundHandler" as HANDLER #A5D6A7
+participant "OrderRepository" as REPO #81C784
+participant "PaymentService" as SVC #66BB6A
+participant "Stripe API" as STRIPE #90CAF9
+database "Database" as DB #64B5F6
+
+== Backend Admin Refund (Manual) ==
+
+ADMIN -> UI : View completed order
+activate UI
+UI --> ADMIN : Show "Refund Payment" button
+deactivate UI
+
+ADMIN -> UI : Click "Refund"\nEnter amount: €50.00\nEnter reason: "Partial return"
+activate UI
+
+UI -> GQL : **GraphQL Mutation**\nmutation {\n  refundPayment(input: {\n    orderId: "ORD-123"\n    amount: 50.00\n    reason: "Partial return (2 items)"\n    idempotencyKey: "admin-refund-123"\n  })\n}
+activate GQL
+
+GQL -> ED : **Emit** RefundRequestedEvent
+activate ED
+ED -> HANDLER : handle(RefundRequestedEvent)
+activate HANDLER
+
+HANDLER -> REPO : getById("ORD-123")
+activate REPO
+REPO -> DB : SELECT * FROM osc_order
+activate DB
+DB --> REPO : Order data
+deactivate DB
+REPO --> HANDLER : Order (COMPLETED, €99.99)
+deactivate REPO
+
+HANDLER -> HANDLER : Validate:\n- State = COMPLETED ✓\n- Amount ≤ captured (€50 ≤ €99.99) ✓\n- Not fully refunded ✓
+
+note right of HANDLER
+  **Business Rules:**
+  Order must be COMPLETED
+  Amount ≤ originally captured
+  Check previous refunds
+  Validate reason provided
+end note
+
+HANDLER -> DB : Check idempotency\nCheck previous refunds
+activate DB
+DB --> HANDLER : No duplicate, €0 refunded so far ✓
+deactivate DB
+
+HANDLER -> SVC : refundPayment(\n  providerOrderId: "pi_3ABC...",\n  amount: 50.00,\n  reason: "Partial return"\n)
+activate SVC
+
+SVC -> STRIPE : POST /v1/refunds\n{\n  "payment_intent": "pi_3ABC...",\n  "amount": 5000,\n  "reason": "requested_by_customer"\n}
+activate STRIPE
+STRIPE --> SVC : {\n  "id": "re_3DEF...",\n  "status": "succeeded",\n  "amount": 5000\n}
+deactivate STRIPE
+
+note right of STRIPE
+  **Provider API:**
+  Create refund at provider
+  Money returned to customer
+  Provider confirms success
+end note
+
+SVC -> DB : INSERT INTO osc_transaction\n(type: "refund", amount: 50.00)
+activate DB
+DB --> SVC : Transaction saved
+deactivate DB
+
+SVC --> HANDLER : Refund result
+deactivate SVC
+
+HANDLER -> ED : **Emit** RefundCompletedEvent(\n  orderId: "ORD-123",\n  refundId: "re_3DEF...",\n  amount: 50.00,\n  remainingAmount: 49.99\n)
+activate ED
+ED --> HANDLER : (subscribers: status, email, log,\n                inventory restore, credit memo)
+deactivate ED
+
+HANDLER --> ED : Success
+deactivate HANDLER
+
+ED --> GQL : Result
+deactivate ED
+
+GQL --> UI : {\n  "success": true,\n  "refundId": "re_3DEF...",\n  "newStatus": "PARTIALLY_REFUNDED"\n}
+deactivate GQL
+
+UI -> UI : Update UI:\n"€50.00 refunded ✓\nRemaining: €49.99"
+UI --> ADMIN : Show success
+deactivate UI
+
+note right of ADMIN
+  **Refund Benefits:**
+  ✅ Partial/full refunds
+  ✅ Reason tracking
+  ✅ Audit trail
+  ✅ Inventory restoration
+  ✅ Accounting integration
+end note
+
+== MCP Bot Auto-Refund (Policy-Based) ==
+
+BOT -> BOT : Analyze order:\n"Customer requested return,\nwithin 30-day policy,\nauto-approve refund"
+
+note right of BOT
+  **AI Policy Enforcement:**
+  Bot checks return policy
+  Auto-approves valid returns
+  No admin intervention needed
+  Faster customer satisfaction
+end note
+
+BOT -> MCP : **MCP Tool Call**\nPOST /mcp/tools\n\n{\n  "tool": "refund_payment",\n  "parameters": {\n    "order_id": "ORD-456",\n    "amount": 99.99,\n    "reason": "Auto-approved: 30-day policy",\n    "idempotency_key": "bot-auto-refund-456"\n  }\n}
+activate MCP
+
+MCP -> ED : **Emit** RefundRequestedEvent
+activate ED
+ED -> HANDLER : handle(RefundRequestedEvent)
+activate HANDLER
+
+HANDLER -> HANDLER : Validate order\nCheck refund amount\nCheck idempotency
+
+HANDLER -> SVC : refundPayment()
+activate SVC
+SVC -> STRIPE : POST /v1/refunds
+activate STRIPE
+STRIPE --> SVC : Success
+deactivate STRIPE
+SVC -> DB : Track refund transaction
+activate DB
+DB --> SVC : Saved
+deactivate DB
+SVC --> HANDLER : Result
+deactivate SVC
+
+HANDLER -> ED : **Emit** RefundCompletedEvent
+activate ED
+ED --> HANDLER : (subscribers react)
+deactivate ED
+
+HANDLER --> ED : Success
+deactivate HANDLER
+
+ED --> MCP : Result
+deactivate ED
+
+MCP --> BOT : {\n  "success": true,\n  "refundId": "re_3GHI...",\n  "customer_notified": true\n}
+deactivate MCP
+
+BOT -> BOT : Log: "Auto-refunded ORD-456\nPolicy: 30-day return\nCustomer satisfaction: ✓"
+
+note right of BOT
+  **MCP Auto-Refund Benefits:**
+  ✅ Policy enforcement (autonomous)
+  ✅ Faster refunds (no admin delay)
+  ✅ Customer satisfaction
+  ✅ Reduced admin workload
+  ✅ 24/7 operation
+end note
+
+== Summary: All Channels ==
+
+note over ED, HANDLER
+  **Refund Channels:**
+
+  1. **Admin (Manual):** Admin reviews, decides, refunds
+  2. **API (ERP):** Return processed in warehouse → auto-refund
+  3. **MCP (Bot):** AI checks policy → auto-approves valid returns
+  4. **Webhook:** Provider-initiated refund → sync status
+
+  **All channels:**
+  ✅ Same RefundHandler
+  ✅ Same business logic
+  ✅ Same validation (amount, state, idempotency)
+  ✅ Same provider API calls
+  ✅ Same subscriber reactions (email, inventory, accounting)
+
+  **Benefits:**
+  ✅ Consistent refund process
+  ✅ No code duplication
+  ✅ Easy to audit
+  ✅ Easy to test
+  ✅ Future-proof (add new channels easily)
+end note
+
+@enduml

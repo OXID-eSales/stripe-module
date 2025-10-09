@@ -1,6 +1,8 @@
 # One-Page Checkout & Headless API
 
 **Component Documentation - Part 5**
+**Version:** 2.0.0
+**Visual Diagram:** [puml/08-onepage-headless-checkout.puml](puml/08-onepage-headless-checkout.puml)
 
 ---
 
@@ -13,6 +15,8 @@ The payment component provides a **configurable one-page checkout experience** t
 3. **Headless API** (for mobile apps, MCP, programmatic buying)
 
 All three modes use the same event-driven backend architecture, ensuring consistency and maintainability.
+
+**📊 See Visual Architecture:** [puml/08-onepage-headless-checkout.puml](puml/08-onepage-headless-checkout.puml) showing all three modes converging on the same event-driven backend.
 
 ---
 

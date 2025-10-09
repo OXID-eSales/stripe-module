@@ -1,12 +1,16 @@
 # Event-Driven Payment Component Summary
 
 **Component Documentation - Part 2 (Refactored)**
+**Version:** 2.0.0
+**Visual Diagram:** [puml/02-class-diagram-core.puml](puml/02-class-diagram-core.puml)
 
 ---
 
 ## Overview
 
 This document summarizes all **reusable event-driven components** that form the basis of a modern `payment-component` package. The architecture has been refactored from controller-driven to **event-driven**, making it suitable for headless commerce and multi-provider implementations.
+
+**📊 See Class Diagram:** [puml/02-class-diagram-core.puml](puml/02-class-diagram-core.puml) for visual representation of core classes and relationships.
 
 ---
 

@@ -375,3 +375,372 @@ note as API_FEATURES #FFE0B2
 end note
 
 @enduml
+
+' =====================================
+' SEQUENCE DIAGRAM: PAYMENT FLOWS
+' =====================================
+@startuml One-Page & Headless Payment Flows (Sequence)
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title One-Page Checkout & Headless API Flows (Sequence View)\nAll Modes → Event-Driven Backend
+
+' =====================================
+' FLOW 1: ONE-PAGE CHECKOUT (SPA)
+' =====================================
+
+actor "Customer" as CUSTOMER #81C784
+participant "Single Page\n/checkout" as SPA #66BB6A
+participant "JavaScript\n(Client-side)" as JS #4CAF50
+participant "GraphQL\n/graphql" as GQL #FFEB3B
+participant "OnePageController" as CTRL #A5D6A7
+participant "EventDispatcher" as ED #81C784
+participant "PaymentHandler" as HANDLER #66BB6A
+participant "PaymentService" as SVC #4CAF50
+participant "Stripe API" as STRIPE #E0F2F1
+database "Database" as DB #64B5F6
+
+== One-Page Checkout Flow (SPA - No Page Reload) ==
+
+CUSTOMER -> SPA : Load checkout page
+activate SPA
+SPA -> JS : Initialize
+activate JS
+JS -> SPA : Render all sections\n(basket, address, payment)
+deactivate JS
+SPA --> CUSTOMER : Show page (one time)
+deactivate SPA
+
+note right of SPA
+  **Single Page Load:**
+  All sections visible on one page
+  No navigation, no page reloads
+  JavaScript handles everything
+end note
+
+CUSTOMER -> JS : Fill address
+activate JS
+JS -> JS : Validate locally
+JS -> GQL : **GraphQL Mutation**\nupdateAddress(input)
+activate GQL
+GQL -> CTRL : Resolve mutation
+activate CTRL
+CTRL -> CTRL : Validate
+CTRL -> ED : Emit AddressUpdatedEvent
+activate ED
+ED --> HANDLER : (subscribers react)
+deactivate ED
+CTRL --> GQL : { success: true }
+deactivate CTRL
+GQL --> JS : JSON Response
+deactivate GQL
+JS -> JS : Update UI\n(show payment section)
+JS --> CUSTOMER : Enable payment section
+deactivate JS
+
+note right of JS
+  **AJAX Communication:**
+  No page reload!
+  GraphQL mutations update backend
+  UI updates via JavaScript
+end note
+
+CUSTOMER -> JS : Enter card data
+activate JS
+JS -> JS : **Encrypt card data**\n(Web Crypto API)
+JS -> GQL : **GraphQL Mutation**\nprocessPayment(input: {\n  encryptedData: "ENC:..."\n})
+activate GQL
+GQL -> CTRL : Resolve mutation
+activate CTRL
+CTRL -> CTRL : Decrypt encrypted data
+CTRL -> ED : **Emit** PaymentInitiatedEvent
+activate ED
+ED -> HANDLER : handle(PaymentInitiatedEvent)
+activate HANDLER
+deactivate ED
+
+note right of CTRL
+  **Event-Driven:**
+  Controller emits event
+  Handler contains business logic
+  Thin controller, fat handler
+end note
+
+HANDLER -> SVC : createPayment()
+activate SVC
+SVC -> STRIPE : POST /v1/payment_intents
+activate STRIPE
+STRIPE --> SVC : { id: "pi_3ABC...", status: "succeeded" }
+deactivate STRIPE
+SVC -> DB : trackTransaction()
+activate DB
+DB --> SVC : Transaction saved
+deactivate DB
+SVC --> HANDLER : Payment result
+deactivate SVC
+
+HANDLER -> ED : **Emit** PaymentCompletedEvent
+activate ED
+ED --> HANDLER : (subscribers: email, status, log)
+deactivate ED
+
+HANDLER --> CTRL : Result
+deactivate HANDLER
+CTRL --> GQL : { orderId, status, redirectUrl }
+deactivate CTRL
+GQL --> JS : JSON Response
+deactivate GQL
+
+JS -> JS : Update UI\n(show confirmation)
+JS --> CUSTOMER : Order confirmed!
+deactivate JS
+
+note right of CUSTOMER
+  **One-Page Checkout Benefits:**
+  ✅ No page reloads (faster UX)
+  ✅ +15-30% conversion rate
+  ✅ Real-time validation
+  ✅ Mobile-optimized
+  ✅ PCI-compliant encryption
+end note
+
+@enduml
+
+' =====================================
+' SEQUENCE DIAGRAM: MOBILE APP FLOW
+' =====================================
+@startuml Mobile App Payment Flow (GraphQL)
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title Mobile App Payment Flow (GraphQL API)\nEvent-Driven Backend
+
+actor "User" as USER #FFA726
+participant "Mobile App\n(iOS/Android)" as APP #FF9800
+participant "GraphQL API\n/graphql" as GQL #FFEB3B
+participant "Auth Middleware" as AUTH #FDD835
+participant "OnePageController" as CTRL #A5D6A7
+participant "EventDispatcher" as ED #81C784
+participant "PaymentHandler" as HANDLER #66BB6A
+participant "PaymentService" as SVC #4CAF50
+participant "Stripe API" as STRIPE #E0F2F1
+database "Database" as DB #64B5F6
+
+== Mobile App Flow ==
+
+USER -> APP : Open checkout
+activate APP
+APP -> APP : Collect basket items
+APP -> APP : Collect payment info
+APP -> APP : **Encrypt card data**\n(native crypto)
+APP --> USER : Review order
+deactivate APP
+
+USER -> APP : Confirm payment
+activate APP
+
+APP -> GQL : **GraphQL Mutation**\nPOST /graphql\n+ JWT Token\n\nmutation {\n  processPayment(input: {\n    basketId: "123"\n    encryptedData: "ENC:..."\n    paymentMethod: "stripe"\n  })\n}
+activate GQL
+
+GQL -> AUTH : Verify JWT token
+activate AUTH
+AUTH -> AUTH : Validate signature
+AUTH --> GQL : Valid ✓
+deactivate AUTH
+
+note right of AUTH
+  **JWT Authentication:**
+  Bearer token in header
+  Stateless authentication
+  Secure API access
+end note
+
+GQL -> CTRL : Resolve mutation
+activate CTRL
+CTRL -> CTRL : Decrypt encrypted data
+CTRL -> ED : **Emit** PaymentInitiatedEvent
+activate ED
+ED -> HANDLER : handle(PaymentInitiatedEvent)
+activate HANDLER
+deactivate ED
+
+HANDLER -> SVC : createPayment()
+activate SVC
+SVC -> STRIPE : POST /v1/payment_intents
+activate STRIPE
+STRIPE --> SVC : { id: "pi_3ABC...", client_secret: "..." }
+deactivate STRIPE
+
+note right of STRIPE
+  **Provider API:**
+  Same provider integration
+  Same business logic
+  Same as web checkout
+end note
+
+SVC -> DB : trackTransaction()
+activate DB
+DB --> SVC : Transaction saved
+deactivate DB
+SVC --> HANDLER : Payment result
+deactivate SVC
+
+HANDLER -> ED : **Emit** PaymentCompletedEvent
+activate ED
+ED --> HANDLER : (email, status, log)
+deactivate ED
+
+HANDLER --> CTRL : Result
+deactivate HANDLER
+
+CTRL --> GQL : GraphQL Response:\n{\n  orderId: "ORD-123",\n  status: "COMPLETED",\n  requiresAction: false\n}
+deactivate CTRL
+
+GQL --> APP : JSON Response
+deactivate GQL
+
+APP -> APP : Parse response
+APP --> USER : Show confirmation\n(native UI)
+deactivate APP
+
+note right of APP
+  **Mobile App Benefits:**
+  ✅ Native UX (iOS/Android)
+  ✅ Same backend as web
+  ✅ GraphQL flexibility
+  ✅ Type-safe schema
+  ✅ Offline support possible
+end note
+
+@enduml
+
+' =====================================
+' SEQUENCE DIAGRAM: MCP BOT FLOW
+' =====================================
+@startuml MCP Bot Payment Flow (AI Agent)
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title MCP Bot Payment Flow (Programmatic Buying)\nAI Agent → Event-Driven Backend
+
+actor "User" as USER #FF7043
+participant "AI Agent\n(Claude/ChatGPT)" as BOT #FF5722
+participant "MCP Endpoint\n/mcp/tools" as MCP #FFB300
+participant "Auth Handler" as AUTH #FDD835
+participant "PaymentController" as CTRL #A5D6A7
+participant "EventDispatcher" as ED #81C784
+participant "PaymentHandler" as HANDLER #66BB6A
+participant "PaymentService" as SVC #4CAF50
+participant "Stripe API" as STRIPE #E0F2F1
+database "Database" as DB #64B5F6
+
+== MCP Bot Flow (Autonomous Buying) ==
+
+USER -> BOT : "Buy 3 red t-shirts, size L,\npay with my saved card"
+activate BOT
+BOT -> BOT : Parse intent
+BOT -> BOT : Extract parameters:\n- product: "red t-shirt"\n- quantity: 3\n- size: "L"\n- payment: "saved_card"
+
+note right of BOT
+  **AI Understanding:**
+  Natural language → structured data
+  Bot understands buying intent
+  Extracts all parameters
+end note
+
+BOT -> MCP : **MCP Tool Call**\nPOST /mcp/tools\n\n{\n  "tool": "create_order",\n  "parameters": {\n    "items": [{\n      "sku": "TSHIRT-RED-L",\n      "quantity": 3\n    }],\n    "payment_method": "saved_card_123",\n    "idempotency_key": "bot-20251009-143022"\n  }\n}
+activate MCP
+
+MCP -> AUTH : Verify MCP auth token
+activate AUTH
+AUTH -> AUTH : Validate bot credentials
+AUTH --> MCP : Valid ✓
+deactivate AUTH
+
+note right of AUTH
+  **MCP Authentication:**
+  Bot-specific credentials
+  Scope-based permissions
+  Audit trail (who bought)
+end note
+
+MCP -> CTRL : Route to controller
+activate CTRL
+CTRL -> CTRL : Validate parameters
+CTRL -> CTRL : Load saved payment method
+CTRL -> ED : **Emit** PaymentInitiatedEvent
+activate ED
+ED -> HANDLER : handle(PaymentInitiatedEvent)
+activate HANDLER
+deactivate ED
+
+HANDLER -> SVC : createPayment()
+activate SVC
+SVC -> STRIPE : POST /v1/payment_intents\n(using saved card token)
+activate STRIPE
+STRIPE --> SVC : { id: "pi_3ABC...", status: "succeeded" }
+deactivate STRIPE
+
+note right of STRIPE
+  **Saved Card:**
+  No manual card entry
+  Tokenized payment method
+  Fast, autonomous purchase
+end note
+
+SVC -> DB : trackTransaction()
+activate DB
+DB --> SVC : Transaction saved
+deactivate DB
+SVC --> HANDLER : Payment result
+deactivate SVC
+
+HANDLER -> ED : **Emit** PaymentCompletedEvent
+activate ED
+ED --> HANDLER : (email, status, log, inventory)
+deactivate ED
+
+HANDLER --> CTRL : Result
+deactivate HANDLER
+
+CTRL --> MCP : MCP Response:\n{\n  "success": true,\n  "order_id": "ORD-123",\n  "total": 89.97,\n  "status": "COMPLETED"\n}
+deactivate CTRL
+
+MCP --> BOT : JSON Response
+deactivate MCP
+
+BOT -> BOT : Parse response
+BOT --> USER : "Done! I've ordered 3 red t-shirts\n(size L) for $89.97.\nOrder #ORD-123\nShips in 2-3 days."
+deactivate BOT
+
+note right of BOT
+  **MCP Benefits:**
+  ✅ Voice commerce
+  ✅ Autonomous purchasing
+  ✅ No UI needed
+  ✅ Natural language
+  ✅ AI-driven shopping
+  ✅ Future of e-commerce
+end note
+
+== All Three Modes Converge ==
+
+note over CTRL, HANDLER
+  **Key Architecture Benefit:**
+
+  One-Page Checkout (SPA) → GraphQL → Controller → EventDispatcher
+  Mobile App (Native) → GraphQL → Controller → EventDispatcher
+  MCP Bot (AI Agent) → MCP Tools → Controller → EventDispatcher
+
+  **Same backend code for all three!**
+  - Same event handlers
+  - Same business logic
+  - Same validation rules
+  - Same provider integration
+  - Same database tracking
+
+  **Only difference:** Entry point (GraphQL vs MCP)
+  **Result:** 70% less code, consistent behavior
+end note
+
+@enduml

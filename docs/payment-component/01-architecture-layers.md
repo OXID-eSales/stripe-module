@@ -1,12 +1,16 @@
 # Event-Driven Architecture Layers
 
 **Component Documentation - Part 1 (Refactored)**
+**Version:** 2.0.0
+**Visual Diagram:** [puml/01-architecture-overview.puml](puml/01-architecture-overview.puml)
 
 ---
 
 ## Overview
 
 The payment component follows an **event-driven layered architecture** where business logic is decoupled from presentation concerns. Controllers act as thin validation and security layers that emit domain events. Event handlers orchestrate business operations.
+
+**📊 See Visual Diagram:** [puml/01-architecture-overview.puml](puml/01-architecture-overview.puml) for complete architecture visualization.
 
 ---
 
