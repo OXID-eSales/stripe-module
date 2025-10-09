@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.0] - unreleased
+
+### Added
+
+### Removed
+
+### Changed
+
+
 ## [2.0.3] - 2024-11-29
 
 - Submitting the customer email address is optional
