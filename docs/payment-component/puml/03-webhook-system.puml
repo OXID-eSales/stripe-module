@@ -1,0 +1,162 @@
+@startuml Webhook Processing System
+
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam sequenceMessageAlign center
+
+title Webhook Processing System\n(100% Reusable Pattern)
+
+actor "Payment\nProvider" as Provider
+participant "WebhookController" as WC #FFE082
+participant "RequestHandler" as RH #F366F5
+participant "EventVerifier" as EV #E8F5E9
+participant "EventDispatcher" as ED #F3E5F5
+participant "ConcreteHandler\n(e.g. CaptureCompleted)" as CH #FFEBEE
+participant "WebhookHandlerBase" as WHB #FFE082
+participant "OrderRepository" as OR #E1F5FE
+participant "PaymentService" as PS #FFF9C4
+database "Database" as DB
+
+Provider -> WC : POST /webhook\n+ signature header
+activate WC
+WC -> RH : processWebhook(request)
+activate RH
+
+RH -> RH : Read request body
+RH -> EV : verify(body, signature, webhookId)
+activate EV
+
+EV -> EV : Calculate expected signature
+alt Signature Valid
+  EV --> RH : true
+  deactivate EV
+else Signature Invalid
+  EV --> RH : throw SignatureException
+  RH --> WC : 401 Unauthorized
+  WC --> Provider : 401
+  deactivate RH
+  deactivate WC
+end
+
+RH -> RH : Parse JSON to Event object
+RH -> ED : dispatch(event)
+activate ED
+
+ED -> ED : Lookup handler for event type\n(from EventHandlerMapping)
+ED -> CH : handle(event)
+activate CH
+
+CH -> WHB : handle(event)
+activate WHB
+
+note right of WHB
+  **Template Method Pattern**
+  Base class defines workflow:
+  1. Extract payload
+  2. Get IDs
+  3. Load order
+  4. Process
+  5. Update status
+  6. Mark as paid
+  7. Cleanup
+end note
+
+WHB -> WHB : getEventPayload(event)
+WHB -> WHB : getPayPalOrderIdFromResource()\n**Abstract - implemented in concrete**
+WHB -> WHB : getPayPalTransactionIdFromResource()\n**Abstract - implemented in concrete**
+
+WHB -> OR : getShopOrderByPayPalOrderId(orderId)
+activate OR
+OR -> DB : SELECT * FROM oxorder\nWHERE oxid = ...\nJOIN oscpaypal_order
+activate DB
+DB --> OR : Order data
+deactivate DB
+OR --> WHB : Order object
+deactivate OR
+
+WHB -> OR : paypalOrderByOrderIdAndPayPalId(...)
+activate OR
+OR -> DB : SELECT * FROM oscpaypal_order\nWHERE oxorderid = ...
+activate DB
+DB --> OR : PaymentTransaction data
+deactivate DB
+OR --> WHB : PaymentTransaction object
+deactivate OR
+
+WHB -> WHB : handleWebhookTasks(order, paypalOrder, resource)
+
+WHB -> WHB : getTransactionIdFromResource()\n**Abstract - implemented in concrete**
+WHB -> PS : fetchOrderFields(paypalOrderId)
+note right
+  Fetch latest order status
+  from payment provider API
+end note
+activate PS
+PS --> WHB : Provider order details
+deactivate PS
+
+WHB -> WHB : getStatusFromResource()\n**Abstract - implemented in concrete**
+
+WHB -> WHB : updateStatus(paypalOrder, status, transactionId)
+WHB -> DB : UPDATE oscpaypal_order\nSET oscpaypalstatus = ?,\noscpaypaltransactionid = ?
+activate DB
+DB --> WHB : Updated
+deactivate DB
+
+WHB -> WHB : markShopOrderPaymentStatus(order, paypalOrder)
+
+alt Order is paid (status = COMPLETED)
+  WHB -> Order : markOrderPaid()
+  activate Order
+  Order -> DB : UPDATE oxorder\nSET oxpaid = NOW(),\noxtransstatus = 'OK'
+  activate DB
+  DB --> Order : Updated
+  deactivate DB
+  Order -> Order : sendPayPalOrderByEmail()
+  Order --> WHB : Done
+  deactivate Order
+end
+
+WHB -> OR : cleanUpNotFinishedOrders()
+note right
+  Clean up abandoned orders
+  older than timeout threshold
+end note
+activate OR
+OR -> DB : SELECT and cancel\nNOT_FINISHED orders
+activate DB
+DB --> OR : Done
+deactivate DB
+OR --> WHB : Done
+deactivate OR
+
+WHB --> CH : void
+deactivate WHB
+CH --> ED : void
+deactivate CH
+ED --> RH : void
+deactivate ED
+
+RH --> WC : void
+deactivate RH
+WC --> Provider : 200 OK
+deactivate WC
+
+note over Provider, DB
+  **Concrete Handler Implementations**
+  Each event type has a concrete handler that extends WebhookHandlerBase:
+
+  - PaymentCaptureCompletedHandler (PAYMENT.CAPTURE.COMPLETED)
+  - PaymentCaptureRefundedHandler (PAYMENT.CAPTURE.REFUNDED)
+  - CheckoutOrderCompletedHandler (CHECKOUT.ORDER.COMPLETED)
+  - CheckoutOrderApprovedHandler (CHECKOUT.ORDER.APPROVED)
+  - PaymentCaptureDeniedHandler (PAYMENT.CAPTURE.DENIED)
+  - CheckoutPaymentApprovalReverseHandler (CHECKOUT.PAYMENT.APPROVAL.REVERSED)
+
+  Each implements abstract methods:
+  - getPayPalOrderIdFromResource()
+  - getPayPalTransactionIdFromResource()
+  - getStatusFromResource()
+end note
+
+@enduml

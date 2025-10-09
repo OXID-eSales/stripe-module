@@ -1,0 +1,304 @@
+@startuml Core Payment Component Classes
+
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 8
+skinparam classAttributeIconSize 0
+
+title Core Payment Module Classes\n(Reusable Component Pattern)
+
+' Service Layer
+package "Service Layer" <<Rectangle>> #FFF3E0 {
+
+  class PaymentService {
+    - session: Session
+    - orderRepository: OrderRepository
+    - scaValidator: SCAValidatorInterface
+    - moduleSettings: ModuleSettings
+    - logger: LoggerInterface
+    - trackingService: OrderProcessTrackingService
+    - serviceFactory: ServiceFactory
+    - orderRequestFactory: OrderRequestFactory
+    - patchRequestFactory: PatchRequestFactory
+    --
+    + doCreatePayPalOrder(...): Order
+    + doPatchPayPalOrder(...): void
+    + doCapturePayPalOrder(...): Order
+    + doAuthorizePayment(...): array
+    + doExecuteUAPMPayment(...): string
+    + doExecutePuiPayment(...): bool
+    + trackPayPalOrder(...): PaymentTransaction
+    + fetchOrderFields(...): Order
+    + verify3D(...): bool
+    + isPayPalPayment(...): bool
+    + removeTemporaryOrder(): void
+    + isOrderExecutionInProgress(): bool
+    --
+    **90% Reusable**
+    Core payment orchestration
+  }
+
+  class OrderRepository {
+    - queryBuilderFactory: QueryBuilderFactory
+    - config: Config
+    --
+    + paypalOrderByOrderIdAndPayPalId(...): PaymentTransaction
+    + paypalOrderByOrderId(...): PaymentTransaction
+    + getShopOrderByPayPalOrderId(...): Order
+    + getShopOrderByPayPalTransactionId(...): Order
+    + getPaymenterOrderIdByShopOrderId(...): string
+    + fetchCurrentShopOrderId(): string
+    + fetchCurrentShopOrder(): Order
+    + cleanUpNotFinishedOrders(): void
+    --
+    **100% Reusable**
+    Generic data access
+    Rename: PayPal → Payment
+  }
+
+  class OrderManager {
+    - session: Session
+    - basket: Basket
+    --
+    + createShopOrder(user, basket): Order
+    + getUser(): User
+    --
+    **100% Reusable**
+    Order creation logic
+  }
+
+  class ModuleSettings {
+    - config: Config
+    --
+    + isSandbox(): bool
+    + getClientId(): string
+    + getClientSecret(): string
+    + getMerchantId(): string
+    + getWebhookId(): string
+    + saveClientId(id): void
+    + saveClientSecret(secret): void
+    + getPaymenterStandardCaptureStrategy(): string
+    + isAcdcEligibility(): bool
+    + isPuiEligibility(): bool
+    + isVaultingEligibility(): bool
+    + alwaysIgnoreSCAResult(): bool
+    + getPaymenterSCAContingency(): string
+    --
+    **100% Pattern Reusable**
+    Structure generic,
+    values provider-specific
+  }
+
+  class OrderProcessTrackingService {
+    - session: Session
+    --
+    + startPaymentProcessTracking(): string
+    + getTrackingId(): string
+    --
+    **100% Reusable**
+    Process tracking
+  }
+
+  interface SCAValidatorInterface {
+    + isCardUsableForPayment(order): bool
+    + getCardAuthenticationResult(order): ?string
+  }
+
+  class SCAValidator implements SCAValidatorInterface {
+    + isCardUsableForPayment(order): bool
+    + getCardAuthenticationResult(order): ?string
+    --
+    **90% Reusable**
+    3D Secure validation pattern
+  }
+
+  class UserRepository {
+    - queryBuilderFactory: QueryBuilderFactory
+    --
+    + getUserCountryIso(user): string
+    + getUserStateIso(user): string
+    --
+    **100% Reusable**
+  }
+}
+
+' Factory Layer
+package "Factory Layer" <<Rectangle>> #FFE082 {
+
+  class OrderRequestFactory {
+    - basket: Basket
+    - moduleSettings: ModuleSettings
+    - context: Context
+    - purchaseUnitsFactory: PurchaseUnitsFactory
+    --
+    + setBasket(basket): self
+    + getRequest(...): OrderRequest
+    --
+    **80% Adaptable**
+    Structure reusable,
+    format provider-specific
+  }
+
+  class PatchRequestFactory {
+    - purchaseUnitsFactory: PurchaseUnitsFactory
+    --
+    + getOrderPatches(basket, orderId): Patch[]
+    --
+    **80% Adaptable**
+  }
+
+  class PurchaseUnitsFactory {
+    - basket: Basket
+    - moduleSettings: ModuleSettings
+    - amountFactory: AmountFactory
+    --
+    + createPurchaseUnits(): PurchaseUnit[]
+    --
+    **70% Adaptable**
+    Line item format varies
+  }
+
+  class ServiceFactory {
+    - config: Config
+    - httpClient: HttpClient
+    --
+    + getOrderService(): OrderServiceInterface
+    + getPaymentService(): PaymentServiceInterface
+    + getVaultingService(): VaultingServiceInterface
+    --
+    **100% Pattern Reusable**
+    Creates provider API clients
+  }
+}
+
+' Domain Layer
+package "Domain Layer" <<Rectangle>> #E8F5E9 {
+
+  class Order {
+    + ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500
+    + ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS = 600
+    + ORDER_STATE_ACDCINPROGRESS = 700
+    + ORDER_STATE_ACDCCOMPLETED = 750
+    + ORDER_STATE_NEED_CALL_ACDC_FINALIZE = 800
+    + ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS = 900
+    --
+    + finalizeOrder(basket, user): int
+    + finalizeOrderAfterExternalPayment(basket): int
+    + markOrderPaid(): void
+    + markOrderPaymentFailed(): void
+    + setTransId(transactionId): void
+    + isOrderFinished(): bool
+    + isOrderPaid(): bool
+    + isWaitForWebhookTimeoutReached(): bool
+    + sendPayPalOrderByEmail(): void
+    --
+    **90% Reusable**
+    State machine pattern generic
+  }
+
+  class PaymentTransaction <<rename to>> {
+    - shopOrderId: string
+    - providerOrderId: string
+    - transactionId: string
+    - status: string
+    - paymentMethodId: string
+    - transactionType: string
+    --
+    + getPaymenterOrderId(): string
+    + getTransactionId(): string
+    + getShopOrderId(): string
+    + getStatus(): string
+    + getPaymentMethodId(): string
+    + getTransactionType(): string
+    + setStatus(status): void
+    + setTransactionId(id): void
+    + setPaymentMethodId(id): void
+    + setTransactionType(type): void
+    --
+    **100% Reusable**
+    Generic transaction tracking
+    Currently named: PayPalOrder
+  }
+
+  class Payment {
+    + isUAPMPayment(): bool
+    + isPayPalPayment(): bool
+    + isDeprecatedPayment(): bool
+    --
+    **90% Reusable**
+    Payment method checks
+  }
+
+  class Basket {
+    + getPaymenterCheckoutWrapping(): float
+    + getPaymenterCheckoutGiftCard(): float
+    + getPaymenterCheckoutPayment(): float
+    + getPaymenterCheckoutDeliveryCosts(): float
+    + getPaymenterCheckoutDiscount(): float
+    + getPaymenterCheckoutItems(): float
+    + getPaymenterCheckoutRoundDiff(): float
+    + isVirtualPayPalBasket(): bool
+    + isFractionQuantityItemsPresent(): bool
+    --
+    **100% Reusable**
+    Amount calculation methods
+  }
+
+  class User {
+    + onOrderExecute(): void
+    + getBirthDateForPuiRequest(): string
+    + getPhoneNumberForPuiRequest(): string
+    + getInvoiceAddress(): Address
+    --
+    **90% Reusable**
+    Payment-related user data
+  }
+}
+
+' Relationships
+PaymentService --> OrderRepository : uses
+PaymentService --> OrderManager : uses
+PaymentService --> ModuleSettings : uses
+PaymentService --> OrderProcessTrackingService : uses
+PaymentService --> SCAValidator : uses
+PaymentService --> OrderRequestFactory : uses
+PaymentService --> PatchRequestFactory : uses
+PaymentService --> ServiceFactory : uses
+
+OrderRequestFactory --> PurchaseUnitsFactory : uses
+PatchRequestFactory --> PurchaseUnitsFactory : uses
+
+PaymentService --> Order : updates
+PaymentService --> PaymentTransaction : tracks
+OrderRepository --> Order : loads
+OrderRepository --> PaymentTransaction : loads/saves
+
+OrderManager --> Order : creates
+OrderManager --> Basket : uses
+OrderManager --> User : uses
+
+note top of PaymentService
+  **Core Orchestration**
+  Coordinates all payment operations
+  Provider-agnostic workflow
+end note
+
+note top of OrderRepository
+  **Data Access Layer**
+  100% reusable
+  Just rename PayPal→Payment
+end note
+
+note top of PaymentTransaction
+  **Currently: PayPalOrder**
+  Rename to PaymentTransaction
+  for generic use
+end note
+
+note bottom of ServiceFactory
+  **API Client Factory**
+  Creates provider-specific
+  API service instances
+end note
+
+@enduml

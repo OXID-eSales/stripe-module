@@ -1,0 +1,289 @@
+@startuml Event-Driven Order State Machine
+!theme vibrant
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 15
+skinparam state {
+  BackgroundColor<<Initial>> #E8F5E9
+  BackgroundColor<<Processing>> #FFF3E0
+  BackgroundColor<<Waiting>> #E3F2FD
+  BackgroundColor<<Success>> #C8E6C9
+  BackgroundColor<<Error>> #FFCDD2
+  BorderColor #455A64
+  FontSize 12
+}
+
+title Event-Driven Order State Machine\n(Provider-Agnostic - 100% Reusable)
+
+[*] --> NOT_STARTED : User adds items
+
+state NOT_STARTED <<Initial>>
+
+NOT_STARTED --> NOT_FINISHED : **Event:** OrderCreatedEvent
+note on link
+  **Emitted by:**
+  Controller validates,
+  emits OrderCreatedEvent
+
+  **Handler:**
+  Creates temporary order
+end note
+
+state NOT_FINISHED <<Processing>> {
+  state "NOT_FINISHED\n(Order created,\nawaiting payment)" as NF
+  note right of NF
+    **Temporary order state**
+    - Order exists in DB
+    - No payment initiated yet
+    - Can be cleaned up
+    - PAYMENT_STATE = 'NOT_FINISHED'
+  end note
+}
+
+NOT_FINISHED --> IN_PROGRESS : **Event:** PaymentInitiatedEvent
+note on link
+  **Emitted by:**
+  OrderController
+
+  **Handler:**
+  - Creates provider order
+  - Stores provider_order_id
+  - Redirects customer
+
+  **Event-Driven!**
+  Controller doesn't call service
+end note
+
+state IN_PROGRESS <<Processing>> {
+  state "IN_PROGRESS\n(500-800)\nPayment Processing" as IP
+
+  state IP {
+    state "500\nExternal Payment\n(Redirect)" as EP
+    state "700\nCard Payment\n(Processing)" as CP
+    state "750\nCard Authorized\n(Need Capture)" as CA
+    state "800\nNeed Finalization" as NF2
+
+    [*] --> EP : Redirect payment\n(PayPal, iDEAL)
+    [*] --> CP : Card payment\n(3DS)
+
+    CP --> CA : Card authorized
+    CA --> NF2 : Needs finalization
+  }
+
+  note right of IP
+    **Processing States:**
+
+    **500 - External Payment:**
+    - Customer at provider
+    - uAPM methods (iDEAL, EPS, etc.)
+    - Redirect-based flow
+
+    **700 - Card Processing:**
+    - Card payment (Stripe, Adyen)
+    - 3D Secure challenge
+    - Apple/Google Pay
+
+    **750 - Card Authorized:**
+    - 3DS passed
+    - Need capture call
+
+    **800 - Need Finalization:**
+    - Authorization valid
+    - Must call finalizePayment()
+
+    PAYMENT_STATE = 'IN_PROGRESS'
+  end note
+}
+
+IN_PROGRESS --> AWAITING_WEBHOOK : **Event:** PaymentApprovedEvent
+note on link
+  **Emitted by:**
+  Customer return handler
+
+  **Handler:**
+  - Updates state
+  - Waits for webhook
+
+  Customer completed payment,
+  now awaiting confirmation
+end note
+
+state AWAITING_WEBHOOK <<Waiting>> {
+  state "AWAITING_WEBHOOK\n(600)\nWaiting for\nWebhook" as AW
+  note right of AW
+    **Webhook pending**
+    - Payment approved at provider
+    - Awaiting async confirmation
+    - Timeout: 60 minutes
+    - PAYMENT_STATE = 'AWAITING_WEBHOOK'
+
+    **Event-Driven Flow:**
+    Webhook will emit
+    PaymentCapturedEvent
+  end note
+}
+
+AWAITING_WEBHOOK --> COMPLETED : **Event:** PaymentCapturedEvent
+note on link
+  **Emitted by:**
+  WebhookController
+  (receives provider webhook)
+
+  **Handler:**
+  - Marks order as paid
+  - Updates transaction
+  - Emits OrderCompletedEvent
+
+  **Multiple Subscribers:**
+  - Email notification
+  - Inventory update
+  - Analytics tracking
+end note
+
+IN_PROGRESS --> COMPLETED : **Event:** PaymentCapturedEvent\n(Direct capture)
+note on link
+  Some flows skip
+  AWAITING_WEBHOOK state
+  (direct capture)
+end note
+
+AWAITING_WEBHOOK --> TIMEOUT : 60 min timeout
+note on link
+  No webhook received
+  within timeout period
+end note
+
+state TIMEOUT <<Processing>> {
+  state "TIMEOUT\n(900)\nWebhook Timeout\n(Fallback)" as TO
+  note right of TO
+    **Fallback mechanism**
+    - Webhook delayed/failed
+    - Poll provider API
+    - Or wait for customer return
+    - PAYMENT_STATE = 'TIMEOUT'
+
+    **Event-Driven:**
+    Polling emits
+    PaymentCapturedEvent
+    when confirmed
+  end note
+}
+
+TIMEOUT --> COMPLETED : **Event:** PaymentCapturedEvent\n(Polling confirmed)
+note on link
+  **Emitted by:**
+  Polling service
+
+  **Handler:**
+  Same as webhook handler
+end note
+
+state COMPLETED <<Success>> {
+  state "COMPLETED\n(OK)\nOrder Completed\nand Paid" as SUCCESS
+  note right of SUCCESS
+    **Order finalized**
+    - OXPAID timestamp set
+    - OXTRANSSTATUS = 'OK'
+    - PAYMENT_STATE = 'COMPLETED'
+    - Transaction ID stored
+    - Email sent (subscriber)
+    - Inventory updated (subscriber)
+    - Cannot be cancelled
+
+    **Event Chain Complete:**
+    OrderCompletedEvent triggered
+    all subscribers
+  end note
+}
+
+COMPLETED --> [*]
+
+NOT_FINISHED --> CANCELLED : **Event:** OrderCancelledEvent
+IN_PROGRESS --> CANCELLED : **Event:** PaymentFailedEvent
+AWAITING_WEBHOOK --> CANCELLED : **Event:** PaymentFailedEvent
+TIMEOUT --> CANCELLED : **Event:** OrderCancelledEvent
+
+note on link
+  **Emitted by:**
+  - Customer cancellation
+  - Payment failure
+  - Timeout expiry
+
+  **Handler:**
+  - Marks order as storno
+  - Cancels at provider
+  - Emits OrderCancelledEvent
+
+  **Subscriber:**
+  Cleanup service
+end note
+
+state CANCELLED <<Error>> {
+  state "CANCELLED\n(Order cancelled/failed)" as CANCEL
+  note right of CANCEL
+    **Order cancelled**
+    - Payment failed/cancelled
+    - OXSTORNO = 1
+    - PAYMENT_STATE = 'CANCELLED'
+    - Can be cleaned up
+    - Email sent (subscriber)
+  end note
+}
+
+CANCELLED --> [*]
+
+note bottom
+  **Event-Driven State Transitions:**
+
+  All state transitions triggered by events:
+  ✓ OrderCreatedEvent → NOT_FINISHED
+  ✓ PaymentInitiatedEvent → IN_PROGRESS
+  ✓ PaymentApprovedEvent → AWAITING_WEBHOOK
+  ✓ PaymentCapturedEvent → COMPLETED
+  ✓ PaymentFailedEvent → CANCELLED
+  ✓ OrderCancelledEvent → CANCELLED
+  ✓ OrderCompletedEvent (emitted at COMPLETED)
+
+  **State Code Mapping:**
+  NOT_FINISHED = "NOT_FINISHED"
+  500-800 = IN_PROGRESS (various sub-states)
+  600 = AWAITING_WEBHOOK
+  900 = TIMEOUT
+  OK = COMPLETED
+
+  **Payment Component States:**
+  PAYMENT_STATE field tracks high-level state:
+  NOT_FINISHED → IN_PROGRESS → AWAITING_WEBHOOK → COMPLETED
+
+  **Provider-Agnostic:**
+  Works for Stripe, PayPal, Adyen, Amazon Pay, etc.
+
+  **Reusability: 100%**
+  Event-driven flow is fully reusable!
+end note
+
+note as N1
+  **Key Event-Driven Benefits:**
+
+  1. **Controllers don't manage state**
+     They emit events, handlers update state
+
+  2. **Multiple subscribers react**
+     Email, inventory, analytics all subscribe
+     to OrderCompletedEvent
+
+  3. **Easy to extend**
+     Add new subscriber without changing core
+
+  4. **Webhooks use same events**
+     WebhookController emits PaymentCapturedEvent
+     Same handler as customer return path
+
+  5. **Testable**
+     Test event handlers independently
+     Mock event dispatcher
+
+  6. **Audit trail**
+     All state changes via events = complete log
+end note
+
+@enduml

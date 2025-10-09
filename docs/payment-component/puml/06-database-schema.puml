@@ -1,0 +1,338 @@
+@startuml Payment Component Database Schema
+!theme vibrant
+
+skinparam backgroundColor #FEFEFE
+skinparam linetype ortho
+skinparam roundcorner 8
+
+title Payment Component Database Schema\n(Provider-Agnostic - 100% Reusable)
+
+entity "oxorder\n(Shop Orders - Extended)" as ORDER {
+  * **OXID** : CHAR(32) <<PK>>
+  --
+  OXSHOPID : INT
+  OXUSERID : CHAR(32) <<FK>>
+  OXORDERDATE : DATETIME
+  OXORDERNR : INT
+  OXBILLEMAIL : VARCHAR(255)
+  OXBILLFNAME : VARCHAR(255)
+  OXBILLLNAME : VARCHAR(255)
+  **OXTRANSSTATUS** : VARCHAR(32)
+  **OXPAID** : DATETIME
+  **OXTRANSID** : VARCHAR(255)
+  OXPAYMENTTYPE : VARCHAR(32)
+  OXTOTALORDERSUM : DECIMAL(20,2)
+  OXCURRENCY : VARCHAR(32)
+  OXSTORNO : TINYINT
+  --
+  <color:green>**New Fields (Component):**</color>
+  <color:green>PAYMENT_PROVIDER_ORDER_ID : VARCHAR(128)</color>
+  <color:green>PAYMENT_STATE : VARCHAR(32)</color>
+  ...40+ more fields
+}
+
+entity "osc_transaction\n(Payment Transactions)" as PAYMENT_TX {
+  * **OXID** : CHAR(32) <<PK>>
+  --
+  OXSHOPID : INT
+  **OXORDERID** : CHAR(32) <<FK>>
+  --
+  <color:blue>**Core Transaction Fields:**</color>
+  **PROVIDER_NAME** : VARCHAR(32)
+  **PROVIDER_ORDER_ID** : VARCHAR(128)
+  **PROVIDER_TRANSACTION_ID** : VARCHAR(128)
+  **PROVIDER_CUSTOMER_ID** : VARCHAR(128)
+  **STATUS** : VARCHAR(64)
+  **TRANSACTION_TYPE** : VARCHAR(32)
+  **PAYMENT_METHOD_ID** : VARCHAR(64)
+  --
+  <color:orange>**Tracking & Shipping:**</color>
+  TRACKING_CODE : VARCHAR(255)
+  TRACKING_CARRIER : VARCHAR(64)
+  --
+  <color:purple>**Provider-Specific Data (JSON):**</color>
+  PROVIDER_DATA : TEXT
+  --
+  <color:gray>**Metadata:**</color>
+  CREATED_AT : TIMESTAMP
+  UPDATED_AT : TIMESTAMP
+}
+
+entity "oxuser\n(Customers - Extended)" as USER {
+  * **OXID** : CHAR(32) <<PK>>
+  --
+  OXSHOPID : INT
+  OXUSERNAME : VARCHAR(255)
+  OXFNAME : VARCHAR(255)
+  OXLNAME : VARCHAR(255)
+  OXEMAIL : VARCHAR(255)
+  OXSTREET : VARCHAR(255)
+  OXSTREETNR : VARCHAR(16)
+  OXCITY : VARCHAR(255)
+  OXZIP : VARCHAR(16)
+  OXCOUNTRYID : CHAR(32)
+  OXFON : VARCHAR(128)
+  OXBIRTHDATE : DATE
+  --
+  <color:green>**New Field (Component):**</color>
+  <color:green>PAYMENT_PROVIDER_CUSTOMERS : TEXT</color>
+  ...30+ more fields
+}
+
+entity "oxpayments\n(Payment Methods)" as PAYMENT {
+  * **OXID** : CHAR(32) <<PK>>
+  --
+  OXACTIVE : TINYINT
+  OXDESC : VARCHAR(255)
+  OXADDSUM : DECIMAL(9,2)
+  OXADDSUMTYPE : ENUM('abs','%')
+  OXFROMBONI : FLOAT
+  OXFROMAMOUNT : DECIMAL(9,2)
+  OXTOAMOUNT : DECIMAL(9,2)
+  OXCHECKED : TINYINT
+  OXSORT : INT
+  --
+  <color:green>**New Fields (Component):**</color>
+  <color:green>PROVIDER_NAME : VARCHAR(32)</color>
+  <color:green>PROVIDER_PAYMENT_METHOD_ID : VARCHAR(64)</color>
+  ...
+}
+
+' Relationships
+ORDER ||--o{ PAYMENT_TX : "has many\ntransactions"
+USER ||--o{ ORDER : "places many"
+PAYMENT ||--o{ ORDER : "paid via"
+
+note right of PAYMENT_TX
+  **Universal Transaction Tracking**
+
+  <color:blue>**Supports Multiple Providers:**</color>
+  - Stripe: stripe_pi_xxx, stripe_ch_xxx
+  - PayPal: PPL-ORDER-123, CAP-67890
+  - Adyen: psp_ref_abc, capture_ref_xyz
+  - Amazon Pay: amzn-order-456
+  - Any provider with REST API!
+
+  **PROVIDER_NAME Examples:**
+  'stripe', 'paypal', 'adyen', 'amazonpay', 'mollie'
+
+  **Transaction Types:**
+  - 'authorization' (funds reserved)
+  - 'capture' (payment captured)
+  - 'refund' (money returned)
+  - 'partial_refund'
+  - 'void' (cancel authorization)
+
+  **Status Examples:**
+  - CREATED, APPROVED, COMPLETED
+  - PARTIALLY_REFUNDED, REFUNDED
+  - DENIED, FAILED, PENDING
+
+  **PROVIDER_DATA (JSON):**
+  Store provider-specific fields:
+  {
+    "pui_payment_reference": "...",
+    "pui_bic": "...",
+    "stripe_payment_intent": "...",
+    "adyen_psp_reference": "..."
+  }
+
+  **Why Separate Table?**
+  1. One order → many transactions
+  2. Support multiple providers
+  3. Track full transaction history
+  4. Enable reconciliation/reporting
+
+  **Reusability: 100%**
+  Works for ANY payment provider!
+end note
+
+note right of ORDER
+  **Extended Fields (Component):**
+
+  <color:green>**PAYMENT_PROVIDER_ORDER_ID:**</color>
+  Direct reference to provider's order ID
+  for quick lookups (indexed)
+
+  <color:green>**PAYMENT_STATE:**</color>
+  Custom payment lifecycle states:
+  - NOT_FINISHED
+  - IN_PROGRESS
+  - AWAITING_WEBHOOK
+  - COMPLETED
+  - FAILED
+  - CANCELLED
+
+  **Existing OXTRANSSTATUS:**
+  Used for state machine:
+  - NOT_FINISHED
+  - 500-900 (various states)
+  - OK
+
+  **OXPAID:** Payment timestamp
+  **OXTRANSID:** Transaction ID from provider
+  **OXPAYMENTTYPE:** Payment method ID
+end note
+
+note right of USER
+  **Extended Field (Component):**
+
+  <color:green>**PAYMENT_PROVIDER_CUSTOMERS:**</color>
+  JSON field storing customer IDs
+  for multiple providers:
+
+  {
+    "stripe": "cus_abc123",
+    "paypal": "CUSTOMER-ID-789",
+    "adyen": "shopper_ref_xyz",
+    "amazonpay": "amzn_cust_456"
+  }
+
+  **Use Case:**
+  Saved payment methods (vaulting)
+  across multiple providers
+
+  **Alternative Design:**
+  Separate table:
+  osc_customer_provider_mapping
+  (if many providers per user)
+end note
+
+note right of PAYMENT
+  **Extended Fields (Component):**
+
+  <color:green>**PROVIDER_NAME:**</color>
+  Which provider handles this method
+  Examples: 'stripe', 'paypal', 'adyen'
+
+  <color:green>**PROVIDER_PAYMENT_METHOD_ID:**</color>
+  Provider's internal method ID
+  Examples:
+  - PayPal: 'paypal', 'card', 'pui'
+  - Stripe: 'card', 'sepa_debit', 'ideal'
+  - Adyen: 'scheme', 'ideal', 'paypal'
+
+  **Enables:**
+  Multiple providers for same
+  payment method type (e.g., cards)
+end note
+
+' Indexes
+note bottom of PAYMENT_TX
+  **Indexes (Critical for Performance):**
+
+  PRIMARY KEY (OXID)
+  UNIQUE KEY idx_order_provider (OXORDERID, PROVIDER_ORDER_ID)
+  INDEX idx_provider_order (PROVIDER_ORDER_ID)
+  INDEX idx_provider_transaction (PROVIDER_TRANSACTION_ID)
+  INDEX idx_provider_name (PROVIDER_NAME)
+  INDEX idx_status (STATUS)
+  INDEX idx_created (CREATED_AT)
+
+  **Query Patterns:**
+  1. Find transactions by shop order ID
+  2. Find order by provider order ID
+  3. Find order by transaction ID
+  4. List transactions by provider
+  5. List transactions by status
+  6. Reconciliation by date range
+end note
+
+' Example data flow for multiple providers
+note as N1
+  **Example: Multi-Provider Flow**
+
+  <color:blue>**Stripe Payment:**</color>
+  1. Create order:
+     INSERT INTO oxorder (OXID='abc', PAYMENT_STATE='NOT_FINISHED')
+
+  2. Create Stripe PaymentIntent:
+     Provider returns: pi_3ABC123
+
+  3. Track transaction:
+     INSERT INTO osc_transaction
+     VALUES (
+       OXORDERID='abc',
+       PROVIDER_NAME='stripe',
+       PROVIDER_ORDER_ID='pi_3ABC123',
+       STATUS='CREATED',
+       PROVIDER_DATA='{"payment_method_types":["card"]}'
+     )
+
+  4. Payment captured (webhook):
+     UPDATE osc_transaction
+     SET PROVIDER_TRANSACTION_ID='ch_3XYZ789',
+         STATUS='COMPLETED',
+         TRANSACTION_TYPE='capture'
+
+  <color:green>**PayPal Payment:**</color>
+  1. Create order:
+     INSERT INTO oxorder (OXID='def', PAYMENT_STATE='NOT_FINISHED')
+
+  2. Create PayPal Order:
+     Provider returns: PPL-ORDER-456
+
+  3. Track transaction:
+     INSERT INTO osc_transaction
+     VALUES (
+       OXORDERID='def',
+       PROVIDER_NAME='paypal',
+       PROVIDER_ORDER_ID='PPL-ORDER-456',
+       STATUS='CREATED'
+     )
+
+  4. Payment captured (webhook):
+     UPDATE osc_transaction
+     SET PROVIDER_TRANSACTION_ID='CAP-12345',
+         STATUS='COMPLETED',
+         TRANSACTION_TYPE='capture'
+
+  <color:orange>**Refund (Any Provider):**</color>
+  INSERT INTO osc_transaction
+  VALUES (
+    OXORDERID='abc',
+    PROVIDER_NAME='stripe',
+    PROVIDER_ORDER_ID='pi_3ABC123',
+    PROVIDER_TRANSACTION_ID='re_3REFUND',
+    STATUS='REFUNDED',
+    TRANSACTION_TYPE='refund'
+  )
+end note
+
+note as N2
+  **Provider-Specific Data Examples:**
+
+  <color:blue>**Stripe PROVIDER_DATA:**</color>
+  {
+    "payment_method": "pm_card_visa",
+    "payment_intent": "pi_3ABC123",
+    "charge": "ch_3XYZ789",
+    "customer": "cus_abc123",
+    "metadata": {...}
+  }
+
+  <color:green>**PayPal PROVIDER_DATA:**</color>
+  {
+    "pui_payment_reference": "REF-12345",
+    "pui_bic": "SOGEDEFF",
+    "pui_iban": "DE89370400440532013000",
+    "pui_bank_name": "Deutsche Bank",
+    "pui_account_holder": "John Doe"
+  }
+
+  <color:purple>**Adyen PROVIDER_DATA:**</color>
+  {
+    "psp_reference": "8815517812345678",
+    "merchant_reference": "ORDER-123",
+    "shopper_reference": "shopper_xyz",
+    "payment_method": "scheme"
+  }
+
+  **Benefits:**
+  - No schema changes per provider
+  - Store unlimited provider-specific fields
+  - Easy to query with JSON functions
+  - Forward-compatible
+end note
+
+@enduml

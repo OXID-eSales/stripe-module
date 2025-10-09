@@ -1,0 +1,328 @@
+@startuml Event-Driven Payment Flow (Standard)
+
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 10
+skinparam sequenceMessageAlign center
+
+title Event-Driven Payment Flow - Standard Pattern\n(95% Reusable - Headless Architecture)
+
+actor Customer
+participant "PaymentController" as PC #E3F2FD
+participant "OrderController" as OC #E3F2FD
+participant "EventDispatcher" as ED #C5E1A5
+participant "PaymentInitiationHandler" as PIH #FFF3E0
+participant "PaymentCaptureHandler" as PCH #FFF3E0
+participant "EventContext\n(Request Cache)" as EC #FFE082
+participant "PaymentService" as PS #FFE082
+participant "OrderRepository" as OR #FFE082
+participant "Provider API" as API #E0F2F1
+participant "WebhookController" as WC #F3E5F5
+participant "WebhookHandler" as WH #FFF3E0
+database "Database" as DB
+queue "Event Bus" as EB #C5E1A5
+
+== Payment Method Selection ==
+
+Customer -> PC : Select payment method
+activate PC
+PC -> PC : Validate input:\n- CSRF token\n- User session\n- Payment method
+PC -> PC : Check eligibility:\n- Country, currency\n- Module health
+PC --> Customer : Render payment form
+deactivate PC
+
+== Order Creation & Payment Initiation (EVENT-DRIVEN) ==
+
+Customer -> OC : Submit order
+activate OC
+
+note right of OC
+  **Controller is THIN**
+  Only validates & emits event
+  NO business logic!
+end note
+
+OC -> OC : Validate:\n- Basket\n- User auth\n- CSRF token
+
+OC -> EC : Create EventContext
+activate EC
+note right of EC
+  **Request Data Cached Once**
+  - Basket (DB query)
+  - User (DB query)
+  - Session data
+  - Configuration
+
+  Cached for all event handlers
+  50-70% fewer DB queries
+end note
+EC -> DB : Fetch basket, user\n(ONE TIME ONLY)
+activate DB
+DB --> EC : Basket, User
+deactivate DB
+EC --> OC : EventContext ready
+deactivate EC
+
+OC -> ED : **Emit** PaymentInitiatedEvent(context)
+activate ED
+note right of ED
+  **Event dispatched**
+  Business logic happens here
+end note
+
+ED -> EB : Dispatch event
+activate EB
+EB -> PIH : handle(PaymentInitiatedEvent)
+deactivate EB
+activate PIH
+
+note right of PIH
+  **Event Handler contains business logic**
+  Controller doesn't touch DB or services!
+end note
+
+PIH -> EC : getBasket() // From cache
+activate EC
+EC --> PIH : Basket (cached)
+deactivate EC
+
+PIH -> EC : getUser() // From cache
+activate EC
+EC --> PIH : User (cached)
+deactivate EC
+
+PIH -> PIH : Create temporary order\nState: NOT_FINISHED
+
+PIH -> DB : INSERT INTO oxorder\n(oxtransstatus = 'NOT_FINISHED')
+activate DB
+DB --> PIH : Order created
+deactivate DB
+
+PIH -> PS : createProviderOrder(basket, user)
+activate PS
+
+PS -> PS : Build order request:\n- Customer info\n- Line items\n- Return URLs
+
+PS -> API : POST /v2/checkout/orders
+activate API
+API -> API : Create order\nGenerate order ID
+API --> PS : Order { id, status: CREATED, links }
+deactivate API
+
+PS -> PS : Store order ID in session
+PS --> PIH : Provider order object
+deactivate PS
+
+PIH -> DB : UPDATE oxorder\nSET oxtransstatus = '500'\n(PAYMENT_IN_PROGRESS)
+activate DB
+DB --> PIH : Updated
+deactivate DB
+
+PIH -> ED : **Emit** OrderCreatedAtProviderEvent
+activate ED
+ED -> EB : Log/track event
+deactivate ED
+
+PIH -> PIH : Set provider redirect URL\nin event result
+
+PIH --> EB : Handler complete
+deactivate PIH
+
+EB --> ED : Event processed
+ED --> OC : Event result
+deactivate ED
+
+OC -> OC : Get redirect URL\nfrom event result
+
+OC --> Customer : Redirect to provider\n(approval_url)
+deactivate OC
+
+note right of Customer
+  **Key Difference:**
+  Controller emitted event,
+  Handler did ALL the work
+end note
+
+== Customer at Payment Provider ==
+
+Customer -> API : Approve payment
+activate API
+API -> API : Validate customer\nProcess payment
+API --> Customer : Redirect to return URL
+deactivate API
+
+== Payment Confirmation - Webhook Path (EVENT-DRIVEN) ==
+
+API -> WC : Webhook:\nPAYMENT.CAPTURE.COMPLETED
+activate WC
+
+note right of WC
+  **Webhook also uses events!**
+  Same pattern as frontend
+end note
+
+WC -> WC : Verify webhook signature
+
+WC -> ED : **Emit** WebhookReceivedEvent(payload)
+activate ED
+
+ED -> EB : Dispatch event
+activate EB
+EB -> WH : handle(WebhookReceivedEvent)
+deactivate EB
+activate WH
+
+WH -> WH : Extract:\n- Provider order ID\n- Transaction ID\n- Status
+
+WH -> OR : getOrderByProviderOrderId()
+activate OR
+OR -> DB : SELECT order
+activate DB
+DB --> OR : Order
+deactivate DB
+OR --> WH : Order
+deactivate OR
+
+WH -> WH : Process payment capture
+
+WH -> DB : UPDATE payment_transaction\nSET status = 'COMPLETED'
+activate DB
+DB --> WH : Updated
+deactivate DB
+
+WH -> ED : **Emit** PaymentCapturedEvent(order)
+activate ED
+
+ED -> EB : Dispatch event
+activate EB
+EB -> PCH : handle(PaymentCapturedEvent)
+deactivate EB
+activate PCH
+
+PCH -> DB : UPDATE oxorder\nSET oxpaid = NOW(),\noxtransstatus = 'OK'
+activate DB
+DB --> PCH : Updated
+deactivate DB
+
+PCH -> ED : **Emit** OrderCompletedEvent(order)
+activate ED
+note right of ED
+  **Multiple subscribers**
+  can react:
+  - Email notification
+  - Inventory update
+  - Analytics
+  - Audit log
+end note
+
+ED -> EB : Notify subscribers
+activate EB
+EB -> EB : EmailSubscriber\nInventorySubscriber\nAnalyticsSubscriber
+deactivate EB
+
+ED --> PCH : Event processed
+deactivate ED
+
+PCH --> EB : Handler complete
+deactivate PCH
+
+EB --> ED : Done
+ED --> WH : Event chain complete
+deactivate ED
+
+WH --> EB : Handler complete
+deactivate WH
+
+EB --> ED : Done
+ED --> WC : Events processed
+deactivate ED
+
+WC --> API : 200 OK
+deactivate WC
+
+note right of API
+  **Event-Driven Benefits:**
+  - Webhook emits event
+  - Multiple handlers react
+  - Easy to extend
+  - No tight coupling
+end note
+
+== Payment Confirmation - Customer Return Path (Fallback) ==
+
+Customer -> OC : Return from provider
+activate OC
+
+OC -> OC : Check if already paid\n(webhook may have completed)
+
+alt Order not yet paid
+  OC -> EC : Create EventContext
+  activate EC
+  EC --> OC : Context (with cached data)
+  deactivate EC
+
+  OC -> ED : **Emit** PaymentCaptureRequestedEvent
+  activate ED
+
+  ED -> EB : Dispatch
+  activate EB
+  EB -> PCH : handle(PaymentCaptureRequestedEvent)
+  deactivate EB
+  activate PCH
+
+  PCH -> PS : capturePayment(orderId)
+  activate PS
+
+  PS -> API : POST /v2/checkout/orders/{id}/capture
+  activate API
+  API --> PS : Order { status: COMPLETED }
+  deactivate API
+
+  PS --> PCH : Capture result
+  deactivate PS
+
+  PCH -> DB : UPDATE order status
+  activate DB
+  DB --> PCH : Updated
+  deactivate DB
+
+  PCH -> ED : **Emit** PaymentCapturedEvent
+  note right: Same event as webhook path!
+
+  PCH --> EB : Done
+  deactivate PCH
+
+  EB --> ED : Processed
+  ED --> OC : Event result
+  deactivate ED
+
+else Order already paid (by webhook)
+  note right of OC
+    Idempotent: No duplicate capture
+  end note
+end
+
+OC --> Customer : Redirect to thank you page
+deactivate OC
+
+== Order Completion ==
+
+Customer -> Customer : View order confirmation
+
+note right of Customer
+  **Event-Driven Flow:**
+
+  Controller → Emit Event → Handler executes →
+  Emit new events → Multiple subscribers react
+
+  **Benefits:**
+  - Controllers 90% generic
+  - Business logic in handlers
+  - Easy to extend
+  - Multiple providers supported
+  - Request data cached (fast!)
+  - Same pattern: frontend + webhooks + CLI
+
+  **Reusability: 95%**
+end note
+
+@enduml

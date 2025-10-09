@@ -1,0 +1,187 @@
+@startuml Payment Module Architecture Overview
+
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 10
+skinparam shadowing false
+
+title Payment Module Architecture - Layered View\n(Reusable Component Pattern)
+
+' Define colors for layers
+!define PRESENTATION #E3F2FD
+!define SERVICE #FFF3E0
+!define DOMAIN #E8F5E9
+!define DATAACCESS #F3E5F5
+!define INFRASTRUCTURE #FFEBEE
+!define EXTERNAL #E0F2F1
+
+package "Presentation Layer" PRESENTATION {
+  [Payment Controller] as PC
+  [Order Controller] as OC
+  [Webhook Controller] as WC
+  [Ajax Controller] as AC
+  [Admin Controllers] as ADM
+  [Templates & Views] as TPL
+}
+
+package "Service Layer" SERVICE {
+  [Payment Service] as PS
+  [OrderRepository] as OR
+  [OrderManager] as OM
+  [ModuleSettings] as MS
+  [OrderProcessTracking] as OPT
+  [BasketSummary] as BS
+  [UserRepository] as UR
+  [SCAValidator] as SCA
+}
+
+package "Factory Layer" SERVICE {
+  [OrderRequestFactory] as ORF
+  [PatchRequestFactory] as PRF
+  [PurchaseUnitsFactory] as PUF
+  [ServiceFactory] as SF
+}
+
+package "Domain Layer" DOMAIN {
+  [Order Model] as OM1
+  [PaymentTransaction Model] as PTM
+  [Payment Model] as PM
+  [Basket Model] as BM
+  [User Model] as UM
+  [Domain Events] as DE
+}
+
+package "Data Access Layer" DATAACCESS {
+  [Query Builder] as QB
+  [Database Connection] as DB
+  database "Payment DB" {
+    [oscpaypal_order\n(Transaction Table)] as TT
+    [oxorder\n(Shop Orders)] as SOT
+    [oxuser\n(Customers)] as UST
+  }
+}
+
+package "Infrastructure Layer" INFRASTRUCTURE {
+  [Logger (PSR-3)] as LOG
+  [Session Manager] as SESS
+  [Config Manager] as CFG
+  [Event Dispatcher] as ED
+  [HTTP Client] as HTTP
+}
+
+package "Webhook System" EXTERNAL {
+  [RequestHandler] as RH
+  [EventVerifier] as EV
+  [EventDispatcher] as EVD
+  [WebhookHandlerBase] as WHB
+  [Concrete Handlers] as CH
+}
+
+package "External Integration" EXTERNAL {
+  cloud "Payment Provider API" as PAPI {
+    [Orders API]
+    [Payments API]
+    [Vaulting API]
+    [Webhooks]
+  }
+}
+
+' Presentation -> Service connections
+PC --> PS : "uses"
+PC --> MS : "uses"
+OC --> PS : "uses"
+OC --> OM : "uses"
+OC --> MS : "uses"
+WC --> RH : "delegates"
+AC --> PS : "uses"
+
+' Service -> Domain connections
+PS --> OM1 : "updates"
+PS --> PTM : "tracks"
+PS --> BM : "reads"
+OM --> OM1 : "creates"
+OR --> OM1 : "loads"
+OR --> PTM : "loads/saves"
+
+' Service -> Factory connections
+PS --> ORF : "uses"
+PS --> PRF : "uses"
+PS --> SF : "uses"
+ORF --> PUF : "uses"
+
+' Service -> Data Access connections
+OR --> QB : "uses"
+UR --> QB : "uses"
+QB --> DB : "queries"
+DB --> TT : "CRUD"
+DB --> SOT : "CRUD"
+DB --> UST : "CRUD"
+
+' Service -> Infrastructure connections
+PS --> LOG : "logs"
+PS --> SESS : "uses"
+PS --> ED : "dispatches"
+MS --> CFG : "reads"
+SF --> HTTP : "creates clients"
+
+' Webhook flow
+WC --> RH : "receives webhook"
+RH --> EV : "verifies signature"
+RH --> EVD : "dispatches event"
+EVD --> CH : "routes to"
+CH --> WHB : "extends"
+WHB --> OR : "uses"
+WHB --> PS : "uses"
+
+' External integration
+SF --> PAPI : "creates API clients"
+PS --> PAPI : "API calls via SF"
+PAPI --> Webhooks : "sends notifications"
+Webhooks --> WC : "POST request"
+
+' Notes
+note right of PS
+  **Core Orchestration Service**
+  - 90% reusable across providers
+  - Contains payment workflow logic
+  - Provider-agnostic patterns
+end note
+
+note right of OR
+  **100% Reusable**
+  - Generic data access
+  - No provider-specific code
+  - Repository pattern
+end note
+
+note right of WHB
+  **100% Reusable Pattern**
+  - Template method pattern
+  - Concrete handlers implement
+    provider-specific extraction
+end note
+
+note right of PTM
+  **Rename for reuse:**
+  PayPalOrder → PaymentTransaction
+  Tracks any provider's transactions
+end note
+
+note bottom of PAPI
+  **Provider-Specific Integration**
+  - PayPal, Stripe, Mollie, etc.
+  - Same patterns, different APIs
+  - SDK or HTTP client
+end note
+
+legend right
+  |= Layer |= Reusability |
+  | Presentation | 70-90% |
+  | Service | 90-100% |
+  | Domain | 90-100% |
+  | Data Access | 100% |
+  | Infrastructure | 100% |
+  | Webhook System | 100% |
+endlegend
+
+@enduml

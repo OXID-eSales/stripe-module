@@ -1,0 +1,315 @@
+@startuml Building Payment Modules on the Component
+!theme vibrant
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+skinparam roundcorner 10
+skinparam nodesep 80
+skinparam ranksep 80
+
+title Building Payment Modules on Top of Payment Component\n(Event-Driven Architecture - How It Works)
+
+' Core Payment Component (Foundation)
+package "Payment Component (Foundation Layer)\nBuilt Once - Reusable for All Providers" as CORE #E8F5E9 {
+
+  ' Event Layer
+  package "Event Layer" as EVENT_LAYER #C5E1A5 {
+    component [Domain Events\n• PaymentInitiatedEvent\n• PaymentCapturedEvent\n• OrderCompletedEvent\n• WebhookReceivedEvent] as EVENTS
+    component [Event Dispatcher\nPSR-14] as DISPATCHER
+    component [EventContext\n(Request Cache)] as CONTEXT
+  }
+
+  ' Service Layer
+  package "Service & Data Layer" as SERVICE_LAYER #A5D6A7 {
+    component [PaymentService\n• trackTransaction()\n• updateOrderState()] as SERVICE
+    component [OrderManager\n• createOrder()\n• finalizeOrder()] as MANAGER
+    component [OrderRepository\n• getByProviderId()\n• getByTransactionId()] as REPO
+    component [CachableApiInterface\n• cacheApiResponse()\n• getCachedResponse()\n• invalidateCache()] as API_CACHE #7CB342
+    database "osc_transaction\n(Universal Schema)" as DB #64B5F6
+  }
+
+  ' Security Layer
+  package "Security & Encryption Layer" as SECURITY_LAYER #FFCCBC {
+    component [EncryptionService\n• encrypt()\n• decrypt()\n• rotateKeys()] as ENCRYPTION #FF7043
+    component [PciComplianceGuard\n• validateEncryptedData()\n• sanitizeOutput()\n• preventPlainTextStorage()] as PCI #FF5722
+    component [SecureTokenService\n• generateToken()\n• validateToken()\n• expireToken()] as TOKEN #F4511E
+  }
+
+  ' Base Handlers
+  package "Base Event Handlers" as BASE_HANDLERS #81C784 {
+    component [AbstractPaymentHandler\n• handle()\n• getContext()\n• trackTransaction()] as BASE_PAYMENT
+    component [AbstractWebhookHandler\n• handle()\n• processPaymentCapture()\n• emitEvents()] as BASE_WEBHOOK
+  }
+
+  ' Extended Models
+  package "Extended Data Models" as MODELS #66BB6A {
+    component [Order\n(Extended)\n• markAsPaymentCompleted()\n• isAwaitingPayment()] as ORDER_MODEL
+    component [User\n(Extended)\n• getProviderCustomerId()\n• saveProviderCustomerId()] as USER_MODEL
+  }
+
+  ' Connections within component
+  EVENTS -down-> DISPATCHER
+  DISPATCHER -down-> BASE_HANDLERS
+  BASE_HANDLERS -down-> SERVICE
+  SERVICE -down-> MANAGER
+  MANAGER -down-> REPO
+  REPO -down-> DB
+  BASE_HANDLERS ..> CONTEXT : access cached data
+  MODELS -up-> DB : read/write
+}
+
+' Stripe Module
+package "Stripe Payment Module\n(35 hours)" as STRIPE #E1F5FE {
+
+  component [StripePaymentInitiationHandler\n\n**Extends:** AbstractPaymentHandler\n\n1. Get basket & user (cached)\n2. Create PaymentIntent via Stripe API\n3. Track transaction\n4. Emit OrderCreatedAtProviderEvent] as STRIPE_INIT #4FC3F7
+
+  component [StripeWebhookHandler\n\n**Extends:** AbstractWebhookHandler\n\n1. Parse Stripe webhook payload\n2. Extract payment_intent.id\n3. Call processPaymentCapture()\n4. Component emits PaymentCapturedEvent] as STRIPE_WEBHOOK #4FC3F7
+
+  component [StripeApiClient\n\n**Implements:** CachableApiInterface\n\nWrapper around Stripe SDK:\n• paymentIntents->create()\n• paymentIntents->capture()\n• customers->retrieve()\n\nWith caching support] as STRIPE_API #29B6F6
+
+  component [stripe.yaml\n\nConfiguration:\n• api_key\n• webhook_secret\n• payment_methods] as STRIPE_CONFIG #0288D1
+}
+
+' PayPal Module
+package "PayPal Payment Module\n(35 hours)" as PAYPAL #FFF9C4 {
+
+  component [PayPalPaymentInitiationHandler\n\n**Extends:** AbstractPaymentHandler\n\n1. Get basket & user (cached)\n2. Create Order via PayPal API\n3. Track transaction\n4. Emit OrderCreatedAtProviderEvent] as PAYPAL_INIT #FFF176
+
+  component [PayPalWebhookHandler\n\n**Extends:** AbstractWebhookHandler\n\n1. Parse PayPal webhook payload\n2. Extract order_id from resource\n3. Call processPaymentCapture()\n4. Component emits PaymentCapturedEvent] as PAYPAL_WEBHOOK #FFF176
+
+  component [PayPalApiClient\n\n**Implements:** CachableApiInterface\n\nWrapper around PayPal SDK:\n• orders->create()\n• orders->capture()\n• payments->get()\n\nWith caching support] as PAYPAL_API #FFEB3B
+
+  component [paypal.yaml\n\nConfiguration:\n• client_id\n• client_secret\n• webhook_id] as PAYPAL_CONFIG #FDD835
+}
+
+' Adyen Module
+package "Adyen Payment Module\n(35 hours)" as ADYEN #E1BEE7 {
+
+  component [AdyenPaymentInitiationHandler\n\n**Extends:** AbstractPaymentHandler\n\n1. Get basket & user (cached)\n2. Create Payment via Adyen API\n3. Track transaction\n4. Emit OrderCreatedAtProviderEvent] as ADYEN_INIT #CE93D8
+
+  component [AdyenWebhookHandler\n\n**Extends:** AbstractWebhookHandler\n\n1. Parse Adyen webhook payload\n2. Extract pspReference\n3. Call processPaymentCapture()\n4. Component emits PaymentCapturedEvent] as ADYEN_WEBHOOK #CE93D8
+
+  component [AdyenApiClient\n\n**Implements:** CachableApiInterface\n\nWrapper around Adyen SDK:\n• payments->create()\n• payments->capture()\n• paymentMethods->get()\n\nWith caching support] as ADYEN_API #BA68C8
+
+  component [adyen.yaml\n\nConfiguration:\n• api_key\n• merchant_account\n• hmac_key] as ADYEN_CONFIG #AB47BC
+}
+
+' Flow: Stripe Module uses Component
+STRIPE_INIT -up-|> BASE_PAYMENT : extends
+STRIPE_WEBHOOK -up-|> BASE_WEBHOOK : extends
+STRIPE_INIT ..> CONTEXT : gets cached data
+STRIPE_INIT ..> SERVICE : uses trackTransaction()
+STRIPE_INIT ..> EVENTS : emits events
+STRIPE_INIT --> STRIPE_API : calls
+STRIPE_WEBHOOK --> STRIPE_API : calls
+STRIPE_API .up.|> API_CACHE : implements
+STRIPE_API ..> API_CACHE : uses caching
+STRIPE_INIT ..> DB : writes via component
+STRIPE_INIT ..> ENCRYPTION : uses for sensitive data
+STRIPE_API ..> TOKEN : validates tokens
+
+' Flow: PayPal Module uses Component
+PAYPAL_INIT -up-|> BASE_PAYMENT : extends
+PAYPAL_WEBHOOK -up-|> BASE_WEBHOOK : extends
+PAYPAL_INIT ..> CONTEXT : gets cached data
+PAYPAL_INIT ..> SERVICE : uses trackTransaction()
+PAYPAL_INIT ..> EVENTS : emits events
+PAYPAL_INIT --> PAYPAL_API : calls
+PAYPAL_WEBHOOK --> PAYPAL_API : calls
+PAYPAL_API .up.|> API_CACHE : implements
+PAYPAL_API ..> API_CACHE : uses caching
+PAYPAL_INIT ..> DB : writes via component
+PAYPAL_INIT ..> ENCRYPTION : uses for sensitive data
+PAYPAL_API ..> TOKEN : validates tokens
+
+' Flow: Adyen Module uses Component
+ADYEN_INIT -up-|> BASE_PAYMENT : extends
+ADYEN_WEBHOOK -up-|> BASE_WEBHOOK : extends
+ADYEN_INIT ..> CONTEXT : gets cached data
+ADYEN_INIT ..> SERVICE : uses trackTransaction()
+ADYEN_INIT ..> EVENTS : emits events
+ADYEN_INIT --> ADYEN_API : calls
+ADYEN_WEBHOOK --> ADYEN_API : calls
+ADYEN_API .up.|> API_CACHE : implements
+ADYEN_API ..> API_CACHE : uses caching
+ADYEN_INIT ..> DB : writes via component
+ADYEN_INIT ..> ENCRYPTION : uses for sensitive data
+ADYEN_API ..> TOKEN : validates tokens
+
+' Event flow visualization
+note right of DISPATCHER
+  **Event Flow:**
+
+  1. Controller emits PaymentInitiatedEvent
+  2. Dispatcher routes to StripeHandler
+  3. Handler creates PaymentIntent
+  4. Handler uses component services
+  5. Handler emits OrderCreatedEvent
+  6. Multiple subscribers react
+
+  **Same flow for all providers!**
+end note
+
+' What you write
+note bottom of STRIPE
+  **What You Write (Stripe Module):**
+
+  ✏️ StripePaymentInitiationHandler (25 lines)
+     - Create PaymentIntent
+     - Parse response
+
+  ✏️ StripeWebhookHandler (15 lines)
+     - Parse webhook payload
+     - Extract payment_intent ID
+
+  ✏️ StripeApiClient (50 lines)
+     - Wrapper around Stripe SDK
+
+  ✏️ Configuration (10 lines)
+     - API keys, webhook secret
+
+  **Total: ~100 lines of code**
+  **Development: 35 hours**
+end note
+
+' What component provides
+note bottom of CORE
+  **What Component Provides:**
+
+  ✅ Event system (8 events + dispatcher)
+  ✅ EventContext (request caching)
+  ✅ AbstractPaymentHandler (base class)
+  ✅ AbstractWebhookHandler (base class)
+  ✅ PaymentService (business logic)
+  ✅ OrderManager (order lifecycle)
+  ✅ OrderRepository (data access)
+  ✅ CachableApiInterface (API response caching)
+  ✅ EncryptionService (PCI compliance)
+  ✅ SecureTokenService (token management)
+  ✅ Universal database schema
+  ✅ Extended Order & User models
+  ✅ State machine
+  ✅ Testing infrastructure
+  ✅ Documentation
+
+  **Total: ~3,500 lines of code**
+  **Built once, reused forever**
+end note
+
+' Database writes
+note right of DB
+  **All Providers → One Table**
+
+  INSERT INTO osc_transaction
+  VALUES (
+    provider_name: 'stripe',
+    provider_order_id: 'pi_3ABC...',
+    provider_transaction_id: 'ch_3XYZ...',
+    status: 'COMPLETED',
+    provider_data: '{"payment_method": "pm_card_..."}'
+  )
+
+  INSERT INTO osc_transaction
+  VALUES (
+    provider_name: 'paypal',
+    provider_order_id: 'PPL-ORDER-123',
+    provider_transaction_id: 'CAP-67890',
+    status: 'COMPLETED',
+    provider_data: '{"pui_reference": "..."}'
+  )
+
+  **Universal schema for all providers!**
+end note
+
+' How to add new provider
+note as N1 #FFFFCC
+  **Adding a New Provider (e.g., Amazon Pay):**
+
+  **Step 1:** Create event handlers (30 lines)
+  class AmazonPayPaymentInitiationHandler extends AbstractPaymentHandler
+  class AmazonPayWebhookHandler extends AbstractWebhookHandler
+
+  **Step 2:** Create API client (50 lines)
+  class AmazonPayApiClient implements CachableApiInterface
+
+  **Step 3:** Create configuration (10 lines)
+  amazonpay.yaml: api_key, merchant_id
+
+  **Step 4:** Register handlers (10 lines)
+  services.yaml: register with event dispatcher
+
+  **Total:** ~100 lines, 35 hours
+  **Component handles everything else!**
+end note
+
+' PCI Compliance & Encryption Flow
+note as N2 #FFE0B2
+  **PCI Compliance & Encryption Flow:**
+
+  **Frontend → Backend (Sensitive Data):**
+
+  1. **Frontend (Browser):**
+     User enters: card number, CVV, email, phone
+     JavaScript calls: EncryptionService.encrypt(data)
+     Result: Encrypted token (unreadable in browser)
+
+  2. **Network Transfer:**
+     POST /payment {
+       "encrypted_data": "ENC:a8f9d3...",
+       "token": "tok_secure_abc123"
+     }
+     ✅ Sensitive data never visible in network tab
+     ✅ Browser never stores plain text data
+
+  3. **Backend (Server):**
+     Controller receives encrypted_data
+     EncryptionService.decrypt(encrypted_data)
+     Validates with PciComplianceGuard
+     Processes payment via provider API
+     ✅ Decryption only happens server-side
+     ✅ Keys never exposed to frontend
+
+  4. **Response to Frontend:**
+     {
+       "status": "success",
+       "order_id": "ORD123",
+       "token": "tok_..."  // No sensitive data!
+     }
+
+  **Benefits:**
+  🔒 PCI DSS Level 1 compliant
+  🔒 Card data never in plain text on frontend
+  🔒 Reduced PCI scope (encryption at edge)
+  🔒 Automatic key rotation
+  🔒 Token-based sensitive data handling
+  🔒 Browser storage protection
+end note
+
+' API Caching
+note as N3 #C8E6C9
+  **CachableApiInterface - API Response Caching:**
+
+  **Problem:**
+  Provider API calls are slow (200-500ms)
+  Multiple requests to same resource waste time
+
+  **Solution:**
+  All API clients implement CachableApiInterface
+
+  **Example (Stripe):**
+  // First call - hits API
+  $customer = $stripeClient->getCustomer('cus_123');
+  // Cached for request lifecycle
+
+  // Second call - from cache
+  $customer = $stripeClient->getCustomer('cus_123');
+  // Instant retrieval, no API call
+
+  **Benefits:**
+  ⚡ 50-70% faster payment processing
+  ⚡ Reduced API rate limit usage
+  ⚡ Lower provider API costs
+  ⚡ Better user experience
+  ⚡ Consistent data across handlers
+end note
+
+@enduml

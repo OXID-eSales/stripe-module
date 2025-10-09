@@ -1,0 +1,377 @@
+@startuml One-Page Checkout & Headless Architecture
+!theme vibrant
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 10
+
+title One-Page Checkout & Headless API Architecture\n(Three Modes - One Backend)
+
+' Frontend Clients
+package "Frontend Clients" as CLIENTS #E8EAF6 {
+
+  ' Traditional Checkout
+  actor "Browser\n(Traditional)" as TRAD_USER #90CAF9
+  component "Multi-Step Pages\n/basket → /address →\n/payment → /order" as TRAD_PAGES #64B5F6
+
+  ' One-Page Checkout
+  actor "Browser\n(One-Page)" as OPC_USER #81C784
+  component "Single Page Checkout\n/checkout\n(No page reloads)" as OPC_PAGE #66BB6A {
+    component [Basket Section] as OPC_BASKET
+    component [Address Section] as OPC_ADDRESS
+    component [Payment Section] as OPC_PAYMENT
+    component [Review Section] as OPC_REVIEW
+  }
+
+  ' Headless Clients
+  actor "Mobile App\n(iOS/Android)" as MOBILE #FFA726
+  actor "MCP Bot\n(AI Agent)" as MCP #FF7043
+  actor "Third Party\nIntegration" as API_CLIENT #FF5722
+}
+
+' GraphQL & MCP API Layer
+package "API Layer (oxAPI)" as API_LAYER #FFF9C4 {
+  component "GraphQL Endpoint\n/graphql" as GRAPHQL #FFEB3B {
+    component [Query: checkout] as GQL_QUERY
+    component [Mutation: updateAddress] as GQL_ADDRESS
+    component [Mutation: processPayment] as GQL_MUTATION
+    component [Subscription: orderUpdates] as GQL_SUB
+  }
+
+  component "MCP Endpoint\n/mcp/tools" as MCP_ENDPOINT #FFB300 {
+    component [Tool: create_order] as MCP_CREATE
+    component [Tool: check_status] as MCP_CHECK
+  }
+}
+
+' Payment Component (Unified Backend)
+package "Payment Component\n(Event-Driven Backend)" as COMPONENT #E8F5E9 {
+
+  ' Configuration
+  component "Configuration Manager" as CONFIG #C5E1A5 {
+    note right
+      **Config: payment-component.yaml**
+
+      checkout:
+        mode: 'onepage'  # or 'traditional'
+
+      onepage:
+        enabled: true
+        template: 'checkout/onepage.tpl'
+        validation_mode: 'realtime'
+
+      graphql:
+        enabled: true
+        endpoint: '/graphql'
+        authentication: 'jwt'
+
+      mcp:
+        enabled: true
+        tools: ['create_order', 'check_status']
+    end note
+  }
+
+  ' Controllers (Unified)
+  component "OnePageCheckoutController" as CONTROLLER #A5D6A7 {
+    component [render()\nRender template] as CTRL_RENDER
+    component [updateAddress()\nAJAX/GraphQL] as CTRL_ADDRESS
+    component [processPayment()\nAJAX/GraphQL] as CTRL_PAYMENT
+    component [createOrderGraphQL()\nGraphQL resolver] as CTRL_GQL
+  }
+
+  ' Event System
+  component "Event Dispatcher" as DISPATCHER #81C784 {
+    component [PaymentInitiatedEvent] as EVT_PAYMENT
+    component [AddressUpdatedEvent] as EVT_ADDRESS
+    component [OrderCreatedEvent] as EVT_ORDER
+  }
+
+  ' Event Handlers (Business Logic)
+  component "Event Handlers" as HANDLERS #66BB6A {
+    component [PaymentInitiationHandler] as HANDLER_PAY
+    component [OrderCreationHandler] as HANDLER_ORDER
+  }
+
+  ' Services
+  component "Services" as SERVICES #4CAF50 {
+    component [EncryptionService\n(PCI Compliance)] as SVC_ENCRYPT
+    component [PaymentService\n(Provider API)] as SVC_PAYMENT
+    component [OrderManager] as SVC_ORDER
+  }
+
+  database "osc_transaction" as DB #64B5F6
+}
+
+' Template
+component "Apex Template\n/Application/views/apex/tpl/\npage/checkout/onepage.tpl" as TEMPLATE #B39DDB {
+  note right
+    **Component takes over template:**
+
+    - Single page (no reloads)
+    - JavaScript-driven navigation
+    - Real-time validation
+    - Encrypted payment data
+    - GraphQL communication (AJAX)
+
+    **Features:**
+    ✅ Progress bar (4 steps)
+    ✅ Dynamic validation
+    ✅ Auto-save progress
+    ✅ Mobile-optimized
+  end note
+}
+
+' External Payment Providers
+cloud "Payment Providers" as PROVIDERS #E0F2F1 {
+  component [Stripe API] as STRIPE
+  component [PayPal API] as PAYPAL
+  component [Adyen API] as ADYEN
+}
+
+' =====================================
+' TRADITIONAL CHECKOUT FLOW
+' =====================================
+TRAD_USER --> TRAD_PAGES : Browse pages
+TRAD_PAGES --> CONTROLLER : HTTP POST\n(page reload)
+note on link
+  Traditional: Multiple pages
+  Each step = separate HTTP request
+end note
+
+' =====================================
+' ONE-PAGE CHECKOUT FLOW
+' =====================================
+OPC_USER --> OPC_PAGE : Single page load
+OPC_PAGE --> TEMPLATE : Render
+TEMPLATE --> CONFIG : Check mode
+
+note right of OPC_PAGE
+  **One-Page Checkout Flow:**
+
+  1. Load single page
+  2. User fills basket section
+  3. JavaScript shows address section
+  4. User fills address
+  5. AJAX call to backend
+  6. JavaScript shows payment section
+  7. User enters card data
+  8. JavaScript encrypts data
+  9. AJAX call to backend
+  10. JavaScript shows confirmation
+
+  **No page reloads!**
+  All communication via GraphQL (AJAX)
+end note
+
+OPC_BASKET ..> GQL_ADDRESS : GraphQL: Update address
+OPC_ADDRESS ..> GQL_ADDRESS : GraphQL: Validate
+OPC_PAYMENT ..> GQL_MUTATION : GraphQL: Process payment\n(encrypted data)
+OPC_PAYMENT ..> SVC_ENCRYPT : Encrypt card data\n(client-side)
+
+' =====================================
+' HEADLESS API FLOW (Mobile)
+' =====================================
+MOBILE --> GRAPHQL : GraphQL Mutation\nprocessPayment
+note on link
+  **Mobile App Flow:**
+
+  mutation {
+    processPayment(input: {
+      basketId: "123"
+      paymentMethodId: "stripe"
+      encryptedData: "ENC:..."
+    }) {
+      orderId
+      redirectUrl
+      requiresAction
+    }
+  }
+end note
+
+' =====================================
+' HEADLESS API FLOW (MCP)
+' =====================================
+MCP --> MCP_ENDPOINT : MCP Tool Call
+note on link
+  **MCP (AI Agent) Flow:**
+
+  POST /mcp/tools
+  {
+    "tool": "create_order",
+    "parameters": {
+      "basket_items": [...],
+      "payment_method": "stripe",
+      "encrypted_data": "ENC:..."
+    }
+  }
+end note
+
+' =====================================
+' THIRD PARTY API FLOW
+' =====================================
+API_CLIENT --> GRAPHQL : GraphQL Mutation
+note on link
+  **Third-Party Integration:**
+
+  mutation {
+    processPayment(input: {
+      basketId: "123"
+      encryptedData: "ENC:..."
+      paymentMethod: "stripe"
+    }) {
+      orderId
+      status
+    }
+  }
+end note
+
+' =====================================
+' BACKEND FLOW (UNIFIED)
+' =====================================
+GQL_ADDRESS --> CTRL_ADDRESS : Resolve
+GQL_MUTATION --> CTRL_GQL : Resolve
+MCP_ENDPOINT --> CTRL_PAYMENT : Route
+
+note right of CONTROLLER
+  **Key: Same Controller**
+  All modes use same backend logic!
+
+  - Traditional: HTTP POST
+  - One-Page: GraphQL (AJAX)
+  - Mobile: GraphQL
+  - Third-Party: GraphQL
+  - MCP: MCP protocol
+
+  All emit same events!
+end note
+
+CTRL_ADDRESS --> DISPATCHER : Emit AddressUpdatedEvent
+CTRL_PAYMENT --> DISPATCHER : Emit PaymentInitiatedEvent
+CTRL_GQL --> DISPATCHER : Emit PaymentInitiatedEvent
+
+DISPATCHER --> HANDLERS : Route to handlers
+
+HANDLERS --> SERVICES : Call services
+
+SVC_ENCRYPT -.-> CTRL_PAYMENT : Decrypt encrypted data
+SVC_PAYMENT --> PROVIDERS : Call provider API
+SVC_ORDER --> DB : Write transaction
+
+note bottom of SERVICES
+  **Event-Driven:**
+  All checkout modes trigger same events
+  Same business logic, different entry points
+end note
+
+' =====================================
+' RESPONSES
+' =====================================
+CTRL_PAYMENT ..> OPC_PAYMENT : JSON Response
+CTRL_GQL ..> GRAPHQL : GraphQL Response
+CTRL_PAYMENT ..> MCP_ENDPOINT : MCP Response
+
+GRAPHQL ..> MOBILE : GraphQL Response
+GRAPHQL ..> API_CLIENT : GraphQL Response
+MCP_ENDPOINT ..> MCP : MCP Response
+
+' =====================================
+' COMPARISON TABLE
+' =====================================
+note as COMPARISON #FFFFCC
+  **Mode Comparison:**
+
+  | Mode | Entry Point | Communication | Use Case |
+  |------|-------------|---------------|----------|
+  | **Traditional** | Multiple pages | HTTP POST | SEO, legacy |
+  | **One-Page** | Single page | GraphQL (AJAX) | Better UX |
+  | **Mobile** | /graphql | GraphQL | Native apps |
+  | **Third-Party** | /graphql | GraphQL | Integrations |
+  | **MCP** | /mcp/tools | MCP protocol | AI agents |
+
+  **Backend:** Same event-driven architecture for all modes!
+
+  **Benefits:**
+  ✅ One codebase, multiple interfaces
+  ✅ Consistent business logic (GraphQL + MCP only)
+  ✅ Type-safe API (GraphQL schema)
+  ✅ Maintainable
+  ✅ Testable
+end note
+
+' =====================================
+' ONE-PAGE CHECKOUT FEATURES
+' =====================================
+note as OPC_FEATURES #E1F5FE
+  **One-Page Checkout Features:**
+
+  🎯 **Single Page:**
+  - No page reloads
+  - JavaScript navigation
+  - All sections on one page
+
+  ⚡ **Real-Time Validation:**
+  - Validate on blur
+  - Instant feedback
+  - Reduce errors
+
+  💾 **Auto-Save:**
+  - Save progress automatically
+  - Resume on page reload
+  - LocalStorage backup
+
+  📊 **Progress Tracking:**
+  - Visual progress bar
+  - Step indicators
+  - Completion percentage
+
+  🔒 **Security:**
+  - Client-side encryption
+  - PCI compliant
+  - Secure tokens
+
+  📱 **Mobile-Optimized:**
+  - Responsive design
+  - Touch-friendly
+  - Fast performance
+
+  **Conversion Rate:** +15-30% improvement!
+end note
+
+' =====================================
+' HEADLESS API FEATURES
+' =====================================
+note as API_FEATURES #FFE0B2
+  **Headless API Features:**
+
+  📱 **Mobile Apps:**
+  - Native iOS/Android apps
+  - React Native
+  - Flutter
+
+  🤖 **MCP Support:**
+  - AI agents can buy
+  - Automation tools
+  - Voice commerce
+
+  🔌 **Integrations:**
+  - Third-party systems
+  - Partner integrations
+  - B2B platforms
+
+  🔐 **Authentication:**
+  - JWT tokens
+  - OAuth2
+  - API keys
+
+  📊 **GraphQL:**
+  - Flexible queries
+  - Type-safe
+  - Real-time subscriptions
+
+  ⚡ **Performance:**
+  - Stateless
+  - Cacheable
+  - Scalable
+
+  **Future-Ready:** Build once, support all clients!
+end note
+
+@enduml
