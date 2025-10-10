@@ -282,8 +282,8 @@ One backend serves all 6 channels · Zero code duplication
 <div class="grid-2">
 
 <div class="metric">
-<h3>€276K</h3>
-<p>Annual fraud savings<br>(80% reduction)</p>
+<h3>AI Fraud protection</h3>
+<p>Secures up to 99.9% of known leaks</p>
 </div>
 
 <div class="metric">
@@ -293,11 +293,11 @@ One backend serves all 6 channels · Zero code duplication
 
 <div class="metric" style="background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);">
 <h3>83%</h3>
-<p>Development time<br>reduction</p>
+<p>Development time<br>reduction for any next payment module</p>
 </div>
 
 <div class="metric" style="background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);">
-<h3>1-2 days</h3>
+<h3>1-2 weeks</h3>
 <p>New provider<br>integration</p>
 </div>
 
@@ -356,11 +356,10 @@ Subscribers
 
 ## 🤖 AI-Driven Fraud Prevention
 
+### Multi-Layered Defense
 <div class="grid-2">
 
 <div>
-
-### 4 Detection Layers
 
 **Layer 1: Pre-Validation**
 - IP Geolocation Analysis
@@ -368,29 +367,21 @@ Subscribers
 - Behavioral Analysis
 - Velocity Checking
 
-**Layer 2: AI Risk Scoring**
-- ML Model (35+ features)
-- Real-time scoring (0-100)
-- Adaptive thresholds
-
 </div>
 
 <div>
 
-### The Impact
-
-<div class="stat-box" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-<h3>80%</h3>
-<p>Fraud reduction</p>
+**Layer 2: AI Risk Scoring**
+- ML Model (35+ features)
+- Real-time scoring (0-100)
+- Adaptive thresholds
+- Continuous learning
 </div>
 
-**Provider Integration:**
-60% component + 40% provider
-= Better protection than provider alone
+... 2 more layers in technical docs ...
 
-</div>
+<div>
 
-</div>
 ---
 
 ## 📊 Success Metrics
@@ -413,7 +404,7 @@ Subscribers
 
 ### Business KPIs
 
-- **Fraud Reduction:** 80%
+- **Fraud Reduction:** 88%
 - **Conversion Increase:** +30%
 - **Chargeback Reduction:** 40-60%
 - **Maintenance Cost for OXID:** -60%
@@ -424,7 +415,7 @@ Subscribers
 </div>
 
 <div class="success">
-<strong>Validated with PayPal module:</strong> 30K LOC, 95% reusable, production-ready
+<strong>Validated with PayPal module:</strong> 30K LOC, 95% reusable code, production-ready
 </div>
 
 ---
@@ -458,7 +449,7 @@ Subscribers
 - Queue System
 - Docker
 
-### Providers
+### Fraud Protection SDKs 
 - **Stripe** (Radar)
 - **PayPal** (Fraud Protection)
 - **Adyen** (Risk Management)
@@ -558,6 +549,5 @@ Let's discuss how the Payment Component can transform your business
 
 </div>
 
-<br>
 
 **Questions? Let's talk.**
