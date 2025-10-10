@@ -79,10 +79,10 @@ make up
 docker compose exec -T php composer update --no-interaction
 docker compose exec -T php bin/oe-console oe:setup:demodata
 docker compose exec -T php bin/oe-console oe:theme:activate apex
-#docker compose exec -T php bin/oe-console oe:module:install extensions/stripe
-#docker compose exec -T php bin/oe-console oe:module:activate stripe
+docker compose exec -T php bin/oe-console oe:module:install extensions/stripe
+docker compose exec -T php bin/oe-console oe:module:activate stripe
 
-$PROJECT_ROOT/stripe-install/recipe/parts/shared/create_admin.sh
+$PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/create_admin.sh
 # Register all related project packages git repositories
 
 echo -e "\033[1;37m\033[1;42mInstallation is finished!\033[0m\n"
