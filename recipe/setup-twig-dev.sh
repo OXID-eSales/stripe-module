@@ -82,8 +82,7 @@ docker compose exec -T php bin/oe-console oe:theme:activate apex
 docker compose exec -T php bin/oe-console oe:module:install extensions/stripe
 docker compose exec -T php bin/oe-console oe:module:activate stripe
 
-$PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/create_admin.sh
-# Register all related project packages git repositories
+$PROJECT_ROOT/stripe-install/recipe/parts/shared/create_admin.sh
 
 echo -e "\033[1;37m\033[1;42mInstallation is finished!\033[0m\n"
 echo -e "\033[1;37m\033[1;42mYou can now access your shop at http://localhost.local/\033[0m\n"
