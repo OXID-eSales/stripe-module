@@ -69,7 +69,7 @@ $PROJECT_ROOT/source/extensions/stripe/recipe/parts/shared/setup_database.sh
 
 # Configure module in composer
 docker compose exec -T \
-  php composer config repositories.oxid-esales/stripe \
+  php composer config repositories.oxid-solution-catalysts/stripe-module \
   --json '{"type":"path", "url":"./extensions/stripe", "options": {"symlink": true}}' || exit 1
 
 
