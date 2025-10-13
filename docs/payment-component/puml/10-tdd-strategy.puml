@@ -1,0 +1,319 @@
+@startuml TDD Strategy for Payment Component
+
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 8
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+title TDD Strategy for Event-Driven Payment Component\n(Test Pyramid & Coverage Goals)
+
+!define TEST_UNIT #C8E6C9
+!define TEST_INTEGRATION #FFE082
+!define TEST_E2E #FFCDD2
+!define FIXTURE #F3E5F5
+!define MOCK #FCE4EC
+!define METRICS #FFF3E0
+
+' =====================================
+' Test Pyramid
+' =====================================
+package "Test Pyramid Strategy" as PYRAMID TEST_UNIT {
+
+  rectangle "E2E Tests\n(10%)" as E2E TEST_E2E
+  rectangle "Integration Tests\n(30%)" as Integration TEST_INTEGRATION
+  rectangle "Unit Tests\n(60%)" as Unit TEST_UNIT
+
+  Unit -up-> Integration : builds foundation
+  Integration -up-> E2E : enables
+}
+
+note right of PYRAMID
+  **Distribution:**
+  • Unit: 60% (~300 tests, <5s)
+  • Integration: 30% (~100 tests, <2m)
+  • E2E: 10% (~20 tests, <10m)
+
+  **Total: ~420 tests in <15 minutes**
+end note
+
+' =====================================
+' Test Coverage by Layer
+' =====================================
+package "Test Coverage by Architecture Layer" as COVERAGE METRICS {
+
+  rectangle "Event Layer\n100% coverage" as EventLayer TEST_UNIT
+  rectangle "Domain Layer\n95% coverage" as DomainLayer TEST_UNIT
+  rectangle "Service Layer\n90% coverage" as ServiceLayer TEST_INTEGRATION
+  rectangle "Repository Layer\n100% coverage" as RepoLayer TEST_INTEGRATION
+  rectangle "Factory Layer\n85% coverage" as FactoryLayer TEST_UNIT
+  rectangle "Controller Layer\n80% coverage" as ControllerLayer TEST_E2E
+  rectangle "Webhook System\n100% coverage" as WebhookLayer TEST_INTEGRATION
+}
+
+note right of COVERAGE
+  **Coverage Goals:**
+  • Critical paths: 100%
+  • Domain/Event: 95-100%
+  • Services: 90%
+  • Overall: 85%+
+end note
+
+' =====================================
+' Unit Test Components
+' =====================================
+package "Unit Test Strategy" as UNIT_PKG TEST_UNIT {
+
+  component [Event\nTests] as UT_EVENT
+  component [Domain\nTests] as UT_DOMAIN
+  component [Service\nTests] as UT_SERVICE
+  component [Factory\nTests] as UT_FACTORY
+  component [Handler\nTests] as UT_HANDLER
+}
+
+note right of UNIT_PKG
+  **Characteristics:**
+  • Fast (<1ms per test)
+  • Isolated components
+  • All dependencies mocked
+  • No DB, API, or network
+
+  **Examples:**
+  - testOrderStateTransitions()
+  - testEventContextCaching()
+  - testPaymentServiceCreateOrder()
+end note
+
+' =====================================
+' Integration Test Components
+' =====================================
+package "Integration Test Strategy" as INT_PKG TEST_INTEGRATION {
+
+  component [Event Flow\nTests] as IT_EVENT
+  component [Repository\nTests] as IT_REPO
+  component [Webhook\nTests] as IT_WEBHOOK
+  component [Service\nIntegration] as IT_SERVICE
+}
+
+note right of INT_PKG
+  **Characteristics:**
+  • Medium speed (10-100ms)
+  • Real database (TestContainers)
+  • Mocked external APIs
+  • Component interaction
+
+  **Examples:**
+  - testCaptureEventFlow()
+  - testWebhookToOrderUpdate()
+  - testRepositoryQueries()
+end note
+
+' =====================================
+' E2E Test Components
+' =====================================
+package "E2E Test Strategy" as E2E_PKG TEST_E2E {
+
+  component [Checkout\nFlow] as E2E_CHECKOUT
+  component [Webhook\nIntegration] as E2E_WEBHOOK
+  component [GraphQL\nAPI] as E2E_API
+  component [Refund\nWorkflow] as E2E_REFUND
+}
+
+note right of E2E_PKG
+  **Characteristics:**
+  • Slow (1-10s per test)
+  • Full system
+  • Real DB & APIs (sandbox)
+  • Browser automation
+
+  **Examples:**
+  - testCompleteCheckoutFlow()
+  - testWebhookIntegration()
+  - testRefundWorkflow()
+end note
+
+' =====================================
+' Test Fixtures
+' =====================================
+package "Test Fixtures & Builders" as FIXTURES FIXTURE {
+
+  rectangle "Unit\nFixtures" as UnitFixtures
+  rectangle "Integration\nFixtures" as IntegrationFixtures
+  rectangle "E2E\nFixtures" as E2EFixtures
+}
+
+note right of FIXTURES
+  **Fixture Strategy:**
+
+  Unit Test Fixtures:
+  • Builders (OrderBuilder::new())
+  • In-memory objects
+  • createMockBasket()
+  • createMockOrder()
+
+  Integration Fixtures:
+  • Factories (OrderFactory::create())
+  • Database seeding
+  • createTestOrder()
+  • seedTestDatabase()
+
+  E2E Fixtures:
+  • Seeders (DatabaseSeeder::seed())
+  • Full system state
+  • loadDatabaseSnapshot()
+  • setupTestShop()
+end note
+
+' =====================================
+' Mocking Strategy
+' =====================================
+package "Mocking Strategy" as MOCKS MOCK {
+
+  rectangle "External APIs\n(Stripe/PayPal)" as MockAPIs
+  rectangle "Internal Services\n(EventDispatcher)" as MockInternal
+  rectangle "Database\n(Repository)" as MockDB
+}
+
+note right of MOCKS
+  **Mocking Approach:**
+
+  Unit Tests:
+  • Full mocks (Mockery)
+  • All dependencies mocked
+
+  Integration Tests:
+  • Real database
+  • WireMock for APIs
+
+  E2E Tests:
+  • Provider sandboxes
+  • Real systems
+end note
+
+' =====================================
+' CI/CD Pipeline
+' =====================================
+package "CI/CD Test Pipeline" as PIPELINE METRICS {
+
+  rectangle "Stage 1\nFast Feedback\n(<5s)" as Stage1 TEST_UNIT
+  rectangle "Stage 2\nIntegration\n(<2m)" as Stage2 TEST_INTEGRATION
+  rectangle "Stage 3\nE2E Validation\n(<10m)" as Stage3 TEST_E2E
+
+  Stage1 -right-> Stage2 : on pass
+  Stage2 -right-> Stage3 : on pass
+}
+
+note bottom of PIPELINE
+  **Pipeline Stages:**
+
+  Stage 1: Unit Tests
+  • Run on every commit
+  • Parallel execution
+  • Exit: 80%+ coverage
+
+  Stage 2: Integration Tests
+  • Run on PR
+  • TestContainers (Docker)
+  • Exit: All tests pass
+
+  Stage 3: E2E Tests
+  • Run before merge
+  • Provider sandboxes
+  • Exit: Critical flows work
+end note
+
+' =====================================
+' Test Metrics
+' =====================================
+package "Test Metrics & Goals" as METRICS_PKG METRICS {
+
+  rectangle "Coverage\nGoals" as Coverage
+  rectangle "Performance\nGoals" as Performance
+  rectangle "Quality\nMetrics" as Quality
+}
+
+note right of METRICS_PKG
+  **Line Coverage:**
+  • Overall: >85%
+  • Event/Repo: 100%
+  • Domain: >95%
+  • Service: >90%
+
+  **Performance:**
+  • Unit suite: <5s
+  • Integration: <2m
+  • E2E: <10m
+  • Full suite: <15m
+
+  **Quality:**
+  • Flaky rate: <1%
+  • Clear test names
+  • Self-contained tests
+end note
+
+' =====================================
+' Relationships: Test Types to Coverage
+' =====================================
+Unit --> EventLayer : primary
+Unit --> DomainLayer : primary
+Unit --> ServiceLayer : primary
+Unit --> FactoryLayer : primary
+Unit --> UT_EVENT
+Unit --> UT_DOMAIN
+Unit --> UT_SERVICE
+Unit --> UT_FACTORY
+Unit --> UT_HANDLER
+
+Integration --> RepoLayer : primary
+Integration --> WebhookLayer : primary
+Integration --> ServiceLayer : secondary
+Integration --> IT_EVENT
+Integration --> IT_REPO
+Integration --> IT_WEBHOOK
+Integration --> IT_SERVICE
+
+E2E --> ControllerLayer : primary
+E2E --> E2E_CHECKOUT
+E2E --> E2E_WEBHOOK
+E2E --> E2E_API
+E2E --> E2E_REFUND
+
+' =====================================
+' Relationships: Fixtures to Tests
+' =====================================
+UnitFixtures --> Unit
+IntegrationFixtures --> Integration
+E2EFixtures --> E2E
+
+MockAPIs --> Unit
+MockInternal --> Unit
+MockDB --> Unit
+
+' =====================================
+' Legend
+' =====================================
+legend right
+  |= Test Type |= Count |= Speed |
+  | Unit | ~300 | <1ms |
+  | Integration | ~100 | 10-100ms |
+  | E2E | ~20 | 1-10s |
+
+  **Total: ~420 tests**
+  **Full suite: <15 minutes**
+endlegend
+
+note as TDD_WORKFLOW
+  **TDD Workflow (Red-Green-Refactor):**
+
+  1. Write failing test (Red)
+  2. Write minimal code to pass (Green)
+  3. Refactor code (Refactor)
+  4. Ensure all tests still pass
+  5. Check coverage goals (>85%)
+  6. Commit changes
+
+  **Start with unit tests, add integration,**
+  **finish with E2E for critical flows.**
+end note
+
+@enduml
