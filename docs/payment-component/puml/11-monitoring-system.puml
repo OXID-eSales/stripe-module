@@ -1,0 +1,426 @@
+@startuml Real-Time Monitoring & Security System
+
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 8
+skinparam shadowing false
+
+title Real-Time Monitoring & Security System for Payment Modules\n(Enterprise SaaS Feature)
+
+!define CLIENT_SIDE #E3F2FD
+!define MONITORING #FFF9C4
+!define FRAUD #FFCCBC
+!define SECURITY #F8BBD0
+!define ALERTING #C5CAE9
+!define DASHBOARD #C8E6C9
+
+' =====================================
+' Client Side Components
+' =====================================
+package "VIP Client Installation" as CLIENT_PKG CLIENT_SIDE {
+
+    component [Payment\nModule] as PaymentModule
+    component [Monitoring\nAgent] as MonitoringAgent
+    component [Health\nCollector] as HealthCollector
+    component [Transaction\nMonitor] as TransactionMonitor
+    component [Fraud\nDetector] as FraudDetector
+    component [Security\nMonitor] as SecurityMonitor
+    component [Data\nAnonymizer] as DataAnonymizer
+
+    database "Local\nMetrics DB" as LocalDB
+}
+
+note right of CLIENT_PKG
+    **Installed at Client Site**
+    • Collects metrics every 60s
+    • Real-time fraud detection
+    • Security event monitoring
+    • PCI-DSS compliant anonymization
+end note
+
+' =====================================
+' Data Transmission
+' =====================================
+cloud "HTTPS/TLS 1.3\nEncrypted" as Network
+
+note top of Network
+    **Secure Transmission**
+    • Certificate pinning
+    • Gzip compression
+    • Retry queue on failure
+    • Max 10KB per transmission
+end note
+
+' =====================================
+' Central Monitoring Platform
+' =====================================
+package "Central Monitoring Platform (SaaS)" as CENTRAL_PKG MONITORING {
+
+    component [Data Ingestion\nService] as Ingestion
+    component [Message Queue\nKafka/RabbitMQ] as Queue
+    database "Time-Series DB\nInfluxDB" as TimeSeriesDB
+    database "PostgreSQL\nClient Data" as PostgreSQL
+
+    component [Alert\nEngine] as AlertEngine
+    component [Notification\nDispatcher] as NotificationDispatcher
+}
+
+note right of CENTRAL_PKG
+    **SaaS Platform**
+    • Multi-tenant architecture
+    • Real-time processing
+    • 99.9% uptime SLA
+end note
+
+' =====================================
+' ML/AI Processing
+' =====================================
+package "AI/ML Pipeline" as ML_PKG FRAUD {
+
+    component [Anomaly\nDetection] as AnomalyDetection
+    component [Fraud Pattern\nRecognition] as FraudPattern
+    component [Baseline\nLearning] as BaselineLearning
+    component [ML Model\nTraining] as MLTraining
+}
+
+note right of ML_PKG
+    **Machine Learning**
+    • Isolation Forest
+    • LSTM Networks
+    • XGBoost Classifier
+    • Continuous learning
+end note
+
+' =====================================
+' Alert Channels
+' =====================================
+package "Alert Channels" as ALERT_PKG ALERTING {
+
+    component [Email\nSMTP] as Email
+    component [SMS\nTwilio] as SMS
+    component [Slack\nWebhook] as Slack
+    component [PagerDuty\nAPI] as PagerDuty
+    component [Custom\nWebhook] as CustomWebhook
+}
+
+' =====================================
+' Dashboard
+' =====================================
+package "Web Dashboard" as DASHBOARD_PKG DASHBOARD {
+
+    component [Client\nOverview] as ClientOverview
+    component [Real-time\nMetrics] as RealtimeMetrics
+    component [Fraud\nAlerts] as FraudAlerts
+    component [Security\nEvents] as SecurityEvents
+    component [Reports\nGenerator] as Reports
+    component [Settings\nManagement] as Settings
+}
+
+note right of DASHBOARD_PKG
+    **Dashboard Features**
+    • Real-time updates (WebSocket)
+    • Customizable widgets
+    • Multi-client view
+    • Export to PDF/CSV
+end note
+
+' =====================================
+' External Users
+' =====================================
+actor "Shop\nOwner" as ShopOwner
+actor "Software\nManufacturer" as Manufacturer
+
+' =====================================
+' Relationships: Client Side
+' =====================================
+PaymentModule --> MonitoringAgent : triggers
+MonitoringAgent --> HealthCollector : collects
+MonitoringAgent --> TransactionMonitor : collects
+MonitoringAgent --> FraudDetector : collects
+MonitoringAgent --> SecurityMonitor : collects
+
+HealthCollector --> LocalDB : stores
+TransactionMonitor --> LocalDB : stores
+FraudDetector --> LocalDB : stores
+SecurityMonitor --> LocalDB : stores
+
+MonitoringAgent --> DataAnonymizer : anonymize
+DataAnonymizer --> Network : send via HTTPS
+
+' =====================================
+' Relationships: Central Platform
+' =====================================
+Network --> Ingestion : receives data
+Ingestion --> Queue : enqueue
+Queue --> TimeSeriesDB : store metrics
+Queue --> PostgreSQL : store client data
+
+TimeSeriesDB --> AnomalyDetection : analyze
+PostgreSQL --> FraudPattern : analyze
+AnomalyDetection --> BaselineLearning : train
+FraudPattern --> MLTraining : train
+
+TimeSeriesDB --> AlertEngine : evaluate rules
+AnomalyDetection --> AlertEngine : trigger anomaly alerts
+FraudPattern --> AlertEngine : trigger fraud alerts
+
+AlertEngine --> NotificationDispatcher : send alerts
+
+NotificationDispatcher --> Email : send
+NotificationDispatcher --> SMS : send
+NotificationDispatcher --> Slack : send
+NotificationDispatcher --> PagerDuty : send
+NotificationDispatcher --> CustomWebhook : send
+
+' =====================================
+' Relationships: Dashboard
+' =====================================
+TimeSeriesDB --> ClientOverview : load
+TimeSeriesDB --> RealtimeMetrics : load
+PostgreSQL --> FraudAlerts : load
+PostgreSQL --> SecurityEvents : load
+PostgreSQL --> Reports : generate
+
+ClientOverview --> Manufacturer : displays
+RealtimeMetrics --> Manufacturer : displays
+FraudAlerts --> Manufacturer : displays
+SecurityEvents --> Manufacturer : displays
+
+Settings --> ShopOwner : configure alerts
+
+' =====================================
+' Data Flow Annotations (removed - not supported in all PlantUML versions)
+' =====================================
+
+' =====================================
+' Monitoring Metrics Package
+' =====================================
+package "Collected Metrics" as METRICS_PKG MONITORING {
+
+    rectangle "Health\nMetrics" as HealthMetrics
+    rectangle "Transaction\nMetrics" as TransactionMetrics
+    rectangle "Performance\nMetrics" as PerformanceMetrics
+    rectangle "Error\nMetrics" as ErrorMetrics
+}
+
+note right of METRICS_PKG
+    **Health Metrics:**
+    • CPU, Memory, Disk
+    • Transaction count & success rate
+    • Response time (avg, p95, p99)
+    • Provider API status
+
+    **Transaction Metrics:**
+    • Volume, Amount, Currency
+    • Payment method distribution
+    • Success/failure rates
+    • Geographic distribution
+
+    **Performance Metrics:**
+    • Database query time
+    • Webhook processing time
+    • Cache hit rate
+
+    **Error Metrics:**
+    • HTTP 4xx/5xx counts
+    • Exception types
+    • Critical error count
+end note
+
+HealthCollector --> HealthMetrics : collects
+TransactionMonitor --> TransactionMetrics : collects
+TransactionMonitor --> PerformanceMetrics : collects
+TransactionMonitor --> ErrorMetrics : collects
+
+' =====================================
+' Fraud Detection Rules Package
+' =====================================
+package "Fraud Detection" as FRAUD_PKG FRAUD {
+
+    rectangle "Card Testing\nDetection" as CardTesting
+    rectangle "Volume Spike\nDetection" as VolumeSpike
+    rectangle "Geo Location\nAnomaly" as GeoAnomaly
+    rectangle "Amount Pattern\nAnomaly" as AmountAnomaly
+    rectangle "Velocity\nAbuse" as VelocityAbuse
+}
+
+note right of FRAUD_PKG
+    **Card Testing:**
+    • >5 failures in 5 min
+    • Small incremental amounts
+    • Same IP address
+
+    **Volume Spike:**
+    • 3x above baseline
+    • DoS attack indicator
+
+    **Geo Anomaly:**
+    • Unusual location
+    • Impossible travel time
+
+    **Amount Anomaly:**
+    • Unusual transaction size
+    • Deviation from history
+
+    **Velocity Abuse:**
+    • Too many transactions
+    • Same customer/IP
+end note
+
+FraudDetector --> CardTesting : detects
+FraudDetector --> VolumeSpike : detects
+FraudDetector --> GeoAnomaly : detects
+FraudDetector --> AmountAnomaly : detects
+FraudDetector --> VelocityAbuse : detects
+
+' =====================================
+' Security Monitoring Package
+' =====================================
+package "Security Monitoring" as SECURITY_PKG SECURITY {
+
+    rectangle "SQL Injection\nDetector" as SQLInjection
+    rectangle "XSS Attack\nDetector" as XSSDetector
+    rectangle "Brute Force\nDetector" as BruteForce
+    rectangle "Unauthorized\nAccess" as UnauthorizedAccess
+    rectangle "Webhook Replay\nDetector" as WebhookReplay
+}
+
+note right of SECURITY_PKG
+    **SQL Injection:**
+    • Pattern matching
+    • UNION, DROP, DELETE
+    • Quote escaping attempts
+
+    **XSS Attack:**
+    • Script tag detection
+    • Event handler injection
+
+    **Brute Force:**
+    • >5 failed logins in 5 min
+    • Same IP address
+    • Auto IP blocking
+
+    **Webhook Replay:**
+    • Duplicate webhook ID
+    • Expired timestamp
+end note
+
+SecurityMonitor --> SQLInjection : detects
+SecurityMonitor --> XSSDetector : detects
+SecurityMonitor --> BruteForce : detects
+SecurityMonitor --> UnauthorizedAccess : detects
+SecurityMonitor --> WebhookReplay : detects
+
+' =====================================
+' Alert Severity Levels
+' =====================================
+rectangle "Alert Severity" as AlertSeverity ALERTING
+
+note right of AlertSeverity
+    **🔴 CRITICAL:**
+    • System down
+    • Fraud detected (score >85)
+    • Security breach
+    • Channels: Email, SMS, PagerDuty
+
+    **🟠 HIGH:**
+    • Success rate <90%
+    • Response time >5s
+    • Multiple failed attempts
+    • Channels: Email, Slack
+
+    **🟡 MEDIUM:**
+    • Success rate <98%
+    • Response time >2s
+    • High error rate
+    • Channels: Email
+
+    **🟢 LOW:**
+    • Informational
+    • Weekly reports
+    • Channels: Email
+end note
+
+AlertEngine --> AlertSeverity : categorizes
+
+' =====================================
+' Pricing Tiers
+' =====================================
+package "Pricing Tiers" as PRICING_PKG DASHBOARD {
+
+    rectangle "Basic\n$99/mo" as BasicTier
+    rectangle "Professional\n$299/mo" as ProTier
+    rectangle "Enterprise\n$999/mo" as EnterpriseTier
+}
+
+note right of PRICING_PKG
+    **Basic ($99/mo):**
+    ✅ Health monitoring
+    ✅ Email alerts
+    ✅ 30-day retention
+    ❌ Fraud detection
+    ❌ Security monitoring
+
+    **Professional ($299/mo):**
+    ✅ All Basic features
+    ✅ Fraud detection (rules)
+    ✅ Security monitoring
+    ✅ SMS + Slack alerts
+    ✅ 90-day retention
+    ❌ ML fraud detection
+
+    **Enterprise ($999/mo):**
+    ✅ All Pro features
+    ✅ ML fraud detection
+    ✅ PagerDuty integration
+    ✅ Custom rules
+    ✅ 365-day retention
+    ✅ API access
+    ✅ Dedicated support
+end note
+
+' =====================================
+' Compliance & Privacy
+' =====================================
+rectangle "Compliance" as Compliance SECURITY
+
+note right of Compliance
+    **PCI-DSS Compliance:**
+    ✅ No cardholder data stored
+    ✅ Only last 4 digits transmitted
+    ✅ TLS 1.3 encryption
+    ✅ Access control & audit logs
+
+    **GDPR Compliance:**
+    ✅ Data minimization
+    ✅ Data anonymization
+    ✅ Right to be forgotten
+    ✅ Data export capability
+    ✅ 90-day default retention
+
+    **Security:**
+    ✅ IP address hashing
+    ✅ Email hashing
+    ✅ No PII transmitted
+    ✅ Certificate pinning
+end note
+
+DataAnonymizer --> Compliance : ensures
+
+' =====================================
+' Legend
+' =====================================
+legend right
+    |= Component |= Color |= Description |
+    | Client Side | <color:#E3F2FD>Blue</color> | Installed at shop |
+    | Monitoring | <color:#FFF9C4>Yellow</color> | Central platform |
+    | Fraud | <color:#FFCCBC>Orange</color> | Fraud detection |
+    | Security | <color:#F8BBD0>Pink</color> | Security monitoring |
+    | Alerting | <color:#C5CAE9>Purple</color> | Alert system |
+    | Dashboard | <color:#C8E6C9>Green</color> | Web interface |
+
+    **Data Flow:**
+    Client → Network → Central → ML → Alerts → Dashboard
+endlegend
+
+@enduml
