@@ -1,0 +1,462 @@
+@startuml Partner Ecosystem & Cash Flow
+
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+skinparam roundcorner 8
+skinparam shadowing false
+
+title Partner Ecosystem & Cash Flow Model\n(Revenue Streams & Value Chain)
+
+!define PARTNER #E8F5E9
+!define CUSTOMER #E3F2FD
+!define PLATFORM #FFF9C4
+!define REVENUE #C8E6C9
+!define RECURRING #BBDEFB
+!define MARKETPLACE #F3E5F5
+
+' =====================================
+' Actors
+' =====================================
+actor "End Customer\n(Shop Owner)" as Customer
+actor "Partner/Agency\n(System Integrator)" as Partner
+actor "Platform Owner\n(Software Manufacturer)" as Platform
+actor "Payment Provider\n(Stripe/PayPal)" as Provider
+
+' =====================================
+' Partner Types
+' =====================================
+package "Partner Ecosystem" as PARTNER_PKG PARTNER {
+
+    component [Silver Partner\n€50K-€150K/year] as SilverPartner
+    component [Gold Partner\n€250K-€750K/year] as GoldPartner
+    component [Platinum Partner\n€1M-€5M+/year] as PlatinumPartner
+
+    note right of SilverPartner
+        **Capabilities:**
+        • Basic implementation
+        • 1-2 developers
+        • 5-15 clients/year
+
+        **Revenue Mix:**
+        • 70% one-time projects
+        • 30% monitoring services
+    end note
+
+    note right of GoldPartner
+        **Capabilities:**
+        • Complex integrations
+        • 3-5 developers
+        • 15-40 clients/year
+
+        **Revenue Mix:**
+        • 50% one-time projects
+        • 50% recurring services
+    end note
+
+    note right of PlatinumPartner
+        **Capabilities:**
+        • Enterprise solutions
+        • 6+ developers
+        • 40+ clients/year
+        • Custom development
+
+        **Revenue Mix:**
+        • 30% one-time projects
+        • 70% recurring services
+    end note
+}
+
+' =====================================
+' Platform Components (Redesigned for clarity)
+' =====================================
+package "OXID Payment Component Platform" as PLATFORM_PKG PLATFORM {
+
+    rectangle "Platform Core" as PlatformCore {
+        component [Core Payment\nComponent] as CoreComponent
+        component [Provider Adapters\n(Stripe/PayPal/Adyen)] as Adapters
+    }
+
+    rectangle "Platform Services" as PlatformServices {
+        component [Monitoring SaaS\nPaymentGuard Pro] as MonitoringSaaS
+        component [Extension\nMarketplace] as Marketplace
+        component [Partner Program\n& Certification] as PartnerProgram
+    }
+}
+
+note right of PLATFORM_PKG
+    **Platform Benefits:**
+    ✅ 85% code reusability
+    ✅ Event-driven architecture
+    ✅ Provider-agnostic design
+    ✅ Built-in security & compliance
+    ✅ Real-time monitoring ready
+    ✅ Extensive documentation
+    ✅ Test infrastructure included
+end note
+
+' =====================================
+' Revenue Streams - One-Time Projects
+' =====================================
+package "One-Time Revenue Streams" as ONETIME_PKG REVENUE {
+
+    rectangle "Payment Module\nModernization\n€48K-€100K" as Modernization
+    rectangle "Multi-Provider\nImplementation\n€50K-€150K" as MultiProvider
+    rectangle "Headless Commerce\nProject\n€188K-€360K" as Headless
+    rectangle "Custom Provider\nIntegration\n€30K-€80K" as CustomProvider
+}
+
+note bottom of ONETIME_PKG
+    **Margins:** 40-60%
+    **Timeline:** 3-12 months
+    **Effort:** Reduced by 60-70% vs. custom development
+
+    **Why Partners Win:**
+    • Pre-built core = faster delivery
+    • Less bugs = happier clients
+    • Documentation = lower training cost
+    • Test suite = higher quality
+end note
+
+' =====================================
+' Revenue Streams - Recurring
+' =====================================
+package "Recurring Revenue Streams (MRR)" as RECURRING_PKG RECURRING {
+
+    rectangle "Monitoring Service\n€149-€999/mo\nper client" as MonitoringService
+    rectangle "Managed Security\n€200-€500/mo\nper client" as ManagedSecurity
+    rectangle "Fraud Prevention\n€100-€300/mo\nper client" as FraudPrevention
+    rectangle "SLA Support\n€150-€800/mo\nper client" as SLASupport
+}
+
+note bottom of RECURRING_PKG
+    **Margins:** 50-95%
+    **Churn:** <5% annually
+    **Upsell:** 30% annually
+
+    **Why Partners Win:**
+    • Low maintenance cost (stable platform)
+    • High margin (resell monitoring)
+    • Predictable revenue (monthly)
+    • Client lock-in (critical infrastructure)
+
+    **Example:**
+    30 clients × €400/mo avg = €12K MRR = €144K ARR
+    Margin: 70% = €100K profit/year
+end note
+
+' =====================================
+' Extension Marketplace
+' =====================================
+package "Extension Marketplace Revenue" as MARKETPLACE_PKG MARKETPLACE {
+
+    rectangle "Custom Extensions\n€5K-€25K each" as CustomExtensions
+    rectangle "Marketplace Sales\n€99-€999 each\n(70% to partner)" as MarketplaceSales
+    rectangle "White-Label Solutions\n€10K-€50K/project" as WhiteLabel
+}
+
+note bottom of MARKETPLACE_PKG
+    **New Revenue Model:**
+
+    Build once, sell many times:
+    • Industry-specific addon: €299
+    • Sell to 50 shops = €14,950
+    • Partner keeps 70% = €10,465
+    • Zero marginal cost per sale
+
+    **Examples:**
+    • Fashion industry bundle
+    • B2B payment terms addon
+    • Subscription billing module
+    • POS integration adapter
+end note
+
+' =====================================
+' Cash Flow: Customer → Partner → Platform (Simplified)
+' =====================================
+
+' Customer to Partner cash flow (grouped)
+rectangle "Customer\nPayments" as CustomerPayments CUSTOMER
+
+note right of CustomerPayments
+    💶 Implementation: €48K-€360K (one-time)
+    💶 Monitoring: €149-€999/mo
+    💶 Support: €150-€800/mo
+end note
+
+' Partner to Platform cash flow (grouped)
+rectangle "Platform\nRevenue" as PlatformRevenue PLATFORM
+
+note right of PlatformRevenue
+    💸 Core license: €0 (open-source)
+    💸 Monitoring fee: €50-€200/mo per client
+    💸 Marketplace share: 30% of sales
+    💸 Certification: €0-€5K/year
+end note
+
+Customer -down-> CustomerPayments
+CustomerPayments -down-> Partner
+Partner -down-> PlatformRevenue
+PlatformRevenue -down-> Platform
+
+Customer --> Provider : 💶 Payment processing\n1.5%-2.9% per transaction
+
+note right of Customer
+    **Customer Benefits:**
+    • Lower project cost (reusable components)
+    • Faster time-to-market (proven framework)
+    • Better quality (tested infrastructure)
+    • Enterprise monitoring included
+    • Multi-provider flexibility
+    • Future-proof architecture
+
+    **Customer Savings:**
+    Custom development: €200K-€500K
+    With platform: €48K-€150K
+    Savings: €50K-€350K (60-70%)
+end note
+
+' =====================================
+' Partner Value Proposition
+' =====================================
+rectangle "Partner Value Proposition" as PartnerValue PARTNER
+
+note right of PartnerValue
+    **🎯 Why Build on OXID Payment Component?**
+
+    **1. Faster Delivery (60-70% time reduction)**
+    • Core payment logic: Done ✅
+    • Provider integrations: Done ✅
+    • Security & compliance: Done ✅
+    • Test infrastructure: Done ✅
+
+    **2. Higher Margins (40-60% vs. 20-30% custom)**
+    • Less development time = lower cost
+    • Proven quality = fewer bugs/support
+    • Reusable components = economies of scale
+
+    **3. Recurring Revenue (MRR growth)**
+    • Monitoring as-a-Service: €149-€999/mo
+    • 70% margin on resold monitoring
+    • <5% annual churn
+    • 30% upsell opportunities
+
+    **4. Competitive Advantage**
+    • Enterprise-grade solution
+    • Certified partner status
+    • Access to pre-sales support
+    • Co-marketing opportunities
+
+    **5. Risk Reduction**
+    • Battle-tested codebase
+    • PCI-DSS compliant by default
+    • Comprehensive test coverage
+    • Active community support
+
+    **6. Scale Your Business**
+    • Build once, deploy many times
+    • Extension marketplace (passive income)
+    • White-label opportunities
+    • International expansion ready
+end note
+
+' =====================================
+' Partner Financial Model (3 Years)
+' =====================================
+rectangle "Partner Financial Growth Model" as FinancialModel REVENUE
+
+note right of FinancialModel
+    **Silver Partner (Small Agency)**
+
+    Year 1: €50K-€150K
+    • 5 implementations × €50K = €250K
+    • Margin: 40% = €100K gross
+    • 15 monitoring clients × €200/mo = €36K ARR
+    • Margin: 70% = €25K gross
+    • Total: €125K gross profit
+
+    Year 2: €100K-€300K
+    • 10 implementations + 40 monitoring clients
+    • Total: €250K gross profit
+
+    Year 3: €200K-€500K
+    • 15 implementations + 80 monitoring clients
+    • Total: €420K gross profit
+
+    ────────────────────────────────────
+
+    **Gold Partner (Mid-Size Agency)**
+
+    Year 1: €250K-€750K
+    • 15 implementations × €80K = €1.2M
+    • Margin: 50% = €600K gross
+    • 40 monitoring clients × €350/mo = €168K ARR
+    • Margin: 70% = €118K gross
+    • Total: €718K gross profit
+
+    Year 2: €500K-€1.5M
+    • 25 implementations + 100 monitoring clients
+    • Total: €1.37M gross profit
+
+    Year 3: €1M-€3M
+    • 40 implementations + 200 monitoring clients
+    • Total: €2.54M gross profit
+
+    ────────────────────────────────────
+
+    **Platinum Partner (Enterprise SI)**
+
+    Year 1: €1M-€5M+
+    • 40 implementations × €150K = €6M
+    • Margin: 55% = €3.3M gross
+    • 100 monitoring clients × €600/mo = €720K ARR
+    • Margin: 75% = €540K gross
+    • Marketplace: 20 extensions × €10K = €200K
+    • Total: €4.04M gross profit
+
+    Year 2: €2M-€10M+
+    • 70 implementations + 250 monitoring clients
+    • Total: €8.2M gross profit
+
+    Year 3: €5M-€20M+
+    • 120 implementations + 500 monitoring clients
+    • Total: €15.8M gross profit
+end note
+
+' =====================================
+' Platform Ecosystem Benefits
+' =====================================
+rectangle "Platform Ecosystem Benefits" as EcosystemBenefits PLATFORM
+
+note right of EcosystemBenefits
+    **🚀 Network Effects for Partners**
+
+    **More Partners = More Value:**
+    • Shared extensions library
+    • Community best practices
+    • Collective knowledge base
+    • Cross-referral opportunities
+
+    **Platform Investment Benefits:**
+    • Continuous core improvements
+    • New provider adapters added
+    • Security patches & updates
+    • Documentation & training
+    • Marketing & lead generation
+
+    **Certification Program:**
+    • Official partner badge
+    • Listed in partner directory
+    • Access to pre-sales engineering
+    • Co-marketing materials
+    • Discounted monitoring licenses
+    • Early access to new features
+
+    **Community Benefits:**
+    • Slack/Discord channel
+    • Monthly partner webinars
+    • Annual partner conference
+    • Contribution recognition
+    • Technical advisory board seats
+end note
+
+' =====================================
+' ROI Calculator for Partners
+' =====================================
+rectangle "Partner ROI Calculator" as ROICalculator REVENUE
+
+note right of ROICalculator
+    **🧮 Compare: Custom Development vs. Platform**
+
+    **Scenario: Payment Modernization Project**
+
+    **Custom Development (Traditional):**
+    • Development: 1,200 hours × €100 = €120K
+    • Testing: 300 hours × €80 = €24K
+    • Total Cost: €144K
+    • Sale Price: €180K
+    • Margin: €36K (20%)
+    • Timeline: 6 months
+
+    **With OXID Payment Component:**
+    • Development: 400 hours × €100 = €40K
+    • Testing: 80 hours × €80 = €6.4K
+    • Total Cost: €46.4K
+    • Sale Price: €100K (competitive!)
+    • Margin: €53.6K (54%)
+    • Timeline: 2 months
+
+    **Partner Wins:**
+    ✅ 49% higher margin (€53.6K vs €36K)
+    ✅ 3x faster delivery (2mo vs 6mo)
+    ✅ Lower risk (proven codebase)
+    ✅ Happier client (faster launch)
+    ✅ 3x more projects per year possible
+
+    **Annual Impact (10 projects):**
+    Custom: €360K gross profit / 60 months = stuck
+    Platform: €536K gross profit / 20 months = capacity for 30 projects!
+
+    **Extra Revenue from Saved Time:**
+    Saved: 40 months capacity
+    Additional projects: 20 more
+    Additional profit: €536K × 2 = €1.07M
+
+    **Total Year 1: €1.6M gross profit**
+    (vs. €360K with custom development)
+
+    **ROI: 444% improvement** 🚀
+end note
+
+' =====================================
+' Relationships (Simplified to reduce density)
+' =====================================
+
+' Partner to Platform Core (grouped)
+Partner --> PlatformCore : uses core components\nand adapters
+
+' Partner to Platform Services (grouped)
+Partner -down-> PartnerProgram : joins & certifies
+Partner -down-> MonitoringSaaS : resells to clients
+Partner -down-> Marketplace : publishes extensions
+
+' Platform Core enables partner tiers
+PlatformCore -right-> SilverPartner : enables
+PlatformCore -right-> GoldPartner : enables
+PlatformCore -right-> PlatinumPartner : enables
+
+' Partner sells project types (grouped)
+Partner -down-> ONETIME_PKG : delivers\nproject services
+
+' Partner provides recurring services (grouped)
+Partner -down-> RECURRING_PKG : provides\nrecurring services
+
+' Partner builds marketplace offerings (grouped)
+Partner -down-> MARKETPLACE_PKG : creates & sells\nextensions
+
+' Platform services power partner offerings
+MonitoringSaaS -down-> RECURRING_PKG : powers monitoring\n& security services
+Marketplace -down-> MARKETPLACE_PKG : distributes\nextensions
+
+' =====================================
+' Legend
+' =====================================
+legend right
+    |= Component |= Color |= Description |
+    | Partner Ecosystem | <color:#E8F5E9>Green</color> | Partner tiers & capabilities |
+    | Platform | <color:#FFF9C4>Yellow</color> | Core platform components |
+    | One-Time Revenue | <color:#C8E6C9>Light Green</color> | Project-based income |
+    | Recurring Revenue | <color:#BBDEFB>Blue</color> | Monthly recurring income |
+    | Marketplace | <color:#F3E5F5>Purple</color> | Extension sales |
+
+    **Cash Flow Legend:**
+    💶 = Money from customer to partner
+    💸 = Money from partner to platform
+
+    **Key Metrics:**
+    • Partner Margin: 40-60% (one-time), 50-95% (recurring)
+    • Platform Margin: 80-95% (monitoring), 30% (marketplace)
+    • Customer Savings: 60-70% vs. custom development
+    • Partner ROI: 444% improvement with platform
+endlegend
+
+@enduml
