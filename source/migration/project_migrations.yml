@@ -1,0 +1,4 @@
+table_storage:
+  table_name: oxmigrations_project
+migrations_paths:
+  'OxidEsales\EshopCommunity\MigrationsProject': project_data
