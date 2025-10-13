@@ -1,0 +1,4 @@
+table_storage:
+  table_name: oxmigrations_sc_stripe
+migrations_paths:
+  'OxidSolutionCatalysts\Stripe\Migrations': data

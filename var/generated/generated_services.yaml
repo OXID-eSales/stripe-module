@@ -1,0 +1,5 @@
+imports:
+  -
+    resource: ../../vendor/oxid-esales/oxideshop-demodata-installer/services.yaml
+  -
+    resource: ../../vendor/oxid-esales/developer-tools/services.yaml
