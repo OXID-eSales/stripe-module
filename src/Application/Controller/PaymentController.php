@@ -74,6 +74,7 @@ class PaymentController extends PaymentController_parent
      */
     protected function stripeRemoveUnavailablePaymentMethods()
     {
+        $paymentList = parent::getPaymentList();
         $oPaymentHelper = PaymentHelper::getInstance();
         $sToken = $oPaymentHelper->getStripeToken($oPaymentHelper->getStripeMode());
         $blRemoveByBillingCountry = (bool)PaymentHelper::getInstance()->getShopConfVar('blStripeRemoveByBillingCountry');
@@ -82,16 +83,16 @@ class PaymentController extends PaymentController_parent
         $sBillingCountryCode = $this->stripeGetBillingCountry($oBasket);
         $sCurrency = $oBasket->getBasketCurrency()->name;
 
-        foreach ($this->_oPaymentList as $oPayment) {
-            if (method_exists($oPayment, 'isStripePaymentMethod') && $oPayment->isStripePaymentMethod() === true) {
-                $oStripePayment = $oPayment->getStripePaymentModel();
+        foreach ($paymentList as $payment) {
+            if (method_exists($payment, 'isStripePaymentMethod') && $payment->isStripePaymentMethod() === true) {
+                $oStripePayment = $payment->getStripePaymentModel();
                 if (empty($sToken) ||
                     ($blRemoveByBillingCountry === true && $oStripePayment->stripeIsMethodAvailableForCountry($sBillingCountryCode) === false) ||
                     ($blRemoveByBasketCurrency === true && $oStripePayment->stripeIsMethodAvailableForCurrency($sCurrency) === false) ||
                     $oStripePayment->stripeIsBasketSumInLimits($oBasket->getPrice()->getBruttoPrice()) === false ||
                     ($oStripePayment->isOnlyB2BSupported() === true && $this->stripeIsB2BOrder($oBasket) === false)
                 ) {
-                    unset($this->_oPaymentList[$oPayment->getId()]);
+                    unset($this->_oPaymentList[$payment->getId()]);
                 }
             }
         }
