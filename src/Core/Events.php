@@ -8,8 +8,8 @@ namespace OxidSolutionCatalysts\Stripe\Core;
 
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Database;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Service\DatabaseService as Database;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as Payment;
 use OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 use OxidSolutionCatalysts\Stripe\Application\Model\PaymentConfig;
 use OxidSolutionCatalysts\Stripe\Application\Model\RequestLog;

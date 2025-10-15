@@ -6,8 +6,8 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Model\Payment;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
-use OxidSolutionCatalysts\Stripe\Application\Helper\User;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as Payment;
+use OxidSolutionCatalysts\Stripe\Service\UserService as User;
 use OxidEsales\Eshop\Application\Model\Order;
 
 class Creditcard extends Base

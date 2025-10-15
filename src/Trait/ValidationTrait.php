@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Trait;
+namespace OxidSolutionCatalysts\Stripe\Trait;
+
+use function OxidSolutionCatalysts\Stripe\PaymentComponent\Trait\gettype;
 
 /**
  * Trait for input validation helpers

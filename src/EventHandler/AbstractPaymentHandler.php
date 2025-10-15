@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\EventHandler;
+namespace OxidSolutionCatalysts\Stripe\EventHandler;
 
 use OxidSolutionCatalysts\Stripe\PaymentComponent\Contract\OrderManagerInterface;
 use OxidSolutionCatalysts\Stripe\PaymentComponent\Contract\PaymentServiceInterface;
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Trait\LoggableTrait;
+use OxidSolutionCatalysts\Stripe\Trait\LoggableTrait;
 use Psr\Log\LoggerInterface;
 
 /**

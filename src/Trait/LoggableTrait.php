@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Trait;
+namespace OxidSolutionCatalysts\Stripe\Trait;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;

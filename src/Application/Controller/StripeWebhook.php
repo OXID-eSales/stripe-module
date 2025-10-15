@@ -6,7 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Controller;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as Payment;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;

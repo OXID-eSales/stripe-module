@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Service;
 
+use OxidSolutionCatalysts\Stripe\Model\PaymentTransaction;
 use OxidSolutionCatalysts\Stripe\PaymentComponent\Contract\CachableApiInterface;
 use OxidSolutionCatalysts\Stripe\PaymentComponent\Contract\ModuleSettingsInterface;
 use OxidSolutionCatalysts\Stripe\PaymentComponent\Contract\OrderRepositoryInterface;
 use OxidSolutionCatalysts\Stripe\PaymentComponent\Contract\PaymentServiceInterface;
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Model\PaymentTransaction;
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Trait\CachableApiTrait;
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Trait\ConfigurableTrait;
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Trait\LoggableTrait;
-use OxidSolutionCatalysts\Stripe\PaymentComponent\ValueObject\ProviderOrder;
+use OxidSolutionCatalysts\Stripe\Trait\CachableApiTrait;
+use OxidSolutionCatalysts\Stripe\Trait\ConfigurableTrait;
+use OxidSolutionCatalysts\Stripe\Trait\LoggableTrait;
+use OxidSolutionCatalysts\Stripe\ValueObject\ProviderOrder;
 use Psr\Log\LoggerInterface;
 
 /**

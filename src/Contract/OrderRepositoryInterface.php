@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Contract;
 
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Model\PaymentTransaction;
+use OxidSolutionCatalysts\Stripe\Model\PaymentTransaction;
 
 /**
  * Interface for order and transaction repository

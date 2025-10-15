@@ -6,8 +6,8 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Controller\Admin;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Order;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Service\OrderService as Order;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as Payment;
 use OxidEsales\Eshop\Core\Registry;
 use Stripe\WebhookEndpoint;
 

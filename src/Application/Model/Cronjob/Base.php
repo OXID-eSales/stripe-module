@@ -6,7 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as Payment;
 use OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 use OxidEsales\Eshop\Core\Registry;
 

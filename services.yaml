@@ -1,0 +1,62 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  OxidSolutionCatalysts\Stripe\Service\:
+    resource: 'src/Service/*'
+    public: true
+
+  # Configuration Service
+  OxidSolutionCatalysts\Stripe\Application\Service\StripeConfigService:
+    arguments:
+      $moduleConfigurationBridge: '@OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface'
+      $moduleSettingBridge: '@OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface'
+      $language: '@OxidEsales\Eshop\Core\Language'
+    public: true
+
+  # API Service
+  OxidSolutionCatalysts\Stripe\Application\Service\StripeApiService:
+    arguments:
+      $configService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeConfigService'
+    public: true
+
+  # Webhook Service
+  OxidSolutionCatalysts\Stripe\Application\Service\StripeWebhookService:
+    arguments:
+      $configService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeConfigService'
+      $apiService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeApiService'
+    public: true
+
+  # Payment Method Service
+  OxidSolutionCatalysts\Stripe\Application\Service\StripePaymentMethodService:
+    arguments:
+      $configService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeConfigService'
+    public: true
+
+  # User Service
+  OxidSolutionCatalysts\Stripe\Application\Service\UserService:
+    arguments:
+      $apiService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeApiService'
+    public: true
+
+  # Order Service
+  OxidSolutionCatalysts\Stripe\Application\Service\OrderService:
+    arguments:
+      $config: '@OxidEsales\Eshop\Core\Config'
+      $language: '@OxidEsales\Eshop\Core\Language'
+    public: true
+
+  # Database Service
+  OxidSolutionCatalysts\Stripe\Application\Service\DatabaseService:
+    public: true
+
+  # Payment Service (Facade)
+  OxidSolutionCatalysts\Stripe\Application\Service\PaymentService:
+    arguments:
+      $configService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeConfigService'
+      $apiService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeApiService'
+      $webhookService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripeWebhookService'
+      $paymentMethodService: '@OxidSolutionCatalysts\Stripe\Application\Service\StripePaymentMethodService'
+    public: true

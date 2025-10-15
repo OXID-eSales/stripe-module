@@ -7,9 +7,9 @@
 namespace OxidSolutionCatalysts\Stripe\Application\Model\Request;
 
 use OxidEsales\EshopCommunity\Core\Registry;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Order as OrderHelper;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
-use OxidSolutionCatalysts\Stripe\Application\Helper\User as UserHelper;
+use OxidSolutionCatalysts\Stripe\Service\OrderService as OrderHelper;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Service\UserService as UserHelper;
 use OxidSolutionCatalysts\Stripe\Application\Model\RequestLog;
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
 

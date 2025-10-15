@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Model;
+namespace OxidSolutionCatalysts\Stripe\Model;
 
 /**
  * Payment transaction model

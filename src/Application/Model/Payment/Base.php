@@ -12,7 +12,7 @@ use OxidSolutionCatalysts\Stripe\Application\Model\Request\PaymentIntent;
 use OxidSolutionCatalysts\Stripe\Application\Model\Request\PaymentMethod;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Order;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as Payment;
 
 abstract class Base
 {

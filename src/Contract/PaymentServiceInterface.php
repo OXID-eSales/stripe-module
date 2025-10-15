@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Contract;
 
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Model\PaymentTransaction;
-use OxidSolutionCatalysts\Stripe\PaymentComponent\ValueObject\ProviderOrder;
+use OxidSolutionCatalysts\Stripe\Model\PaymentTransaction;
+use OxidSolutionCatalysts\Stripe\ValueObject\ProviderOrder;
 
 /**
  * Interface for payment service orchestration
