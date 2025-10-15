@@ -7,39 +7,6 @@
 /**
  * Metadata version
  */
-
-use OxidEsales\Eshop\Application\Model\PaymentGateway;
-use \OxidEsales\Eshop\Application\Model\Order;
-use \OxidEsales\Eshop\Application\Model\OrderArticle;
-use \OxidEsales\Eshop\Application\Model\Payment;
-use \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration;
-use \OxidEsales\Eshop\Application\Controller\Admin\ModuleMain;
-use \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain;
-use \OxidEsales\Eshop\Application\Controller\Admin\OrderMain;
-use \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview;
-use \OxidEsales\Eshop\Application\Controller\PaymentController;
-use \OxidEsales\Eshop\Application\Controller\OrderController;
-use \OxidEsales\Eshop\Core\Email;
-use \OxidEsales\Eshop\Core\Session;
-use \OxidSolutionCatalysts\Stripe\Application\Controller\StripeWebhook;
-use \OxidSolutionCatalysts\Stripe\Application\Controller\StripeFinishPayment;
-use \OxidSolutionCatalysts\Stripe\Application\Controller\Admin\OrderRefund;
-use \OxidSolutionCatalysts\Stripe\Application\Controller\Admin\StripeConnect;
-use \OxidSolutionCatalysts\Stripe\Core\Events;
-use OxidSolutionCatalysts\Stripe\Application\Model\PaymentGateway as StripePaymentGateway;
-use OxidSolutionCatalysts\Stripe\Application\Model\Order as StripeOrder;
-use OxidSolutionCatalysts\Stripe\Application\Model\OrderArticle as StripeOrderArticle;
-use OxidSolutionCatalysts\Stripe\Application\Model\Payment as StripePayment;
-use OxidSolutionCatalysts\Stripe\Application\Controller\Admin\ModuleConfiguration as StripeModuleConfiguration;
-use OxidSolutionCatalysts\Stripe\Application\Controller\Admin\ModuleMain as StripeModuleMain;
-use OxidSolutionCatalysts\Stripe\Application\Controller\Admin\PaymentMain as StripePaymentMain;
-use OxidSolutionCatalysts\Stripe\Application\Controller\Admin\OrderMain as StripeOrderMain;
-use OxidSolutionCatalysts\Stripe\Application\Controller\Admin\OrderOverview as StripeOrderOverview;
-use OxidSolutionCatalysts\Stripe\Application\Controller\PaymentController as StripePaymentController;
-use OxidSolutionCatalysts\Stripe\Application\Controller\OrderController as StripeOrderController;
-use OxidSolutionCatalysts\Stripe\Core\Email as StripeEmail;
-use OxidSolutionCatalysts\Stripe\Core\Session as StripeSession;
-
 $sMetadataVersion = '2.1';
 
 /**
@@ -77,14 +44,14 @@ $aModule = [
         Session::class => StripeSession::class,
     ],
     'controllers'   => [
-        'StripeWebhook' => StripeWebhook::class,
-        'StripeFinishPayment' => StripeFinishPayment::class,
-        'stripe_order_refund' => OrderRefund::class,
-        'StripeConnect' => StripeConnect::class,
+        'StripeWebhook' => OxidSolutionCatalysts\Stripe\Application\Controller\StripeWebhook::class,
+        'StripeFinishPayment' => OxidSolutionCatalysts\Stripe\Application\Controller\StripeFinishPayment::class,
+        'stripe_order_refund' => OxidSolutionCatalysts\Stripe\Application\Controller\Admin\OrderRefund::class,
+        'StripeConnect' => \OxidSolutionCatalysts\Stripe\Application\Controller\Admin\StripeConnect::class,
     ],
     'events'        => [
-        'onActivate' => Events::class.'::onActivate',
-        'onDeactivate' => Events::class.'::onDeactivate',
+        'onActivate' => \OxidSolutionCatalysts\Stripe\Core\Events::class.'::onActivate',
+        'onDeactivate' => \OxidSolutionCatalysts\Stripe\Core\Events::class.'::onDeactivate',
     ],
     'settings'      => [
         ['group' => 'STRIPE_GENERAL',           'name' => 'sStripeMode',                        'type' => 'select',     'value' => 'test',      'position' => 10, 'constraints' => 'live|test'],
