@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-This document describes a **real-time monitoring and security system** for payment modules deployed at VIP client sites. The system provides:
+This document describes a **real-time monitoring and security system** for payment modules deployed at merchant sites. The system provides:
 
 - **Real-time health monitoring** - Payment system availability and performance
 - **Fraud detection** - AI-powered anomaly detection and attack prevention

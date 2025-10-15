@@ -17,7 +17,7 @@ title Real-Time Monitoring & Security System for Payment Modules\n(Enterprise Sa
 ' =====================================
 ' Client Side Components
 ' =====================================
-package "VIP Client Installation" as CLIENT_PKG CLIENT_SIDE {
+package "Merchant OXID Shop" as CLIENT_PKG CLIENT_SIDE {
 
     component [Payment\nModule] as PaymentModule
     component [Monitoring\nAgent] as MonitoringAgent
