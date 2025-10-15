@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\ValueObject;
+namespace OxidSolutionCatalysts\Stripe\ValueObject;
 
 /**
  * Value object representing a provider order

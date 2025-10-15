@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Contract;
+namespace OxidSolutionCatalysts\Stripe\Contract;
+
+use OxidSolutionCatalysts\Stripe\PaymentComponent\Contract\PciViolationException;
 
 /**
  * Interface for PCI compliance enforcement

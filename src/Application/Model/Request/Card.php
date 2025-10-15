@@ -6,8 +6,8 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Model\Request;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
-use OxidSolutionCatalysts\Stripe\Application\Helper\User as UserHelper;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Service\UserService as UserHelper;
 use OxidSolutionCatalysts\Stripe\Application\Model\RequestLog;
 use OxidEsales\Eshop\Application\Model\User as CoreUser;
 

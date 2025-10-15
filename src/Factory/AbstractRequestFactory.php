@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Factory;
+namespace OxidSolutionCatalysts\Stripe\Factory;
 
-use OxidSolutionCatalysts\Stripe\PaymentComponent\Trait\LoggableTrait;
+use OxidSolutionCatalysts\Stripe\Trait\LoggableTrait;
 
 /**
  * Abstract base class for request factories

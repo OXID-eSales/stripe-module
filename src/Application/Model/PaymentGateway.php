@@ -9,7 +9,7 @@ namespace OxidSolutionCatalysts\Stripe\Application\Model;
 use OxidSolutionCatalysts\Stripe\Application\Model\Request\PaymentIntent;
 use OxidEsales\Eshop\Application\Model\Order as CoreOrder;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as PaymentHelper;
 
 class PaymentGateway extends PaymentGateway_parent
 {

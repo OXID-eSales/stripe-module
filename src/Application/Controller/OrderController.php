@@ -6,7 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Controller;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Order as OrderHelper;
+use OxidSolutionCatalysts\Stripe\Service\OrderService as OrderHelper;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 

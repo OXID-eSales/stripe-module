@@ -6,7 +6,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\Application\Model;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService;
 
 class Payment extends Payment_parent
 {
@@ -17,7 +17,7 @@ class Payment extends Payment_parent
      */
     public function isStripePaymentMethod()
     {
-        return PaymentHelper::getInstance()->isStripePaymentMethod($this->getId());
+        return PaymentService::getInstance()->isStripePaymentMethod($this->getId());
     }
 
     /**
@@ -28,7 +28,7 @@ class Payment extends Payment_parent
     public function getStripePaymentModel()
     {
         if ($this->isStripePaymentMethod()) {
-            return PaymentHelper::getInstance()->getStripePaymentModel($this->getId());
+            return PaymentService::getInstance()->getStripePaymentModel($this->getId());
         }
         return null;
     }

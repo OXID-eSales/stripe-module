@@ -1,19 +1,36 @@
 <?php
+
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
+ *
+ * Enhanced Payment Controller using generic PaymentComponent services
+ *
+ * Key improvements:
+ * - Uses PaymentMethodRegistry for method management
+ * - Uses PaymentMethodFilter for filtering logic
+ * - Cleaner, more testable code
+ * - Separation of concerns
  */
 
 namespace OxidSolutionCatalysts\Stripe\Application\Controller;
 
-use OxidSolutionCatalysts\Stripe\Application\Helper\Order as OrderHelper;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
+use OxidSolutionCatalysts\Stripe\Service\OrderService;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\Stripe\Service\StripePaymentMethodService;
 
 class PaymentController extends PaymentController_parent
 {
+    /**
+     * Stripe payment method service
+     *
+     * @var StripePaymentMethodService|null
+     */
+    private ?StripePaymentMethodService $stripePaymentService = null;
+
     /**
      * Delete sess_challenge from session to trigger the creation of a new order when needed
      */
@@ -22,10 +39,23 @@ class PaymentController extends PaymentController_parent
         $sSessChallenge = Registry::getSession()->getVariable('sess_challenge');
         $blStripeIsRedirected = Registry::getSession()->getVariable('stripeIsRedirected');
         if (!empty($sSessChallenge) && $blStripeIsRedirected === true) {
-            OrderHelper::getInstance()->cancelCurrentOrder();
+            OrderService::getInstance()->cancelCurrentOrder();
         }
         Registry::getSession()->deleteVariable('stripeIsRedirected');
         parent::init();
+    }
+
+    /**
+     * Get Stripe payment method service
+     *
+     * @return StripePaymentMethodService
+     */
+    protected function getStripePaymentService(): StripePaymentMethodService
+    {
+        if ($this->stripePaymentService === null) {
+            $this->stripePaymentService = oxNew(StripePaymentMethodService::class);
+        }
+        return $this->stripePaymentService;
     }
 
     /**
@@ -64,21 +94,88 @@ class PaymentController extends PaymentController_parent
     }
 
     /**
-     * Removes Stripe payment methods which are not available for the current basket situation. The limiting factors can be:
-     * 1. Config option "blStripeRemoveByBillingCountry" activated AND payment method is not available for given billing country
-     * 2. Config option "blStripeRemoveByBasketCurrency" activated AND payment method is not available for given basket currency
-     * 3. BasketSum is outside the min-/max-limits of the payment method
-     * 4. Payment method has a B2B restriction and order does not belong to this category
+     * Removes Stripe payment methods which are not available for the current basket situation
+     *
+     * Uses the new generic PaymentMethodFilter service when available, with fallback to legacy filtering.
+     *
+     * Limiting factors:
+     * 1. Config option "blStripeRemoveByBillingCountry" AND payment method not available for billing country
+     * 2. Config option "blStripeRemoveByBasketCurrency" AND payment method not available for basket currency
+     * 3. BasketSum outside min-/max-limits of payment method
+     * 4. Payment method has B2B restriction and order not B2B
      *
      * @return void
      */
     protected function stripeRemoveUnavailablePaymentMethods()
     {
         $paymentList = parent::getPaymentList();
-        $oPaymentHelper = PaymentHelper::getInstance();
+
+        // Try to use enhanced service if available
+        try {
+            $stripeService = $this->getStripePaymentService();
+
+            // Check if Stripe is configured
+            if (!$stripeService->isStripeConfigured()) {
+                // Remove all Stripe payment methods if not configured
+                foreach ($paymentList as $payment) {
+                    if (method_exists($payment, 'isStripePaymentMethod') && $payment->isStripePaymentMethod() === true) {
+                        unset($this->_oPaymentList[$payment->getId()]);
+                    }
+                }
+                return;
+            }
+
+            // Get filter settings
+            $removeByCountry = (bool) $this->paymentService->getShopConfVar('blStripeRemoveByBillingCountry');
+            $removeByCurrency = (bool) PaymentService::getInstance()->getShopConfVar('blStripeRemoveByBasketCurrency');
+
+            // Get basket
+            $basket = Registry::getSession()->getBasket();
+
+            // Get available payment methods using the new filter service
+            $availableMethods = $stripeService->getAvailablePaymentMethods(
+                $basket,
+                $removeByCountry,
+                $removeByCurrency
+            );
+
+            // Remove unavailable methods from payment list
+            foreach ($paymentList as $payment) {
+                if (method_exists($payment, 'isStripePaymentMethod') && $payment->isStripePaymentMethod() === true) {
+                    $methodId = $payment->getId();
+
+                    // If method is not in available list, remove it
+                    if (!in_array($methodId, $availableMethods, true)) {
+                        unset($this->_oPaymentList[$methodId]);
+
+                        Registry::getLogger()->debug("Removed unavailable Stripe payment method", [
+                            'methodId' => $methodId,
+                        ]);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Fallback to legacy filtering if enhanced service is not available
+            Registry::getLogger()->debug("Using legacy payment filtering", [
+                'reason' => $e->getMessage()
+            ]);
+
+            $this->stripeLegacyRemoveUnavailablePaymentMethods();
+        }
+    }
+
+    /**
+     * Legacy payment method filtering (fallback)
+     *
+     * @return void
+     */
+    protected function stripeLegacyRemoveUnavailablePaymentMethods()
+    {
+        $paymentList = parent::getPaymentList();
+        $oPaymentHelper = PaymentService::getInstance();
         $sToken = $oPaymentHelper->getStripeToken($oPaymentHelper->getStripeMode());
-        $blRemoveByBillingCountry = (bool)PaymentHelper::getInstance()->getShopConfVar('blStripeRemoveByBillingCountry');
-        $blRemoveByBasketCurrency = (bool)PaymentHelper::getInstance()->getShopConfVar('blStripeRemoveByBasketCurrency');
+        $blRemoveByBillingCountry = (bool)PaymentService::getInstance()->getShopConfVar('blStripeRemoveByBillingCountry');
+        $blRemoveByBasketCurrency = (bool)PaymentService::getInstance()->getShopConfVar('blStripeRemoveByBasketCurrency');
         $oBasket = Registry::getSession()->getBasket();
         $sBillingCountryCode = $this->stripeGetBillingCountry($oBasket);
         $sCurrency = $oBasket->getBasketCurrency()->name;
@@ -99,7 +196,7 @@ class PaymentController extends PaymentController_parent
     }
 
     /**
-     * Template variable getter. Returns paymentlist
+     * Template variable getter. Returns payment list
      *
      * @return object
      */
@@ -111,6 +208,8 @@ class PaymentController extends PaymentController_parent
     }
 
     /**
+     * Validate payment selection
+     *
      * @return string
      */
     public function validatepayment()
@@ -118,15 +217,32 @@ class PaymentController extends PaymentController_parent
         $mRet = parent::validatepayment();
 
         $sPaymentId = Registry::getRequest()->getRequestParameter('paymentid');
-        if (!PaymentHelper::getInstance()->isStripePaymentMethod($sPaymentId)) {
+
+        // Try to use enhanced service, fallback to legacy helper
+        try {
+            $stripeService = $this->getStripePaymentService();
+            $isStripeMethod = $stripeService->isStripePaymentMethod($sPaymentId);
+        } catch (\Exception $e) {
+            $isStripeMethod = PaymentService::getInstance()->isStripePaymentMethod($sPaymentId);
+        }
+
+        if (!$isStripeMethod) {
             return $mRet;
         }
+
         try {
             $oBasket = Registry::getSession()->getBasket();
-            $oStripePaymentModel = PaymentHelper::getInstance()->getStripePaymentModel($sPaymentId);
+
+            // Try enhanced service first, fallback to legacy
+            try {
+                $stripeService = $this->getStripePaymentService();
+                $oStripePaymentModel = $stripeService->getPaymentMethodModel($sPaymentId);
+            } catch (\Exception $e) {
+                $oStripePaymentModel = PaymentService::getInstance()->getStripePaymentModel($sPaymentId);
+            }
 
             if ($sPaymentId == 'stripecreditcard') {
-                $sStripeTokenId =  $this->getDynValue()['stripe_token_id'];
+                $sStripeTokenId = $this->getDynValue()['stripe_token_id'];
                 $oStripeCardRequest = $oStripePaymentModel->getCardRequest();
                 $oStripeCardRequest->addRequestParameters($sStripeTokenId, $oBasket->getUser());
                 $oCard = $oStripeCardRequest->execute();
@@ -151,10 +267,54 @@ class PaymentController extends PaymentController_parent
     }
 
     /**
+     * Get Sofort supported countries
+     *
      * @return string[]
      */
     public function stripeGetSofortCountries()
     {
-        return ['AT','BE','DE','ES','IT','NL'];
+        return ['AT', 'BE', 'DE', 'ES', 'IT', 'NL'];
+    }
+
+    /**
+     * Get all registered Stripe payment methods for template
+     *
+     * @return array<string, string>
+     */
+    public function getStripePaymentMethods(): array
+    {
+        try {
+            return $this->getStripePaymentService()->getAllPaymentMethods();
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Get Stripe publishable key for frontend
+     *
+     * @return string
+     */
+    public function getStripePublishableKey(): string
+    {
+        try {
+            return $this->getStripePaymentService()->getPublishableKey();
+        } catch (\Exception $e) {
+            return '';
+        }
+    }
+
+    /**
+     * Check if Stripe is in test mode
+     *
+     * @return bool
+     */
+    public function isStripeTestMode(): bool
+    {
+        try {
+            return $this->getStripePaymentService()->getStripeMode() === 'test';
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

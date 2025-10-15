@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\Stripe\PaymentComponent\Contract;
+namespace OxidSolutionCatalysts\Stripe\Contract;
 
 /**
  * Interface for client-side encryption (PCI compliance)

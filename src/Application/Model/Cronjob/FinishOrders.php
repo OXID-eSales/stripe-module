@@ -9,7 +9,7 @@ namespace OxidSolutionCatalysts\Stripe\Application\Model\Cronjob;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
+use OxidSolutionCatalysts\Stripe\Service\PaymentService as Payment;
 
 class FinishOrders extends Base
 {
