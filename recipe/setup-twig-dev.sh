@@ -48,7 +48,7 @@ cd "$PROJECT_ROOT" || exit 1
 
 $MODULE_ROOT/recipe/parts/shared/prepare_shop_package.sh -e"${edition}" -b"${branch}" || exit 1
 $MODULE_ROOT/recipe/parts/shared/require_twig_components.sh -e"${edition}" -b"${branch}"
-$MODULE_ROOT/recipe/parts/shared/require_theme_dev.sh -t"apex" -b"${branch}"
+$MODULE_ROOT/recipe/parts/shared/require_theme_dev.sh -t"apex" -b"v3.0.0" -e"${edition}"
 $MODULE_ROOT/recipe/parts/shared/require_demodata_package.sh -e"${edition}" -b"${branch}"
 
 mkdir -p "$PROJECT_ROOT"/source/extensions || exit 1
