@@ -2,17 +2,11 @@
 
 **Modern Headless Payment Architecture for Enterprise E-Commerce**
 
-Version: 2.0.0 (Refactored)
-Date: 2025-10-09
-Based on: OXID PayPal Module v2.6.2-rc.4 (Refactored to Event-Driven)
-
----
-
 ## What Is This?
 
 This documentation describes a **modern event-driven payment component architecture** that replaces traditional controller-driven checkout flows with a headless, event-based system. Build payment modules for multiple providers on top of this foundation:
 
-- **Payment Providers:** Stripe, PayPal, Adyen, Amazon Pay, Mollie, Klarna, etc.
+- **Payment Providers:** Stripe, Paypal, Adyen, Amazon Pay, Mollie, Klarna, etc.
 - **E-commerce Platforms:** OXID, Shopware, Magento, WooCommerce, custom platforms
 
 ## Architecture Philosophy
@@ -36,7 +30,7 @@ Multiple Subscribers react → Response returned
 2. **Business logic in event handlers**: All workflows live in event handlers
 3. **Request data caching**: Fetch once, share across all handlers (50-70% fewer queries)
 4. **Extended models**: Core shop models extended with payment capabilities
-5. **Provider abstraction**: Stripe/PayPal/etc. modules built on top of component
+5. **Provider abstraction**: Stripe/Amazon/etc. modules built on top of component
 
 ## How to Use This Documentation
 
@@ -310,11 +304,11 @@ class StripeWebhookHandler extends WebhookHandlerBase {
 - [ ] Create migration for `payment_transaction` table
 - [ ] Write integration guide
 
-### Phase 2: Refactor PayPal Module
-- [ ] Update PayPal module to use component package
+### Phase 2: Refactor Paymenter Module
+- [ ] Update Paymenter module to use component package
 - [ ] Verify all functionality works
 - [ ] Update tests
-- [ ] Document PayPal-specific extensions
+- [ ] Document Paymenter-specific extensions
 
 ### Phase 3: Build Second Provider (Validation)
 - [ ] Choose provider (e.g., Stripe)
@@ -428,9 +422,9 @@ $transaction = $paymentService->trackTransaction(
 ## Related Documentation
 
 ### In This Repository
-- **docs/README.md** - PayPal module main docs
-- **docs/MD/PayPal_Module_Documentation.md** - Complete PayPal docs
-- **docs/UML/** - PayPal-specific UML diagrams
+- **docs/README.md** - Paymenter module main docs
+- **docs/MD/Paymenter_Module_Documentation.md** - Complete Paymenter docs
+- **docs/UML/** - Paymenter-specific UML diagrams
 
 ### External Resources
 - OXID eShop Documentation: https://docs.oxid-esales.com
@@ -443,7 +437,7 @@ $transaction = $paymentService->trackTransaction(
 ## Contributing
 
 ### Found an issue?
-Please open an issue in the OXID PayPal repository
+Please open an issue in the OXID Paymenter repository
 
 ### Suggestions for the component package?
 Contact OXID eSales development team
@@ -452,7 +446,7 @@ Contact OXID eSales development team
 
 ## License
 
-This documentation is part of the OXID PayPal module developed by OXID eSales AG.
+This documentation is part of the OXID Paymenter module developed by OXID eSales AG.
 
 GPL-3.0 License - See LICENSE file in repository root.
 
@@ -461,7 +455,7 @@ GPL-3.0 License - See LICENSE file in repository root.
 ## Credits
 
 **Analyzed by:** Claude (Anthropic)
-**Based on:** OXID PayPal Module v2.6.2-rc.4
+**Based on:** OXID Paymenter Module v2.6.2-rc.4
 **Organization:** OXID eSales AG
 **Date:** 2025-10-09
 

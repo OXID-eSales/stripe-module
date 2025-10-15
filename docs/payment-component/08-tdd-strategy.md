@@ -1886,13 +1886,13 @@ class CheckoutFlowTest extends Unit
     {
         // Similar flow but verify webhook processing
         $this->tester->amOnPage('/checkout');
-        $this->tester->selectOption('payment_method', 'paypal');
-        $this->tester->click('Pay with PayPal');
+        $this->tester->selectOption('payment_method', 'Paymenter');
+        $this->tester->click('Pay with Paymenter');
 
-        // Redirected to PayPal
-        $this->tester->seeInCurrentUrl('paypal.com');
+        // Redirected to Paymenter
+        $this->tester->seeInCurrentUrl('Paymenter.com');
 
-        // Complete payment on PayPal (sandbox)
+        // Complete payment on Paymenter (sandbox)
         $this->tester->fillField('email', 'buyer@test.com');
         $this->tester->fillField('password', 'test123');
         $this->tester->click('Log In');
@@ -1914,7 +1914,7 @@ class CheckoutFlowTest extends Unit
 
 **Test Cases:**
 - ✓ Complete checkout with card payment
-- ✓ Complete checkout with redirect payment (PayPal)
+- ✓ Complete checkout with redirect payment (Paymenter)
 - ✓ Webhook processing after redirect
 - ✓ Failed payment handling
 - ✓ Abandoned cart recovery
@@ -2088,7 +2088,7 @@ class GraphQLApiTest extends Unit
 
 2. **Use Provider Sandboxes:**
    - Stripe: Test mode keys
-   - PayPal: Sandbox accounts
+   - Paymenter: Sandbox accounts
    - Adyen: Test environment
 
 3. **Clean Up After Tests:**
@@ -2761,7 +2761,7 @@ jobs:
         run: vendor/bin/codecept run e2e
         env:
           STRIPE_TEST_KEY: ${{ secrets.STRIPE_TEST_KEY }}
-          PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
+          Paymenter_SANDBOX_CLIENT_ID: ${{ secrets.Paymenter_SANDBOX_CLIENT_ID }}
 ```
 
 ---

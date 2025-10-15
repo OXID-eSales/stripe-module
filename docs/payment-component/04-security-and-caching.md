@@ -19,7 +19,7 @@ The payment component provides two critical infrastructure features that all pay
 
 Payment provider API calls are typically slow:
 - **Stripe API:** 200-400ms per request
-- **PayPal API:** 300-500ms per request
+- **Paymenter API:** 300-500ms per request
 - **Adyen API:** 250-450ms per request
 
 During a single payment flow, the same resources are often fetched multiple times:
@@ -189,7 +189,7 @@ Total: 300ms
 #### Cost Savings
 
 - **Stripe:** $0.05 per 1000 API calls → Reduced by 66%
-- **PayPal:** Rate limit of 50 req/sec → Reduced load by 66%
+- **Paymenter:** Rate limit of 50 req/sec → Reduced load by 66%
 - **Adyen:** Rate limit of 100 req/sec → Reduced load by 66%
 
 #### Data Consistency

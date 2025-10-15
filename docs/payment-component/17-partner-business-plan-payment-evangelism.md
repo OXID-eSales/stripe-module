@@ -140,7 +140,7 @@ The OXID Payment Component represents a **paradigm shift** in e-commerce payment
 > "We can build you a Stripe integration for €80K in 6 months."
 
 **Payment Component Pitch (Strong):**
-> "We'll migrate you to OXID Enterprise with enterprise-grade payment infrastructure including Stripe, PayPal, Adyen, real-time fraud detection, and 99.9% uptime monitoring—all for €200K, delivered in 3 months. Your current platform can't even offer this as an add-on."
+> "We'll migrate you to OXID Enterprise with enterprise-grade payment infrastructure including Stripe, Paymenter, Adyen, real-time fraud detection, and 99.9% uptime monitoring—all for €200K, delivered in 3 months. Your current platform can't even offer this as an add-on."
 
 **Competitive Advantage Matrix:**
 
@@ -328,7 +328,7 @@ The OXID Payment Component represents a **paradigm shift** in e-commerce payment
 - ✅ Fraud costs >0.8% of GMV
 - ✅ Checkout conversion <2.5%
 - ✅ Single payment provider (risk!)
-- ✅ Wanted to add Klarna/PayPal but too expensive
+- ✅ Wanted to add Klarna/Paymenter but too expensive
 - ✅ No real-time monitoring
 - ✅ Taking 3+ days to notice payment issues
 
@@ -357,7 +357,7 @@ The OXID Payment Component represents a **paradigm shift** in e-commerce payment
 *Show them what they CAN'T get elsewhere:*
 
 **Live Demo Points:**
-1. **Provider switching** (show switching from Stripe to PayPal in minutes, not months)
+1. **Provider switching** (show switching from Stripe to Paymenter in minutes, not months)
 2. **Fraud detection** (show real-time alerts, ML anomaly detection)
 3. **Monitoring dashboard** (show 24/7 visibility into payment health)
 4. **Multi-provider optimization** (show smart routing to save 0.3% on fees)
@@ -937,7 +937,7 @@ Establish master partners in major markets.
 - Hands-on: Install & configure (90 min)
 
 **Afternoon (13:30-17:00):**
-- Provider integration workshop (Stripe + PayPal) (90 min)
+- Provider integration workshop (Stripe + Paymenter) (90 min)
 - Fraud detection setup (60 min)
 - Monitoring platform tour (45 min)
 - Certification test (30 min)
@@ -1263,7 +1263,7 @@ P.S. Here's a recent case study of a similar-sized shop that saved €240K in ye
 
 ---
 
-#### Partnership #2: Payment Providers (Stripe, Adyen, PayPal)
+#### Partnership #2: Payment Providers (Stripe, Adyen, Paymenter)
 
 **Goal:** Access provider sales teams for co-selling and better rates.
 

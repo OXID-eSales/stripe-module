@@ -1,17 +1,13 @@
 # Payment Component Documentation - Complete Index
 
-**Generated:** 2025-10-09
-**Source:** OXID PayPal Module v2.6.2-rc.4
-**Purpose:** Extract reusable payment patterns for building payment modules across providers
-
-The Payment Component is a unified, provider-agnostic, event-driven foundation for OXID eShop that enables seamless integration of multiple payment providers (Stripe, PayPal, Adyen, etc.) with 70% less development effort, provides AI-powered programmatic buying via MCP protocol and GraphQL API for
+The Payment Component is a unified, provider-agnostic, event-driven foundation for OXID eShop that enables seamless integration of multiple payment providers (Stripe, Amazon, Adyen, etc.) with 70% less development effort, provides AI-powered programmatic buying via MCP protocol and GraphQL API for
 mobile/headless commerce, implements PCI-compliant client-side encryption for enhanced security, and significantly increases conversion rates by 30-50% through configurable one-page checkout experience—all while maintaining a single, consistent, testable backend architecture.
 
 ---
 
 ## Overview
 
-This documentation set describes **reusable architectural patterns** extracted from the OXID PayPal module that can serve as the foundation for:
+This documentation set describes **reusable architectural patterns**  that can serve as the foundation for:
 
 1. **A reusable component package:** `oxid-esales/payment-component`
 2. **Payment modules for multiple providers:** Stripe, Amazon Pay, Mollie, Adyen, etc.
@@ -278,7 +274,7 @@ plantuml -tsvg diagram.puml
 
 ### Core Table: `payment_transaction`
 
-**Current name:** `oscpaypal_order`
+**Current name:** `oscPaymenter_order`
 **Proposed name:** `payment_transaction`
 
 **Purpose:** Track payment provider transactions and link them to shop orders
@@ -391,7 +387,7 @@ plantuml -tsvg diagram.puml
 **A:** The patterns are largely platform-agnostic. Shopware 6 (Symfony-based) would be very compatible. Magento 2 and WooCommerce would need some adaptation.
 
 ### Q: How much work to extract the component?
-**A:** Estimated 2-3 weeks for initial extraction, 1-2 weeks for refactoring PayPal module to use it, 1-2 weeks for validation with second provider.
+**A:** Estimated 2-3 weeks for initial extraction, 1-2 weeks for refactoring Paymenter module to use it, 1-2 weeks for validation with second provider.
 
 ### Q: What's the ROI?
 **A:** 83% time savings per new payment provider. If you build 3+ providers, the component pays for itself.
@@ -435,7 +431,7 @@ plantuml -tsvg diagram.puml
 ## Credits
 
 **Analyzed by:** Claude (Anthropic AI)
-**Based on:** OXID PayPal Module v2.6.2-rc.4
+**Based on:** OXID Paymenter Module v2.6.2-rc.4
 **Organization:** OXID eSales AG
 **Date:** 2025-10-09
 **License:** GPL-3.0
@@ -447,7 +443,7 @@ plantuml -tsvg diagram.puml
 For questions about this documentation:
 - Review the markdown files in order
 - Check the diagrams for visual understanding
-- Refer to original PayPal module source code
+- Refer to original Paymenter module source code
 
 For questions about OXID modules:
 - Email: info@oxid-esales.com

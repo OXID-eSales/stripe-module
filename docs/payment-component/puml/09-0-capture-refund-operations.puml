@@ -11,7 +11,7 @@ title Event-Driven Capture & Refund Operations\n(Multi-Channel Triggers - One Ba
 package "Trigger Channels" as CHANNELS #E8EAF6 {
 
   ' Webhook
-  actor "Payment Provider\n(Stripe/PayPal)" as PROVIDER #90CAF9
+  actor "Payment Provider\n(Stripe/Paymenter)" as PROVIDER #90CAF9
   component "Webhook\n/webhook/stripe" as WEBHOOK #64B5F6 {
     component [Signature Verification] as SIG_VERIFY
   }
@@ -164,7 +164,7 @@ package "Event Subscribers" as SUBSCRIBERS #E8F5E9 {
 ' =====================================
 cloud "Payment Providers" as PROVIDERS #E0F2F1 {
   component [Stripe API\n/v1/payment_intents/:id/capture] as STRIPE
-  component [PayPal API\n/v2/payments/captures/:id] as PAYPAL
+  component [Paymenter API\n/v2/payments/captures/:id] as Paymenter
   component [Adyen API\n/capture] as ADYEN
 }
 
@@ -280,11 +280,11 @@ CAPTURE_HANDLER --> SVC_CAPTURE : capturePayment()
 REFUND_HANDLER --> SVC_REFUND : refundPayment()
 
 SVC_CAPTURE --> STRIPE : POST /capture
-SVC_CAPTURE --> PAYPAL : POST /capture
+SVC_CAPTURE --> Paymenter : POST /capture
 SVC_CAPTURE --> ADYEN : POST /capture
 
 SVC_REFUND --> STRIPE : POST /refund
-SVC_REFUND --> PAYPAL : POST /refund
+SVC_REFUND --> Paymenter : POST /refund
 SVC_REFUND --> ADYEN : POST /refund
 
 note bottom of PAYMENT_SVC

@@ -190,14 +190,14 @@ Client: "Uh... we'd be screwed?"
 You: "Exactly. Last year, Stripe had 3 hours of downtime on
       a Friday. If you're doing €50K/hour, that's €150K lost."
 
-Client: "We talked about adding PayPal as backup, but our
+Client: "We talked about adding Paymenter as backup, but our
       developer said it would take 6 months and cost €80K..."
 
 You: "With the OXID Payment Component, adding a new provider
-      takes 2 hours, not 6 months. You can have Stripe, PayPal,
+      takes 2 hours, not 6 months. You can have Stripe, Paymenter,
       Adyen, and Klarna—all active, with automatic failover.
 
-      If Stripe goes down, payments automatically route to PayPal.
+      If Stripe goes down, payments automatically route to Paymenter.
       Your customers don't even notice."
 
 Client: "That's exactly what we need. How much?"
@@ -407,7 +407,7 @@ Result: 65X more profit than Year 0
 
 **What's Included:**
 - ✅ Core payment service layer (400 hours saved)
-- ✅ Provider integrations for Stripe, PayPal, Adyen (600 hours saved)
+- ✅ Provider integrations for Stripe, Paymenter, Adyen (600 hours saved)
 - ✅ Fraud detection & security (200 hours saved)
 - ✅ Real-time monitoring infrastructure (150 hours saved)
 - ✅ Complete test suite (200 hours saved)

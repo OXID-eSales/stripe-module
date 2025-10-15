@@ -55,7 +55,7 @@ Admin clicks "Capture" → Controller emits CaptureRequestedEvent → Handler ca
 
 ### Benefits:
 
-1. **Decoupled** - Controller doesn't know about Stripe/PayPal/Adyen
+1. **Decoupled** - Controller doesn't know about Stripe/Paymenter/Adyen
 2. **Testable** - Can test handlers without HTTP requests
 3. **Extensible** - Add new subscribers without changing existing code
 4. **Auditable** - Every operation is an event with full context
@@ -75,7 +75,7 @@ Stripe Webhook → WebhookController → PaymentCapturedEvent → Handlers updat
 
 **Example Webhook Events:**
 - Stripe: `payment_intent.succeeded`, `charge.captured`, `charge.refunded`
-- PayPal: `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED`
+- Paymenter: `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED`
 - Adyen: `CAPTURE`, `REFUND`
 
 **Flow:**
@@ -205,7 +205,7 @@ POST /mcp/tools
 3. PaymentCaptureHandler
    - Load order from DB
    - Validate order state (must be AUTHORIZED)
-   - Call provider API (Stripe/PayPal/Adyen)
+   - Call provider API (Stripe/Paypoal/Adyen)
    - Update osc_transaction table
    ↓
 4. Provider processes capture
@@ -257,7 +257,7 @@ class PaymentCaptureHandler
         // 4. Track transaction
         $this->paymentService->trackTransaction(
             $order->getId(),
-            $order->getProviderName(), // 'stripe', 'paypal', etc.
+            $order->getProviderName(), // 'stripe', 'Paypal', etc.
             $captureResult->getCaptureId(),
             'CAPTURED',
             'capture',
@@ -308,7 +308,7 @@ class PaymentCaptureHandler
    - Load order from DB
    - Validate order state (must be COMPLETED or CAPTURED)
    - Validate amount ≤ captured amount
-   - Call provider API (Stripe/PayPal/Adyen)
+   - Call provider API (Stripe/Paypal/Adyen)
    - Update osc_transaction table
    ↓
 4. Provider processes refund
@@ -435,7 +435,7 @@ class PaymentRefundHandler
          ┌────────▼────────┐ ┌─────▼──────┐
          │ Call Provider   │ │  Update    │
          │ API             │ │  Database  │
-         │ (Stripe/PayPal) │ │  (osc_*)   │
+         │ (Stripe/Paymenter) │ │  (osc_*)   │
          └────────┬────────┘ └─────┬──────┘
                   │                │
                   └────────┬───────┘
@@ -822,7 +822,7 @@ The Payment Component's **event-driven capture and refund operations** provide:
 
 ✅ **Multi-channel triggers:** Webhook, Backend, API, MCP
 ✅ **Unified backend:** Same business logic for all channels
-✅ **Provider-agnostic:** Works with Stripe, PayPal, Adyen, etc.
+✅ **Provider-agnostic:** Works with Stripe, Paypal, Adyen, etc.
 ✅ **Idempotent:** Safe retries, no duplicate operations
 ✅ **Secure:** Signature verification, JWT auth, permission checks
 ✅ **Auditable:** Full event trail with context

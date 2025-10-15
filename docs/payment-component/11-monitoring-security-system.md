@@ -264,7 +264,7 @@ class TransactionMonitor
             'customer_type' => $event->isReturningCustomer() ? 'returning' : 'new',
 
             // Payment method (anonymized)
-            'payment_method' => $event->getPaymentMethod(), // card, paypal, etc.
+            'payment_method' => $event->getPaymentMethod(), // card, Paypal, etc.
             'card_brand' => $event->getCardBrand(), // visa, mastercard (no card number)
             'card_last4' => $event->getCardLast4(), // only last 4 digits
 

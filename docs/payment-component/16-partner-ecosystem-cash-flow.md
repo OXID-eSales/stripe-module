@@ -89,7 +89,7 @@ The partner program has three tiers based on capabilities, annual revenue potent
 
 **Capabilities:**
 - Basic payment module implementations
-- Single provider integrations (Stripe or PayPal)
+- Single provider integrations (Stripe or Paypal)
 - Standard monitoring setup
 - Email support for clients
 
@@ -221,7 +221,7 @@ Partners can monetize the OXID Payment Component through six primary revenue str
 - Audit current payment infrastructure
 - Design migration strategy
 - Implement core payment component
-- Integrate 1-2 primary providers (Stripe, PayPal)
+- Integrate 1-2 primary providers (Stripe, Paypal)
 - Data migration (historical transactions)
 - Testing & QA
 - Training shop staff
@@ -662,9 +662,9 @@ Problem: Every project starts from zero
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│ Project 2: PayPal Integration (different client)            │
+│ Project 2: Paypal Integration (different client)            │
 │ ├─ Core payment logic: 400 hours (START OVER!)             │
-│ ├─ PayPal adapter: 250 hours                                │
+│ ├─ Paymenter adapter: 250 hours                                │
 │ ├─ Security/compliance: 150 hours                           │
 │ ├─ Testing: 200 hours                                       │
 │ └─ Total: 1,000 hours × €100 = €100K cost                   │
@@ -701,9 +701,9 @@ Opportunity: Reusable foundation accelerates every project
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│ Project 2: PayPal Integration (different client)            │
+│ Project 2: Paypal Integration (different client)            │
 │ ├─ Core payment logic: ✅ ALREADY DONE                      │
-│ ├─ PayPal adapter: ✅ ALREADY DONE                          │
+│ ├─ Paymenter adapter: ✅ ALREADY DONE                          │
 │ ├─ Security/compliance: ✅ ALREADY DONE                     │
 │ ├─ Testing infrastructure: ✅ ALREADY DONE                  │
 │ ├─ Custom integration work: 120 hours                       │
@@ -725,18 +725,18 @@ Result: Can do 12-20 projects per year. High margins. Low risk.
 
 **What's Pre-Built:**
 
-| Component | Hours Saved | Value @ €100/hr |
-|-----------|-------------|-----------------|
-| Core payment service layer | 300-400 | €30K-€40K |
+| Component                                    | Hours Saved | Value @ €100/hr |
+|----------------------------------------------|-------------|-----------------|
+| Core payment service layer                   | 300-400 | €30K-€40K |
 | State machine (authorize → capture → refund) | 150-200 | €15K-€20K |
-| Idempotency handling | 80-120 | €8K-€12K |
-| Webhook processing | 100-150 | €10K-€15K |
-| Provider adapters (Stripe, PayPal, Adyen) | 400-600 | €40K-€60K |
-| Security (CSRF, XSS, injection prevention) | 150-200 | €15K-€20K |
-| PCI-DSS compliance patterns | 100-150 | €10K-€15K |
-| Unit + integration test suite | 200-300 | €20K-€30K |
-| Documentation | 80-120 | €8K-€12K |
-| **Total** | **1,560-2,340 hours** | **€156K-€234K** |
+| Idempotency handling                         | 80-120 | €8K-€12K |
+| Webhook processing                           | 100-150 | €10K-€15K |
+| Provider adapters (Stripe, Paypal, Adyen)    | 400-600 | €40K-€60K |
+| Security (CSRF, XSS, injection prevention)   | 150-200 | €15K-€20K |
+| PCI-DSS compliance patterns                  | 100-150 | €10K-€15K |
+| Unit + integration test suite                | 200-300 | €20K-€30K |
+| Documentation                                | 80-120 | €8K-€12K |
+| **Total**                                    | **1,560-2,340 hours** | **€156K-€234K** |
 
 **Impact on Project Timeline:**
 
@@ -1746,7 +1746,7 @@ Gold Partner refers 5 projects/year they can't handle:
 - Annual profit: €52.5K
 
 **Challenge:**
-Client requested multi-provider payment system (Stripe + PayPal + Klarna). Quoted €180K, 9 months. Client rejected (too expensive, too long).
+Client requested multi-provider payment system (Stripe + Paymenter + Klarna). Quoted €180K, 9 months. Client rejected (too expensive, too long).
 
 **After Platform (Year 1):**
 - Joined as Silver Partner (free)

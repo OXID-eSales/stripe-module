@@ -62,31 +62,31 @@ note right of WHB
 end note
 
 WHB -> WHB : getEventPayload(event)
-WHB -> WHB : getPayPalOrderIdFromResource()\n**Abstract - implemented in concrete**
-WHB -> WHB : getPayPalTransactionIdFromResource()\n**Abstract - implemented in concrete**
+WHB -> WHB : getPaymenterOrderIdFromResource()\n**Abstract - implemented in concrete**
+WHB -> WHB : getPaymenterTransactionIdFromResource()\n**Abstract - implemented in concrete**
 
-WHB -> OR : getShopOrderByPayPalOrderId(orderId)
+WHB -> OR : getShopOrderByPaymenterOrderId(orderId)
 activate OR
-OR -> DB : SELECT * FROM oxorder\nWHERE oxid = ...\nJOIN oscpaypal_order
+OR -> DB : SELECT * FROM oxorder\nWHERE oxid = ...\nJOIN oscPaymenter_order
 activate DB
 DB --> OR : Order data
 deactivate DB
 OR --> WHB : Order object
 deactivate OR
 
-WHB -> OR : paypalOrderByOrderIdAndPayPalId(...)
+WHB -> OR : PaymenterOrderByOrderIdAndPaymenterId(...)
 activate OR
-OR -> DB : SELECT * FROM oscpaypal_order\nWHERE oxorderid = ...
+OR -> DB : SELECT * FROM oscPaymenter_order\nWHERE oxorderid = ...
 activate DB
 DB --> OR : PaymentTransaction data
 deactivate DB
 OR --> WHB : PaymentTransaction object
 deactivate OR
 
-WHB -> WHB : handleWebhookTasks(order, paypalOrder, resource)
+WHB -> WHB : handleWebhookTasks(order, PaymenterOrder, resource)
 
 WHB -> WHB : getTransactionIdFromResource()\n**Abstract - implemented in concrete**
-WHB -> PS : fetchOrderFields(paypalOrderId)
+WHB -> PS : fetchOrderFields(PaymenterOrderId)
 note right
   Fetch latest order status
   from payment provider API
@@ -97,13 +97,13 @@ deactivate PS
 
 WHB -> WHB : getStatusFromResource()\n**Abstract - implemented in concrete**
 
-WHB -> WHB : updateStatus(paypalOrder, status, transactionId)
-WHB -> DB : UPDATE oscpaypal_order\nSET oscpaypalstatus = ?,\noscpaypaltransactionid = ?
+WHB -> WHB : updateStatus(PaymenterOrder, status, transactionId)
+WHB -> DB : UPDATE oscPaymenter_order\nSET oscPaymenterstatus = ?,\noscPaymentertransactionid = ?
 activate DB
 DB --> WHB : Updated
 deactivate DB
 
-WHB -> WHB : markShopOrderPaymentStatus(order, paypalOrder)
+WHB -> WHB : markShopOrderPaymentStatus(order, PaymenterOrder)
 
 alt Order is paid (status = COMPLETED)
   WHB -> Order : markOrderPaid()
@@ -112,7 +112,7 @@ alt Order is paid (status = COMPLETED)
   activate DB
   DB --> Order : Updated
   deactivate DB
-  Order -> Order : sendPayPalOrderByEmail()
+  Order -> Order : sendPaymenterOrderByEmail()
   Order --> WHB : Done
   deactivate Order
 end
@@ -154,8 +154,8 @@ note over Provider, DB
   - CheckoutPaymentApprovalReverseHandler (CHECKOUT.PAYMENT.APPROVAL.REVERSED)
 
   Each implements abstract methods:
-  - getPayPalOrderIdFromResource()
-  - getPayPalTransactionIdFromResource()
+  - getPaymenterOrderIdFromResource()
+  - getPaymenterTransactionIdFromResource()
   - getStatusFromResource()
 end note
 

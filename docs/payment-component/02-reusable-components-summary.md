@@ -21,7 +21,7 @@ This document summarizes all **reusable event-driven components** that form the 
 - **Event Handlers**: Contain all business logic
 - **Request Caching**: Data fetched once, shared across handlers
 - **Extended Models**: Core shop models extended with payment capabilities
-- **Provider Modules**: Built on top of component (Stripe, PayPal, Adyen, etc.)
+- **Provider Modules**: Built on top of component (Stripe, Paymenter, Adyen, etc.)
 
 ---
 
@@ -139,7 +139,7 @@ abstract class AbstractPaymentHandler {
 
 ### 1.1 Transaction Tracking Table
 
-**Current Name:** `oscpaypal_order`
+**Current Name:** `oscPaymenter_order`
 **Proposed Name:** `payment_transaction`
 
 ```sql
@@ -200,7 +200,7 @@ interface PaymentOrderStates {
 
 ### 1.3 User Payment Data Extension
 
-**Current Field:** `oxuser.oscpaypalcustomerid`
+**Current Field:** `oxuser.oscPaymentercustomerid`
 **Proposed Field:** `oxuser.payment_provider_customer_id`
 
 Stores provider's customer ID for saved payment methods (vaulting/tokenization).
@@ -263,7 +263,7 @@ ADD INDEX idx_payment_provider_order (payment_provider_order_id);
 
 ### 2.1 PaymentTransaction Model
 
-**Current Name:** `PayPalOrder`
+**Current Name:** `PaymenterOrder`
 **Proposed Name:** `PaymentTransaction`
 
 ```php
@@ -331,7 +331,7 @@ class Order extends ShopOrder {
 
 ```php
 class Basket extends ShopBasket {
-    // Amount breakdown methods (rename PayPal→Payment)
+    // Amount breakdown methods (rename Paymenter→Payment)
     public function getPaymentWrappingCosts(): float;
     public function getPaymentGiftCardCosts(): float;
     public function getPaymentHandlingFee(): float;
@@ -415,7 +415,7 @@ interface OrderRepositoryInterface {
 }
 ```
 
-**Reusability:** 100% - Rename PayPal→Provider, fully generic
+**Reusability:** 100% - Rename Paymenter→Provider, fully generic
 
 ---
 
@@ -875,10 +875,10 @@ class PaymentCompletedSubscriber implements EventSubscriberInterface {
 
 ### What's NOT Reusable
 
-- **API Client Integration:** Provider SDKs differ (PayPal SDK vs Stripe SDK vs custom HTTP)
+- **API Client Integration:** Provider SDKs differ (Paymenter SDK vs Stripe SDK vs custom HTTP)
 - **Request/Response Formats:** JSON structures vary by provider
 - **Authentication:** OAuth vs API keys vs JWT
-- **Payment Method Specifics:** PayPal buttons vs Stripe Elements
+- **Payment Method Specifics:** Paymenter buttons vs Stripe Elements
 - **Provider UI:** Payment buttons, styling options
 - **Onboarding Process:** Partner API, seller onboarding
 

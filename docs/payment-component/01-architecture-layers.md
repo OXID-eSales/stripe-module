@@ -60,7 +60,7 @@ The payment component follows an **event-driven layered architecture** where bus
 
 ┌─────────────────────────────────────────────────────────────┐
 │                   EXTERNAL INTEGRATION                       │
-│  Payment Provider API (Stripe, PayPal, Adyen, etc.)         │
+│  Payment Provider API (Stripe, Paypal, Adyen, etc.)         │
 │  Webhook Notifications (Also emit events!)                  │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -304,7 +304,7 @@ class PaymentInitiationHandler {
 
 **Order Creation:**
 ```php
-doCreatePayPalOrder(
+doCreatePaymenterOrder(
     basket, intent, userAction, processingInstruction,
     paymentSource, clientMetadataId, partnerAttributionId,
     returnUrl, cancelUrl, setProvidedAddress
@@ -316,15 +316,15 @@ doCreatePayPalOrder(
 
 **Order Updates:**
 ```php
-doPatchPayPalOrder(basket, payPalOrderId, shopOrderId): void
+doPatchPaymenterOrder(basket, PaymenterOrderId, shopOrderId): void
 
 // Updates existing payment order with new basket data
 ```
 
 **Payment Capture:**
 ```php
-doCapturePayPalOrder(
-    order, checkoutOrderId, paymentId, payPalOrder
+doCapturePaymenterOrder(
+    order, checkoutOrderId, paymentId, PaymenterOrder
 ): Order
 
 // Captures/completes payment
@@ -345,10 +345,10 @@ doAuthorizePayment(
 
 **Transaction Tracking:**
 ```php
-trackPayPalOrder(
-    shopOrderId, payPalOrderId, paymentMethodId,
-    status, payPalTransactionId, transactionType
-): PayPalOrder
+trackPaymenterOrder(
+    shopOrderId, PaymenterOrderId, paymentMethodId,
+    status, PaymenterTransactionId, transactionType
+): PaymenterOrder
 
 // Persists transaction to database
 ```
@@ -372,11 +372,11 @@ PaymentService
 #### 1. Repository Pattern
 ```php
 interface OrderRepository {
-    paypalOrderByOrderIdAndPayPalId(
-        shopOrderId, paypalOrderId, transactionId
-    ): PayPalOrder
+    PaymenterOrderByOrderIdAndPaymenterId(
+        shopOrderId, PaymenterOrderId, transactionId
+    ): PaymenterOrder
 
-    getShopOrderByPayPalOrderId(paypalOrderId): Order
+    getShopOrderByPaymenterOrderId(PaymenterOrderId): Order
 
     cleanUpNotFinishedOrders(): void
 }
@@ -393,7 +393,7 @@ class ModuleSettings {
     isSandbox(): bool
     getClientId(): string
     getClientSecret(): string
-    getPayPalStandardCaptureStrategy(): string  // 'directly', 'delivery', 'manually'
+    getPaymenterStandardCaptureStrategy(): string  // 'directly', 'delivery', 'manually'
     isAcdcEligibility(): bool
     isPuiEligibility(): bool
     // ... 50+ configuration methods
@@ -413,7 +413,7 @@ class OrderRequestFactory {
     getRequest(
         basket, intent, userAction, customId,
         processingInstruction, paymentSource,
-        payPalClientMetadataId, returnUrl, cancelUrl,
+        PaymenterClientMetadataId, returnUrl, cancelUrl,
         setProvidedAddress
     ): OrderRequest
 }
@@ -477,7 +477,7 @@ class Order extends CoreShopOrder {
 | `PaymentMethod` | Payment method definition | 90% |
 | `ProviderOrder` | Provider order value object | 90% |
 
-**Key Model: PaymentTransaction** (formerly PayPalOrder)
+**Key Model: PaymentTransaction** (formerly PaymenterOrder)
 ```php
 class PaymentTransaction {
     private string $shopOrderId;
@@ -517,8 +517,8 @@ class Order extends EshopModelOrder {
 
 **Transaction Tracking Model:**
 ```php
-class PayPalOrder extends EshopCoreModel {
-    getPayPalOrderId(): string
+class PaymenterOrder extends EshopCoreModel {
+    getPaymenterOrderId(): string
     getTransactionId(): string
     getShopOrderId(): string
     getStatus(): string
@@ -534,13 +534,13 @@ class PayPalOrder extends EshopCoreModel {
 **Basket Amount Methods:**
 ```php
 class Basket extends EshopModelBasket {
-    getPayPalCheckoutWrapping(): float
-    getPayPalCheckoutGiftCard(): float
-    getPayPalCheckoutPayment(): float
-    getPayPalCheckoutDeliveryCosts(): float
-    getPayPalCheckoutDiscount(): float
-    getPayPalCheckoutItems(): float
-    isVirtualPayPalBasket(): bool
+    getPaymenterCheckoutWrapping(): float
+    getPaymenterCheckoutGiftCard(): float
+    getPaymenterCheckoutPayment(): float
+    getPaymenterCheckoutDeliveryCosts(): float
+    getPaymenterCheckoutDiscount(): float
+    getPaymenterCheckoutItems(): float
+    isVirtualPaymenterBasket(): bool
     isFractionQuantityItemsPresent(): bool
 }
 ```
@@ -549,22 +549,22 @@ class Basket extends EshopModelBasket {
 **Location:** `src/Event/`
 
 ```php
-class PayPalOrderCompletedEvent extends Event {
+class PaymenterOrderCompletedEvent extends Event {
     private Order $order;
     private Basket $basket;
     private User $user;
     private string $shopOrderId;
-    private string $payPalOrderId;
+    private string $PaymenterOrderId;
     private string $paymentsId;
     private string $transactionId;
-    private string $payPalCustomerId;
+    private string $PaymenterCustomerId;
 
     // Getters...
 }
 
-class PayPalVaultingSucceededEvent extends Event {
+class PaymenterVaultingSucceededEvent extends Event {
     private User $user;
-    private string $payPalCustomerId;
+    private string $PaymenterCustomerId;
 
     // Getters...
 }
@@ -666,20 +666,20 @@ class OrderController {
 
 **Transaction Tracking Table:**
 ```sql
-CREATE TABLE oscpaypal_order (
+CREATE TABLE oscPaymenter_order (
     OXID CHAR(32) PRIMARY KEY,
     OXSHOPID INT NOT NULL,
     OXORDERID CHAR(32) NOT NULL,  -- FK to oxorder
-    OXPAYPALORDERID VARCHAR(128),  -- Provider order ID
-    OSCPAYPALSTATUS VARCHAR(64),   -- Payment status
+    OXPaymenterORDERID VARCHAR(128),  -- Provider order ID
+    OSCPaymenterSTATUS VARCHAR(64),   -- Payment status
     OSCPAYMENTMETHODID VARCHAR(64), -- Payment method
-    OSCPAYPALTRANSACTIONID VARCHAR(128), -- Transaction/capture ID
-    OSCPAYPALTRACKINGID VARCHAR(255),    -- Shipment tracking
-    OSCPAYPALTRACKINGTYPE VARCHAR(64),   -- Carrier
-    OSCPAYPALTRANSACTIONTYPE VARCHAR(32), -- 'capture' or 'authorization'
+    OSCPaymenterTRANSACTIONID VARCHAR(128), -- Transaction/capture ID
+    OSCPaymenterTRACKINGID VARCHAR(255),    -- Shipment tracking
+    OSCPaymenterTRACKINGTYPE VARCHAR(64),   -- Carrier
+    OSCPaymenterTRANSACTIONTYPE VARCHAR(32), -- 'capture' or 'authorization'
     OXTIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE KEY (OXORDERID, OXPAYPALORDERID)
+    UNIQUE KEY (OXORDERID, OXPaymenterORDERID)
 );
 ```
 
@@ -809,7 +809,7 @@ $this->logger->log('debug', 'Payment order created', [
 try {
     $response = $orderService->createOrder($request);
 } catch (ApiException $e) {
-    $this->handlePayPalApiError($e);
+    $this->handlePaymenterApiError($e);
     $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
 }
 ```
@@ -818,7 +818,7 @@ try {
 
 ### Configuration
 ```php
-$captureStrategy = $this->moduleSettings->getPayPalStandardCaptureStrategy();
+$captureStrategy = $this->moduleSettings->getPaymenterStandardCaptureStrategy();
 $isSandbox = $this->moduleSettings->isSandbox();
 ```
 
@@ -827,7 +827,7 @@ $isSandbox = $this->moduleSettings->isSandbox();
 ### Session Management
 ```php
 $sessionOrderId = $this->session->getVariable('sess_challenge');
-PayPalSession::storePayPalOrderId($payPalOrderId);
+PaymenterSession::storePaymenterOrderId($PaymenterOrderId);
 ```
 
 **Pattern:** Wrapper around shop session

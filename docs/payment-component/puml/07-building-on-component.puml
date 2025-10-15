@@ -69,16 +69,16 @@ package "Stripe Payment Module\n(35 hours)" as STRIPE #E1F5FE {
   component [stripe.yaml\n\nConfiguration:\n• api_key\n• webhook_secret\n• payment_methods] as STRIPE_CONFIG #0288D1
 }
 
-' PayPal Module
-package "PayPal Payment Module\n(35 hours)" as PAYPAL #FFF9C4 {
+' Paymenter Module
+package "Paymenter Payment Module\n(35 hours)" as Paymenter #FFF9C4 {
 
-  component [PayPalPaymentInitiationHandler\n\n**Extends:** AbstractPaymentHandler\n\n1. Get basket & user (cached)\n2. Create Order via PayPal API\n3. Track transaction\n4. Emit OrderCreatedAtProviderEvent] as PAYPAL_INIT #FFF176
+  component [PaymenterPaymentInitiationHandler\n\n**Extends:** AbstractPaymentHandler\n\n1. Get basket & user (cached)\n2. Create Order via Paymenter API\n3. Track transaction\n4. Emit OrderCreatedAtProviderEvent] as Paymenter_INIT #FFF176
 
-  component [PayPalWebhookHandler\n\n**Extends:** AbstractWebhookHandler\n\n1. Parse PayPal webhook payload\n2. Extract order_id from resource\n3. Call processPaymentCapture()\n4. Component emits PaymentCapturedEvent] as PAYPAL_WEBHOOK #FFF176
+  component [PaymenterWebhookHandler\n\n**Extends:** AbstractWebhookHandler\n\n1. Parse Paymenter webhook payload\n2. Extract order_id from resource\n3. Call processPaymentCapture()\n4. Component emits PaymentCapturedEvent] as Paymenter_WEBHOOK #FFF176
 
-  component [PayPalApiClient\n\n**Implements:** CachableApiInterface\n\nWrapper around PayPal SDK:\n• orders->create()\n• orders->capture()\n• payments->get()\n\nWith caching support] as PAYPAL_API #FFEB3B
+  component [PaymenterApiClient\n\n**Implements:** CachableApiInterface\n\nWrapper around Paymenter SDK:\n• orders->create()\n• orders->capture()\n• payments->get()\n\nWith caching support] as Paymenter_API #FFEB3B
 
-  component [paypal.yaml\n\nConfiguration:\n• client_id\n• client_secret\n• webhook_id] as PAYPAL_CONFIG #FDD835
+  component [Paymenter.yaml\n\nConfiguration:\n• client_id\n• client_secret\n• webhook_id] as Paymenter_CONFIG #FDD835
 }
 
 ' Adyen Module
@@ -107,19 +107,19 @@ STRIPE_INIT ..> DB : writes via component
 STRIPE_INIT ..> ENCRYPTION : uses for sensitive data
 STRIPE_API ..> TOKEN : validates tokens
 
-' Flow: PayPal Module uses Component
-PAYPAL_INIT -up-|> BASE_PAYMENT : extends
-PAYPAL_WEBHOOK -up-|> BASE_WEBHOOK : extends
-PAYPAL_INIT ..> CONTEXT : gets cached data
-PAYPAL_INIT ..> SERVICE : uses trackTransaction()
-PAYPAL_INIT ..> EVENTS : emits events
-PAYPAL_INIT --> PAYPAL_API : calls
-PAYPAL_WEBHOOK --> PAYPAL_API : calls
-PAYPAL_API .up.|> API_CACHE : implements
-PAYPAL_API ..> API_CACHE : uses caching
-PAYPAL_INIT ..> DB : writes via component
-PAYPAL_INIT ..> ENCRYPTION : uses for sensitive data
-PAYPAL_API ..> TOKEN : validates tokens
+' Flow: Paymenter Module uses Component
+Paymenter_INIT -up-|> BASE_PAYMENT : extends
+Paymenter_WEBHOOK -up-|> BASE_WEBHOOK : extends
+Paymenter_INIT ..> CONTEXT : gets cached data
+Paymenter_INIT ..> SERVICE : uses trackTransaction()
+Paymenter_INIT ..> EVENTS : emits events
+Paymenter_INIT --> Paymenter_API : calls
+Paymenter_WEBHOOK --> Paymenter_API : calls
+Paymenter_API .up.|> API_CACHE : implements
+Paymenter_API ..> API_CACHE : uses caching
+Paymenter_INIT ..> DB : writes via component
+Paymenter_INIT ..> ENCRYPTION : uses for sensitive data
+Paymenter_API ..> TOKEN : validates tokens
 
 ' Flow: Adyen Module uses Component
 ADYEN_INIT -up-|> BASE_PAYMENT : extends
@@ -210,7 +210,7 @@ note right of DB
 
   INSERT INTO osc_transaction
   VALUES (
-    provider_name: 'paypal',
+    provider_name: 'Paymenter',
     provider_order_id: 'PPL-ORDER-123',
     provider_transaction_id: 'CAP-67890',
     status: 'COMPLETED',
