@@ -205,7 +205,7 @@ POST /mcp/tools
 3. PaymentCaptureHandler
    - Load order from DB
    - Validate order state (must be AUTHORIZED)
-   - Call provider API (Stripe/Paypoal/Adyen)
+   - Call provider API (Stripe/Paymenter/Adyen)
    - Update osc_transaction table
    ↓
 4. Provider processes capture
@@ -257,7 +257,7 @@ class PaymentCaptureHandler
         // 4. Track transaction
         $this->paymentService->trackTransaction(
             $order->getId(),
-            $order->getProviderName(), // 'stripe', 'Paypal', etc.
+            $order->getProviderName(), // 'stripe', 'paymenter', etc.
             $captureResult->getCaptureId(),
             'CAPTURED',
             'capture',
@@ -308,7 +308,7 @@ class PaymentCaptureHandler
    - Load order from DB
    - Validate order state (must be COMPLETED or CAPTURED)
    - Validate amount ≤ captured amount
-   - Call provider API (Stripe/Paypal/Adyen)
+   - Call provider API (Stripe/Paymenter/Adyen)
    - Update osc_transaction table
    ↓
 4. Provider processes refund
@@ -822,7 +822,7 @@ The Payment Component's **event-driven capture and refund operations** provide:
 
 ✅ **Multi-channel triggers:** Webhook, Backend, API, MCP
 ✅ **Unified backend:** Same business logic for all channels
-✅ **Provider-agnostic:** Works with Stripe, Paypal, Adyen, etc.
+✅ **Provider-agnostic:** Works with Stripe, Paymenter, Adyen, etc.
 ✅ **Idempotent:** Safe retries, no duplicate operations
 ✅ **Secure:** Signature verification, JWT auth, permission checks
 ✅ **Auditable:** Full event trail with context

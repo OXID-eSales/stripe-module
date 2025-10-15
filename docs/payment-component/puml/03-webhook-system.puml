@@ -67,26 +67,26 @@ WHB -> WHB : getPaymenterTransactionIdFromResource()\n**Abstract - implemented i
 
 WHB -> OR : getShopOrderByPaymenterOrderId(orderId)
 activate OR
-OR -> DB : SELECT * FROM oxorder\nWHERE oxid = ...\nJOIN oscPaymenter_order
+OR -> DB : SELECT * FROM oxorder\nWHERE oxid = ...\nJOIN oscpaymenter_order
 activate DB
 DB --> OR : Order data
 deactivate DB
 OR --> WHB : Order object
 deactivate OR
 
-WHB -> OR : PaymenterOrderByOrderIdAndPaymenterId(...)
+WHB -> OR : paymenterOrderByOrderIdAndPaymenterId(...)
 activate OR
-OR -> DB : SELECT * FROM oscPaymenter_order\nWHERE oxorderid = ...
+OR -> DB : SELECT * FROM oscpaymenter_order\nWHERE oxorderid = ...
 activate DB
 DB --> OR : PaymentTransaction data
 deactivate DB
 OR --> WHB : PaymentTransaction object
 deactivate OR
 
-WHB -> WHB : handleWebhookTasks(order, PaymenterOrder, resource)
+WHB -> WHB : handleWebhookTasks(order, paymenterOrder, resource)
 
 WHB -> WHB : getTransactionIdFromResource()\n**Abstract - implemented in concrete**
-WHB -> PS : fetchOrderFields(PaymenterOrderId)
+WHB -> PS : fetchOrderFields(paymenterOrderId)
 note right
   Fetch latest order status
   from payment provider API
@@ -97,13 +97,13 @@ deactivate PS
 
 WHB -> WHB : getStatusFromResource()\n**Abstract - implemented in concrete**
 
-WHB -> WHB : updateStatus(PaymenterOrder, status, transactionId)
-WHB -> DB : UPDATE oscPaymenter_order\nSET oscPaymenterstatus = ?,\noscPaymentertransactionid = ?
+WHB -> WHB : updateStatus(paymenterOrder, status, transactionId)
+WHB -> DB : UPDATE oscpaymenter_order\nSET oscpaymenterstatus = ?,\noscpaymentertransactionid = ?
 activate DB
 DB --> WHB : Updated
 deactivate DB
 
-WHB -> WHB : markShopOrderPaymentStatus(order, PaymenterOrder)
+WHB -> WHB : markShopOrderPaymentStatus(order, paymenterOrder)
 
 alt Order is paid (status = COMPLETED)
   WHB -> Order : markOrderPaid()

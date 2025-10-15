@@ -1886,11 +1886,11 @@ class CheckoutFlowTest extends Unit
     {
         // Similar flow but verify webhook processing
         $this->tester->amOnPage('/checkout');
-        $this->tester->selectOption('payment_method', 'Paymenter');
+        $this->tester->selectOption('payment_method', 'paymenter');
         $this->tester->click('Pay with Paymenter');
 
         // Redirected to Paymenter
-        $this->tester->seeInCurrentUrl('Paymenter.com');
+        $this->tester->seeInCurrentUrl('paymenter.com');
 
         // Complete payment on Paymenter (sandbox)
         $this->tester->fillField('email', 'buyer@test.com');
@@ -2761,7 +2761,7 @@ jobs:
         run: vendor/bin/codecept run e2e
         env:
           STRIPE_TEST_KEY: ${{ secrets.STRIPE_TEST_KEY }}
-          Paymenter_SANDBOX_CLIENT_ID: ${{ secrets.Paymenter_SANDBOX_CLIENT_ID }}
+          PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
 ```
 
 ---

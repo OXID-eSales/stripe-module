@@ -114,7 +114,7 @@ note right of PAYMENT_TX
   - Any provider with REST API!
 
   **PROVIDER_NAME Examples:**
-  'stripe', 'Paymenter', 'adyen', 'amazonpay', 'mollie'
+  'stripe', 'paymenter', 'adyen', 'amazonpay', 'mollie'
 
   **Transaction Types:**
   - 'authorization' (funds reserved)
@@ -183,7 +183,7 @@ note right of USER
 
   {
     "stripe": "cus_abc123",
-    "Paymenter": "CUSTOMER-ID-789",
+    "paymenter": "CUSTOMER-ID-789",
     "adyen": "shopper_ref_xyz",
     "amazonpay": "amzn_cust_456"
   }
@@ -203,14 +203,14 @@ note right of PAYMENT
 
   <color:green>**PROVIDER_NAME:**</color>
   Which provider handles this method
-  Examples: 'stripe', 'Paymenter', 'adyen'
+  Examples: 'stripe', 'paymenter', 'adyen'
 
   <color:green>**PROVIDER_PAYMENT_METHOD_ID:**</color>
   Provider's internal method ID
   Examples:
-  - Paymenter: 'Paymenter', 'card', 'pui'
+  - Paymenter: 'paymenter', 'card', 'pui'
   - Stripe: 'card', 'sepa_debit', 'ideal'
-  - Adyen: 'scheme', 'ideal', 'Paymenter'
+  - Adyen: 'scheme', 'ideal', 'paymenter'
 
   **Enables:**
   Multiple providers for same
@@ -276,7 +276,7 @@ note as N1
      INSERT INTO osc_transaction
      VALUES (
        OXORDERID='def',
-       PROVIDER_NAME='Paymenter',
+       PROVIDER_NAME='paymenter',
        PROVIDER_ORDER_ID='PPL-ORDER-456',
        STATUS='CREATED'
      )

@@ -145,7 +145,7 @@ package "Infrastructure" as INFRA_PKG INFRA {
 ' =====================================
 package "Payment Providers" as PROVIDERS EXTERNAL {
   cloud "Stripe\nAPI" as STRIPE
-  cloud "Paymenter\nAPI" as Paymenter
+  cloud "Paymenter\nAPI" as PAYPAL
   cloud "Adyen\nAPI" as ADYEN
 }
 
@@ -265,14 +265,14 @@ H_PAYMENT -down-> QUEUE
 ' CONNECTIONS: Services → Providers
 ' =====================================
 SF -down-> STRIPE
-SF -down-> Paymenter
+SF -down-> PAYPAL
 SF -down-> ADYEN
 
 ' =====================================
 ' CONNECTIONS: Providers → Webhooks
 ' =====================================
 STRIPE -up-> WEBHOOK
-Paymenter -up-> WEBHOOK
+PAYPAL -up-> WEBHOOK
 ADYEN -up-> WEBHOOK
 
 ' =====================================

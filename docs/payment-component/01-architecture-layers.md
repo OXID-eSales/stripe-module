@@ -60,7 +60,7 @@ The payment component follows an **event-driven layered architecture** where bus
 
 ┌─────────────────────────────────────────────────────────────┐
 │                   EXTERNAL INTEGRATION                       │
-│  Payment Provider API (Stripe, Paypal, Adyen, etc.)         │
+│  Payment Provider API (Stripe, Paymenter, Adyen, etc.)         │
 │  Webhook Notifications (Also emit events!)                  │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -316,7 +316,7 @@ doCreatePaymenterOrder(
 
 **Order Updates:**
 ```php
-doPatchPaymenterOrder(basket, PaymenterOrderId, shopOrderId): void
+doPatchPaymenterOrder(basket, payPalOrderId, shopOrderId): void
 
 // Updates existing payment order with new basket data
 ```
@@ -324,7 +324,7 @@ doPatchPaymenterOrder(basket, PaymenterOrderId, shopOrderId): void
 **Payment Capture:**
 ```php
 doCapturePaymenterOrder(
-    order, checkoutOrderId, paymentId, PaymenterOrder
+    order, checkoutOrderId, paymentId, payPalOrder
 ): Order
 
 // Captures/completes payment
@@ -346,8 +346,8 @@ doAuthorizePayment(
 **Transaction Tracking:**
 ```php
 trackPaymenterOrder(
-    shopOrderId, PaymenterOrderId, paymentMethodId,
-    status, PaymenterTransactionId, transactionType
+    shopOrderId, payPalOrderId, paymentMethodId,
+    status, payPalTransactionId, transactionType
 ): PaymenterOrder
 
 // Persists transaction to database
@@ -372,11 +372,11 @@ PaymentService
 #### 1. Repository Pattern
 ```php
 interface OrderRepository {
-    PaymenterOrderByOrderIdAndPaymenterId(
-        shopOrderId, PaymenterOrderId, transactionId
+    paymenterOrderByOrderIdAndPaymenterId(
+        shopOrderId, paymenterOrderId, transactionId
     ): PaymenterOrder
 
-    getShopOrderByPaymenterOrderId(PaymenterOrderId): Order
+    getShopOrderByPaymenterOrderId(paymenterOrderId): Order
 
     cleanUpNotFinishedOrders(): void
 }
@@ -413,7 +413,7 @@ class OrderRequestFactory {
     getRequest(
         basket, intent, userAction, customId,
         processingInstruction, paymentSource,
-        PaymenterClientMetadataId, returnUrl, cancelUrl,
+        payPalClientMetadataId, returnUrl, cancelUrl,
         setProvidedAddress
     ): OrderRequest
 }
@@ -554,17 +554,17 @@ class PaymenterOrderCompletedEvent extends Event {
     private Basket $basket;
     private User $user;
     private string $shopOrderId;
-    private string $PaymenterOrderId;
+    private string $payPalOrderId;
     private string $paymentsId;
     private string $transactionId;
-    private string $PaymenterCustomerId;
+    private string $payPalCustomerId;
 
     // Getters...
 }
 
 class PaymenterVaultingSucceededEvent extends Event {
     private User $user;
-    private string $PaymenterCustomerId;
+    private string $payPalCustomerId;
 
     // Getters...
 }
@@ -666,20 +666,20 @@ class OrderController {
 
 **Transaction Tracking Table:**
 ```sql
-CREATE TABLE oscPaymenter_order (
+CREATE TABLE oscpaymenter_order (
     OXID CHAR(32) PRIMARY KEY,
     OXSHOPID INT NOT NULL,
     OXORDERID CHAR(32) NOT NULL,  -- FK to oxorder
-    OXPaymenterORDERID VARCHAR(128),  -- Provider order ID
-    OSCPaymenterSTATUS VARCHAR(64),   -- Payment status
+    OXPAYPALORDERID VARCHAR(128),  -- Provider order ID
+    OSCPAYPALSTATUS VARCHAR(64),   -- Payment status
     OSCPAYMENTMETHODID VARCHAR(64), -- Payment method
-    OSCPaymenterTRANSACTIONID VARCHAR(128), -- Transaction/capture ID
-    OSCPaymenterTRACKINGID VARCHAR(255),    -- Shipment tracking
-    OSCPaymenterTRACKINGTYPE VARCHAR(64),   -- Carrier
-    OSCPaymenterTRANSACTIONTYPE VARCHAR(32), -- 'capture' or 'authorization'
+    OSCPAYPALTRANSACTIONID VARCHAR(128), -- Transaction/capture ID
+    OSCPAYPALTRACKINGID VARCHAR(255),    -- Shipment tracking
+    OSCPAYPALTRACKINGTYPE VARCHAR(64),   -- Carrier
+    OSCPAYPALTRANSACTIONTYPE VARCHAR(32), -- 'capture' or 'authorization'
     OXTIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE KEY (OXORDERID, OXPaymenterORDERID)
+    UNIQUE KEY (OXORDERID, OXPAYPALORDERID)
 );
 ```
 
@@ -827,7 +827,7 @@ $isSandbox = $this->moduleSettings->isSandbox();
 ### Session Management
 ```php
 $sessionOrderId = $this->session->getVariable('sess_challenge');
-PaymenterSession::storePaymenterOrderId($PaymenterOrderId);
+PaymenterSession::storePaymenterOrderId($payPalOrderId);
 ```
 
 **Pattern:** Wrapper around shop session

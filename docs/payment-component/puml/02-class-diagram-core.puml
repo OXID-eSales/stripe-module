@@ -42,8 +42,8 @@ package "Service Layer" <<Rectangle>> #FFF3E0 {
     - queryBuilderFactory: QueryBuilderFactory
     - config: Config
     --
-    + PaymenterOrderByOrderIdAndPaymenterId(...): PaymentTransaction
-    + PaymenterOrderByOrderId(...): PaymentTransaction
+    + paymenterOrderByOrderIdAndPaymenterId(...): PaymentTransaction
+    + paymenterOrderByOrderId(...): PaymentTransaction
     + getShopOrderByPaymenterOrderId(...): Order
     + getShopOrderByPaymenterTransactionId(...): Order
     + getPaymenterOrderIdByShopOrderId(...): string

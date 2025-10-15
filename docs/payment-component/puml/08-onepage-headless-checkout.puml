@@ -122,7 +122,7 @@ component "Apex Template\n/Application/views/apex/tpl/\npage/checkout/onepage.tp
 ' External Payment Providers
 cloud "Payment Providers" as PROVIDERS #E0F2F1 {
   component [Stripe API] as STRIPE
-  component [Paymenter API] as Paymenter
+  component [Paymenter API] as PAYPAL
   component [Adyen API] as ADYEN
 }
 

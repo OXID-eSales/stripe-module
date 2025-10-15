@@ -177,14 +177,14 @@ Close Rate: 40-60% (if good discovery)
 │  Client: Fashion Retailer GmbH (€15M annual revenue)   │
 │                                                         │
 │  Challenge:                                             │
-│  • Locked into Paypal, wanted to add Stripe            │
+│  • Locked into Paymenter, wanted to add Stripe            │
 │  • 5-10 payment failures per day (€3,000 lost sales/day)│
 │  • Fraud costing €40K/year                              │
 │  • No test coverage - scared to deploy changes         │
 │                                                         │
 │  Solution:                                              │
 │  • Migrated to event-driven payment component          │
-│  • Added PaymenterComponent with fallback routing         │
+│  • Added Stripe + Paymenter with fallback routing         │
 │  • Implemented real-time monitoring                    │
 │  • 300+ automated tests (85% coverage)                 │
 │                                                         │
@@ -260,7 +260,7 @@ Optimized Strategy:
 │  Germany (50% of revenue)                           │
 │  • Primary: Stripe (cards)                          │
 │  • Secondary: SOFORT (local bank transfer)          │
-│  • Fallback: Paypal                                 │
+│  • Fallback: Paymenter                                 │
 │                                                     │
 │  UK (25% of revenue)                                │
 │  • Primary: Adyen (better UK rates)                 │
@@ -270,12 +270,12 @@ Optimized Strategy:
 │  France (15% of revenue)                            │
 │  • Primary: Lydia (local favorite)                  │
 │  • Secondary: Stripe                                │
-│  • Tertiary: Paypal                                 │
+│  • Tertiary: Paymenter                                 │
 │                                                     │
 │  Spain (10% of revenue)                             │
 │  • Primary: Bizum (local payment)                   │
 │  • Secondary: Stripe                                │
-│  • Fallback: Paypal                                 │
+│  • Fallback: Paymenter                                 │
 └─────────────────────────────────────────────────────┘
 
 Results:
@@ -294,7 +294,7 @@ ROI on consulting: 240% in first year
 ┌────────────────────────────────────────────────────────────┐
 │  Provider Comparison Matrix                                │
 │                                                            │
-│  Criteria          Stripe  Paypal  Adyen  Mollie  Weight  │
+│  Criteria          Stripe  Paymenter  Adyen  Mollie  Weight  │
 │  ──────────────────────────────────────────────────────── │
 │  Transaction fees  8/10    6/10    9/10   7/10    30%    │
 │  Market coverage   9/10    10/10   10/10  8/10    25%    │
@@ -834,7 +834,7 @@ Target conversion rate: 3.5% (after optimization)
 Improvements:
 ✅ One-page checkout (remove friction)
 ✅ Guest checkout (no forced registration)
-✅ Multiple payment methods (cards, Paypal, Apple Pay)
+✅ Multiple payment methods (cards, Paymenter, Apple Pay)
 ✅ Address autocomplete (reduce form fields)
 ✅ Trust badges (security seals)
 ✅ Progress indicators (show steps)

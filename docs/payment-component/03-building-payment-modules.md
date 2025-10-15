@@ -487,7 +487,7 @@ $basket = $event->getContext()->getBasket(); // From cache!
 CREATE TABLE stripe_transaction (...);
 
 -- Paymenter module needs its own table
-CREATE TABLE Paymenter_transaction (...);
+CREATE TABLE paymenter_transaction (...);
 
 -- Adyen module needs its own table
 CREATE TABLE adyen_transaction (...);
@@ -497,7 +497,7 @@ CREATE TABLE adyen_transaction (...);
 ```sql
 -- ONE table for all providers
 CREATE TABLE osc_transaction (
-    provider_name VARCHAR(32),     -- 'stripe', 'Paymenter', 'adyen'
+    provider_name VARCHAR(32),     -- 'stripe', 'paymenter', 'adyen'
     provider_order_id VARCHAR(128),
     provider_data TEXT,            -- JSON for provider-specific fields
     ...
@@ -633,10 +633,10 @@ class OrderController extends AbstractOrderController {
 INSERT INTO osc_transaction
 SELECT
     OXID,
-    'Paymenter' as provider_name,
-    Paymenter_order_id as provider_order_id,
+    'paymenter' as provider_name,
+    paymenter_order_id as provider_order_id,
     ...
-FROM Paymenter_transaction;
+FROM paymenter_transaction;
 ```
 
 **Result: Gradual, risk-free migration**

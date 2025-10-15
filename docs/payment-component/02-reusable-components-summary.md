@@ -139,7 +139,7 @@ abstract class AbstractPaymentHandler {
 
 ### 1.1 Transaction Tracking Table
 
-**Current Name:** `oscPaymenter_order`
+**Current Name:** `oscpaymenter_order`
 **Proposed Name:** `payment_transaction`
 
 ```sql
@@ -200,7 +200,7 @@ interface PaymentOrderStates {
 
 ### 1.3 User Payment Data Extension
 
-**Current Field:** `oxuser.oscPaymentercustomerid`
+**Current Field:** `oxuser.oscpaymentercustomerid`
 **Proposed Field:** `oxuser.payment_provider_customer_id`
 
 Stores provider's customer ID for saved payment methods (vaulting/tokenization).

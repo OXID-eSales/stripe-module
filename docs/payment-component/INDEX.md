@@ -1,13 +1,17 @@
 # Payment Component Documentation - Complete Index
 
-The Payment Component is a unified, provider-agnostic, event-driven foundation for OXID eShop that enables seamless integration of multiple payment providers (Stripe, Amazon, Adyen, etc.) with 70% less development effort, provides AI-powered programmatic buying via MCP protocol and GraphQL API for
+**Generated:** 2025-10-09
+**Source:** OXID Paymenter Module v2.6.2-rc.4
+**Purpose:** Extract reusable payment patterns for building payment modules across providers
+
+The Payment Component is a unified, provider-agnostic, event-driven foundation for OXID eShop that enables seamless integration of multiple payment providers (Stripe, Paymenter, Adyen, etc.) with 70% less development effort, provides AI-powered programmatic buying via MCP protocol and GraphQL API for
 mobile/headless commerce, implements PCI-compliant client-side encryption for enhanced security, and significantly increases conversion rates by 30-50% through configurable one-page checkout experience—all while maintaining a single, consistent, testable backend architecture.
 
 ---
 
 ## Overview
 
-This documentation set describes **reusable architectural patterns**  that can serve as the foundation for:
+This documentation set describes **reusable architectural patterns** extracted from the OXID Paymenter module that can serve as the foundation for:
 
 1. **A reusable component package:** `oxid-esales/payment-component`
 2. **Payment modules for multiple providers:** Stripe, Amazon Pay, Mollie, Adyen, etc.
@@ -274,7 +278,7 @@ plantuml -tsvg diagram.puml
 
 ### Core Table: `payment_transaction`
 
-**Current name:** `oscPaymenter_order`
+**Current name:** `oscpaymenter_order`
 **Proposed name:** `payment_transaction`
 
 **Purpose:** Track payment provider transactions and link them to shop orders

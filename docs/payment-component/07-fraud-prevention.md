@@ -824,7 +824,7 @@ fraud_prevention:
   # Provider integration
   providers:
     stripe_radar: true      # Use Stripe Radar as additional layer
-    Paymenter_protection: true # Use Paymenter fraud protection
+    paymenter_protection: true # Use Paymenter fraud protection
     adyen_risk: true        # Use Adyen risk management
 
   # Actions

@@ -13,7 +13,7 @@
 3. [Test Categories](#test-categories)
 4. [Provider API Mocking](#provider-api-mocking)
 5. [Stripe Module Tests](#stripe-module-tests)
-6. [Paymenter Module Tests](#Paymenter-module-tests)
+6. [Paymenter Module Tests](#paymenter-module-tests)
 7. [Cross-Provider Test Suite](#cross-provider-test-suite)
 8. [Sandbox Testing](#sandbox-testing)
 9. [Test Data & Fixtures](#test-data--fixtures)
@@ -108,7 +108,7 @@ tests/
         │   ├── create-payment-intent.json
         │   ├── capture-payment.json
         │   └── webhook-payment-succeeded.json
-        ├── Paymenter/
+        ├── paymenter/
         └── adyen/
 ```
 
@@ -689,7 +689,7 @@ docker run -d -p 8080:8080 \
 **Paymenter API Mock Example:**
 
 ```json
-// tests/Fixtures/WireMock/Paymenter/create-order.json
+// tests/Fixtures/WireMock/paymenter/create-order.json
 {
   "request": {
     "method": "POST",
@@ -702,12 +702,12 @@ docker run -d -p 8080:8080 \
       "status": "CREATED",
       "links": [
         {
-          "href": "https://api.sandbox.Paymenter.com/v2/checkout/orders/{{randomValue}}",
+          "href": "https://api.sandbox.paymenter.com/v2/checkout/orders/{{randomValue}}",
           "rel": "self",
           "method": "GET"
         },
         {
-          "href": "https://www.sandbox.Paymenter.com/checkoutnow?token={{randomValue}}",
+          "href": "https://www.sandbox.paymenter.com/checkoutnow?token={{randomValue}}",
           "rel": "approve",
           "method": "GET"
         }
@@ -902,11 +902,11 @@ namespace PaymentComponent\Tests\Fixtures\Providers;
 class PaymenterTestAccounts
 {
     // Sandbox buyer accounts
-    const BUYER_EMAIL = 'buyer@test.Paymenter.com';
+    const BUYER_EMAIL = 'buyer@test.paymenter.com';
     const BUYER_PASSWORD = 'test12345';
 
     // Sandbox business accounts
-    const MERCHANT_EMAIL = 'merchant@test.Paymenter.com';
+    const MERCHANT_EMAIL = 'merchant@test.paymenter.com';
     const MERCHANT_PASSWORD = 'merchant12345';
 
     public static function getBuyerCredentials(): array
@@ -1008,7 +1008,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        provider: [stripe, Paymenter, adyen]
+        provider: [stripe, paymenter, adyen]
 
     steps:
       - uses: actions/checkout@v3
@@ -1068,7 +1068,7 @@ jobs:
 
     strategy:
       matrix:
-        provider: [stripe, Paymenter]
+        provider: [stripe, paymenter]
 
     steps:
       - uses: actions/checkout@v3
@@ -1085,8 +1085,8 @@ jobs:
         env:
           STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
           STRIPE_TEST_PUBLISHABLE_KEY: ${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
-          Paymenter_SANDBOX_CLIENT_ID: ${{ secrets.Paymenter_SANDBOX_CLIENT_ID }}
-          Paymenter_SANDBOX_SECRET: ${{ secrets.Paymenter_SANDBOX_SECRET }}
+          PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
+          PAYPAL_SANDBOX_SECRET: ${{ secrets.PAYPAL_SANDBOX_SECRET }}
         run: |
           vendor/bin/phpunit \
             --testsuite=Providers \

@@ -89,7 +89,7 @@ The partner program has three tiers based on capabilities, annual revenue potent
 
 **Capabilities:**
 - Basic payment module implementations
-- Single provider integrations (Stripe or Paypal)
+- Single provider integrations (Stripe or Paymenter)
 - Standard monitoring setup
 - Email support for clients
 
@@ -221,7 +221,7 @@ Partners can monetize the OXID Payment Component through six primary revenue str
 - Audit current payment infrastructure
 - Design migration strategy
 - Implement core payment component
-- Integrate 1-2 primary providers (Stripe, Paypal)
+- Integrate 1-2 primary providers (Stripe, Paymenter)
 - Data migration (historical transactions)
 - Testing & QA
 - Training shop staff
@@ -662,7 +662,7 @@ Problem: Every project starts from zero
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│ Project 2: Paypal Integration (different client)            │
+│ Project 2: Paymenter Integration (different client)            │
 │ ├─ Core payment logic: 400 hours (START OVER!)             │
 │ ├─ Paymenter adapter: 250 hours                                │
 │ ├─ Security/compliance: 150 hours                           │
@@ -701,7 +701,7 @@ Opportunity: Reusable foundation accelerates every project
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│ Project 2: Paypal Integration (different client)            │
+│ Project 2: Paymenter Integration (different client)            │
 │ ├─ Core payment logic: ✅ ALREADY DONE                      │
 │ ├─ Paymenter adapter: ✅ ALREADY DONE                          │
 │ ├─ Security/compliance: ✅ ALREADY DONE                     │
@@ -725,18 +725,18 @@ Result: Can do 12-20 projects per year. High margins. Low risk.
 
 **What's Pre-Built:**
 
-| Component                                    | Hours Saved | Value @ €100/hr |
-|----------------------------------------------|-------------|-----------------|
-| Core payment service layer                   | 300-400 | €30K-€40K |
+| Component | Hours Saved | Value @ €100/hr |
+|-----------|-------------|-----------------|
+| Core payment service layer | 300-400 | €30K-€40K |
 | State machine (authorize → capture → refund) | 150-200 | €15K-€20K |
-| Idempotency handling                         | 80-120 | €8K-€12K |
-| Webhook processing                           | 100-150 | €10K-€15K |
-| Provider adapters (Stripe, Paypal, Adyen)    | 400-600 | €40K-€60K |
-| Security (CSRF, XSS, injection prevention)   | 150-200 | €15K-€20K |
-| PCI-DSS compliance patterns                  | 100-150 | €10K-€15K |
-| Unit + integration test suite                | 200-300 | €20K-€30K |
-| Documentation                                | 80-120 | €8K-€12K |
-| **Total**                                    | **1,560-2,340 hours** | **€156K-€234K** |
+| Idempotency handling | 80-120 | €8K-€12K |
+| Webhook processing | 100-150 | €10K-€15K |
+| Provider adapters (Stripe, Paymenter, Adyen) | 400-600 | €40K-€60K |
+| Security (CSRF, XSS, injection prevention) | 150-200 | €15K-€20K |
+| PCI-DSS compliance patterns | 100-150 | €10K-€15K |
+| Unit + integration test suite | 200-300 | €20K-€30K |
+| Documentation | 80-120 | €8K-€12K |
+| **Total** | **1,560-2,340 hours** | **€156K-€234K** |
 
 **Impact on Project Timeline:**
 

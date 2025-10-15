@@ -58,7 +58,7 @@ All diagrams include colored components for clarity:
 
 #### 100% Reusable Components (Use As-Is)
 1. **Database Schema**
-   - `payment_transaction` table (currently `oscPaymenter_order`)
+   - `payment_transaction` table (currently `oscpaymenter_order`)
    - Transaction tracking pattern
    - Order state extensions
 
@@ -369,7 +369,7 @@ class StripeWebhookHandler extends WebhookHandlerBase {
 
 All documentation is located at:
 ```
-/home/dtkachev/osc/pp6-rc-oct6/source/source/modules/osc/Paymenter/docs/component/
+/home/dtkachev/osc/pp6-rc-oct6/source/source/modules/osc/paymenter/docs/component/
 ```
 
 ### Directory Structure
