@@ -62,7 +62,7 @@ state IN_PROGRESS <<Processing>> {
     state "750\nCard Authorized\n(Need Capture)" as CA
     state "800\nNeed Finalization" as NF2
 
-    [*] --> EP : Redirect payment\n(PayPal, iDEAL)
+    [*] --> EP : Redirect payment\n(Paymenter, iDEAL)
     [*] --> CP : Card payment\n(3DS)
 
     CP --> CA : Card authorized
@@ -255,7 +255,7 @@ note bottom
   NOT_FINISHED → IN_PROGRESS → AWAITING_WEBHOOK → COMPLETED
 
   **Provider-Agnostic:**
-  Works for Stripe, PayPal, Adyen, Amazon Pay, etc.
+  Works for Stripe, Paymenter, Adyen, Amazon Pay, etc.
 
   **Reusability: 100%**
   Event-driven flow is fully reusable!

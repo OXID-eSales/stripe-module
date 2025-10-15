@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Date:** 2025-10-13
-**Purpose:** Testing strategy for Stripe, PayPal, Adyen, and other provider modules built on the payment component
+**Purpose:** Testing strategy for Stripe, Paymenter, Adyen, and other provider modules built on the payment component
 
 ---
 
@@ -13,7 +13,7 @@
 3. [Test Categories](#test-categories)
 4. [Provider API Mocking](#provider-api-mocking)
 5. [Stripe Module Tests](#stripe-module-tests)
-6. [PayPal Module Tests](#paypal-module-tests)
+6. [Paymenter Module Tests](#paymenter-module-tests)
 7. [Cross-Provider Test Suite](#cross-provider-test-suite)
 8. [Sandbox Testing](#sandbox-testing)
 9. [Test Data & Fixtures](#test-data--fixtures)
@@ -23,7 +23,7 @@
 
 ## Overview
 
-Provider-specific modules (Stripe, PayPal, Adyen, etc.) extend the base payment component with provider-specific implementations. Testing these modules requires a combination of:
+Provider-specific modules (Stripe, Paymenter, Adyen, etc.) extend the base payment component with provider-specific implementations. Testing these modules requires a combination of:
 
 - **Component Tests**: Verify provider module integrates correctly with base component
 - **API Contract Tests**: Ensure provider API integration is correct
@@ -41,7 +41,7 @@ Provider-specific modules (Stripe, PayPal, Adyen, etc.) extend the base payment 
                         │ extends
                         │
 ┌─────────────┬─────────────┬─────────────┬───────────┐
-│   Stripe    │   PayPal    │   Adyen     │  Amazon   │
+│   Stripe    │   Paymenter    │   Adyen     │  Amazon   │
 │   Module    │   Module    │   Module    │  Module   │
 │             │             │             │           │
 │   Provider-specific tests focus on:                 │
@@ -84,7 +84,7 @@ tests/
 │   │       ├── StripeApiResponseFactory.php
 │   │       └── StripeTestCards.php
 │   │
-│   ├── PayPal/
+│   ├── Paymenter/
 │   │   ├── Unit/
 │   │   ├── Integration/
 │   │   ├── Sandbox/
@@ -101,14 +101,14 @@ tests/
 └── Fixtures/
     ├── Providers/
     │   ├── StripeFixtures.php
-    │   ├── PayPalFixtures.php
+    │   ├── PaymenterFixtures.php
     │   └── AdyenFixtures.php
     └── WireMock/
         ├── stripe/
         │   ├── create-payment-intent.json
         │   ├── capture-payment.json
         │   └── webhook-payment-succeeded.json
-        ├── paypal/
+        ├── paymenter/
         └── adyen/
 ```
 
@@ -686,10 +686,10 @@ docker run -d -p 8080:8080 \
 }
 ```
 
-**PayPal API Mock Example:**
+**Paymenter API Mock Example:**
 
 ```json
-// tests/Fixtures/WireMock/paypal/create-order.json
+// tests/Fixtures/WireMock/paymenter/create-order.json
 {
   "request": {
     "method": "POST",
@@ -702,12 +702,12 @@ docker run -d -p 8080:8080 \
       "status": "CREATED",
       "links": [
         {
-          "href": "https://api.sandbox.paypal.com/v2/checkout/orders/{{randomValue}}",
+          "href": "https://api.sandbox.paymenter.com/v2/checkout/orders/{{randomValue}}",
           "rel": "self",
           "method": "GET"
         },
         {
-          "href": "https://www.sandbox.paypal.com/checkoutnow?token={{randomValue}}",
+          "href": "https://www.sandbox.paymenter.com/checkoutnow?token={{randomValue}}",
           "rel": "approve",
           "method": "GET"
         }
@@ -731,7 +731,7 @@ namespace PaymentComponent\Tests\Providers\CrossProvider;
 
 use PaymentComponent\Tests\Integration\DatabaseTestCase;
 use PaymentComponent\Providers\Stripe\StripePaymentService;
-use PaymentComponent\Providers\PayPal\PayPalPaymentService;
+use PaymentComponent\Providers\Paymenter\PaymenterPaymentService;
 use PaymentComponent\Providers\Adyen\AdyenPaymentService;
 
 /**
@@ -811,7 +811,7 @@ class ConsistencyTest extends DatabaseTestCase
     {
         return [
             'Stripe' => [$this->createStripeService()],
-            'PayPal' => [$this->createPayPalService()],
+            'Paymenter' => [$this->createPaymenterService()],
             'Adyen' => [$this->createAdyenService()],
         ];
     }
@@ -895,18 +895,18 @@ class StripeTestCards
 
 ```php
 <?php
-// tests/Fixtures/Providers/PayPalTestAccounts.php
+// tests/Fixtures/Providers/PaymenterTestAccounts.php
 
 namespace PaymentComponent\Tests\Fixtures\Providers;
 
-class PayPalTestAccounts
+class PaymenterTestAccounts
 {
     // Sandbox buyer accounts
-    const BUYER_EMAIL = 'buyer@test.paypal.com';
+    const BUYER_EMAIL = 'buyer@test.paymenter.com';
     const BUYER_PASSWORD = 'test12345';
 
     // Sandbox business accounts
-    const MERCHANT_EMAIL = 'merchant@test.paypal.com';
+    const MERCHANT_EMAIL = 'merchant@test.paymenter.com';
     const MERCHANT_PASSWORD = 'merchant12345';
 
     public static function getBuyerCredentials(): array
@@ -1008,7 +1008,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        provider: [stripe, paypal, adyen]
+        provider: [stripe, paymenter, adyen]
 
     steps:
       - uses: actions/checkout@v3
@@ -1068,7 +1068,7 @@ jobs:
 
     strategy:
       matrix:
-        provider: [stripe, paypal]
+        provider: [stripe, paymenter]
 
     steps:
       - uses: actions/checkout@v3
@@ -1115,8 +1115,8 @@ jobs:
             <directory>tests/Providers/Stripe</directory>
         </testsuite>
 
-        <testsuite name="PayPal">
-            <directory>tests/Providers/PayPal</directory>
+        <testsuite name="Paymenter">
+            <directory>tests/Providers/Paymenter</directory>
         </testsuite>
 
         <testsuite name="Adyen">

@@ -169,7 +169,7 @@ end note
 ' =====================================
 package "Mocking Strategy" as MOCKS MOCK {
 
-  rectangle "External APIs\n(Stripe/PayPal)" as MockAPIs
+  rectangle "External APIs\n(Stripe/Paymenter)" as MockAPIs
   rectangle "Internal Services\n(EventDispatcher)" as MockInternal
   rectangle "Database\n(Repository)" as MockDB
 }

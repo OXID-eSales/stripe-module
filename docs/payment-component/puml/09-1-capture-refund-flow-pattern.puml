@@ -211,7 +211,7 @@ alt Valid capture request
   note right of PS
     **PaymentService**
     Provider-agnostic orchestration
-    (Stripe, PayPal, Adyen, etc.)
+    (Stripe, Paymenter, Adyen, etc.)
   end note
 
   PS -> PS : Get provider client\nfrom ServiceFactory

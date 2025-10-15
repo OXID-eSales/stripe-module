@@ -26,7 +26,7 @@ The Payment Component provides a **multi-layered fraud prevention system** that 
 - **Early Detection:** Identify suspicious activity before payment initiation
 - **AI-Driven Scoring:** Machine learning models analyze transaction risk
 - **Real-Time Prevention:** Block fraudulent transactions immediately
-- **Provider-Agnostic:** Works with all payment providers (Stripe, PayPal, Adyen)
+- **Provider-Agnostic:** Works with all payment providers (Stripe, Paymenter, Adyen)
 - **Event-Driven:** Integrates seamlessly with component architecture
 - **Adaptive Learning:** Improves over time based on historical data
 
@@ -95,7 +95,7 @@ Customer → Component Fraud Check → High Risk? Block → Safe? → Provider �
 │                    (Provider Level)                           │
 ├─────────────────────────────────────────────────────────────┤
 │  • Stripe Radar                                              │
-│  • PayPal Fraud Protection                                   │
+│  • Paymenter Fraud Protection                                   │
 │  • Adyen Risk Management                                     │
 │  • 3D Secure (SCA)                                          │
 └─────────────────────────────────────────────────────────────┘
@@ -824,7 +824,7 @@ fraud_prevention:
   # Provider integration
   providers:
     stripe_radar: true      # Use Stripe Radar as additional layer
-    paypal_protection: true # Use PayPal fraud protection
+    paymenter_protection: true # Use Paymenter fraud protection
     adyen_risk: true        # Use Adyen risk management
 
   # Actions

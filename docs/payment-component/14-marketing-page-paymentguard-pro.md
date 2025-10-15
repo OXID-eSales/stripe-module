@@ -472,7 +472,7 @@ Frequently Asked Questions
 
   PaymentGuard Pro works with all major payment providers:
   • Stripe
-  • PayPal
+  • Paymenter
   • Adyen
   • Mollie
   • Amazon Pay

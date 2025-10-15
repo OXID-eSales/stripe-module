@@ -20,7 +20,7 @@ title Partner Ecosystem & Cash Flow Model\n(Revenue Streams & Value Chain)
 actor "End Customer\n(Shop Owner)" as Customer
 actor "Partner/Agency\n(System Integrator)" as Partner
 actor "Platform Owner\n(Software Manufacturer)" as Platform
-actor "Payment Provider\n(Stripe/PayPal)" as Provider
+actor "Payment Provider\n(Stripe/Paymenter)" as Provider
 
 ' =====================================
 ' Partner Types
@@ -73,7 +73,7 @@ package "OXID Payment Component Platform" as PLATFORM_PKG PLATFORM {
 
     rectangle "Platform Core" as PlatformCore {
         component [Core Payment\nComponent] as CoreComponent
-        component [Provider Adapters\n(Stripe/PayPal/Adyen)] as Adapters
+        component [Provider Adapters\n(Stripe/Paymenter/Adyen)] as Adapters
     }
 
     rectangle "Platform Services" as PlatformServices {

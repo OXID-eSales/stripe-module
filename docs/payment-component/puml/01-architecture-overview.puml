@@ -145,7 +145,7 @@ package "Infrastructure" as INFRA_PKG INFRA {
 ' =====================================
 package "Payment Providers" as PROVIDERS EXTERNAL {
   cloud "Stripe\nAPI" as STRIPE
-  cloud "PayPal\nAPI" as PAYPAL
+  cloud "Paymenter\nAPI" as PAYPAL
   cloud "Adyen\nAPI" as ADYEN
 }
 
@@ -344,7 +344,7 @@ end note
 
 note right of PROVIDERS
   **Provider-Agnostic:**
-  - Stripe, PayPal, Adyen, Amazon
+  - Stripe, Paymenter, Adyen, Amazon
   - Same service interface
   - Add new provider in 1-2 days
   - Weighted fraud scoring
@@ -359,7 +359,7 @@ note as FEATURES #E1F5FE
 
   ✅ **Multi-Channel:** 6 entry points, 1 backend (70% code reuse)
   ✅ **Event-Driven:** PSR-14, thin controllers, fat handlers
-  ✅ **Provider-Agnostic:** Stripe, PayPal, Adyen, Amazon (extensible)
+  ✅ **Provider-Agnostic:** Stripe, Paymenter, Adyen, Amazon (extensible)
   ✅ **Security:** PCI-DSS, client-side encryption, JWT/OAuth2
   ✅ **AI Fraud Prevention:** 4 layers, 80% reduction, €276K savings
   ✅ **Performance:** Request caching, 50-70% fewer queries

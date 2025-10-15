@@ -227,7 +227,7 @@ Increase conversion by **30%**
 ### Core Architecture
 
 - **⚡ Event-Driven:** PSR-14, thin controllers, decoupled logic
-- **🔄 Provider-Agnostic:** Stripe, PayPal, Adyen, Amazon Pay
+- **🔄 Provider-Agnostic:** Stripe, Paymenter, Adyen, Amazon Pay
 - **🔒 Security-First:** PCI-DSS, client-side encryption
 - **🤖 AI-Protection:** ML fraud detection & risk scoring
 - **🤖 Agentic Ready:** MCP protocol support for agentic and programmatic buying
@@ -415,7 +415,7 @@ Subscribers
 </div>
 
 <div class="success">
-<strong>Validated with PayPal module:</strong> 30K LOC, 95% reusable code, production-ready
+<strong>Validated with Paymenter module:</strong> 30K LOC, 95% reusable code, production-ready
 </div>
 
 ---
@@ -451,7 +451,7 @@ Subscribers
 
 ### Fraud Protection SDKs 
 - **Stripe** (Radar)
-- **PayPal** (Fraud Protection)
+- **Paymenter** (Fraud Protection)
 - **Adyen** (Risk Management)
 - **Amazon Pay**
 - Easily extensible

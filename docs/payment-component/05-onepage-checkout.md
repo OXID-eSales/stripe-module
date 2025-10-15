@@ -474,7 +474,7 @@ class OnePageCheckout {
 
         if (result.success) {
             if (result.redirect_url) {
-                // Redirect to provider (e.g., PayPal, Stripe 3DS)
+                // Redirect to provider (e.g., Paymenter, Stripe 3DS)
                 window.location.href = result.redirect_url;
             } else {
                 // Payment completed, show confirmation
@@ -587,7 +587,7 @@ type CheckoutData {
 type PaymentResult {
     success: Boolean!
     orderId: ID
-    redirectUrl: String  # For provider redirect (PayPal, Stripe 3DS)
+    redirectUrl: String  # For provider redirect (Paymenter, Stripe 3DS)
     requiresAction: Boolean!
     errors: [PaymentError!]
 }

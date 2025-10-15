@@ -108,13 +108,13 @@ note right of PAYMENT_TX
 
   <color:blue>**Supports Multiple Providers:**</color>
   - Stripe: stripe_pi_xxx, stripe_ch_xxx
-  - PayPal: PPL-ORDER-123, CAP-67890
+  - Paymenter: PPL-ORDER-123, CAP-67890
   - Adyen: psp_ref_abc, capture_ref_xyz
   - Amazon Pay: amzn-order-456
   - Any provider with REST API!
 
   **PROVIDER_NAME Examples:**
-  'stripe', 'paypal', 'adyen', 'amazonpay', 'mollie'
+  'stripe', 'paymenter', 'adyen', 'amazonpay', 'mollie'
 
   **Transaction Types:**
   - 'authorization' (funds reserved)
@@ -183,7 +183,7 @@ note right of USER
 
   {
     "stripe": "cus_abc123",
-    "paypal": "CUSTOMER-ID-789",
+    "paymenter": "CUSTOMER-ID-789",
     "adyen": "shopper_ref_xyz",
     "amazonpay": "amzn_cust_456"
   }
@@ -203,14 +203,14 @@ note right of PAYMENT
 
   <color:green>**PROVIDER_NAME:**</color>
   Which provider handles this method
-  Examples: 'stripe', 'paypal', 'adyen'
+  Examples: 'stripe', 'paymenter', 'adyen'
 
   <color:green>**PROVIDER_PAYMENT_METHOD_ID:**</color>
   Provider's internal method ID
   Examples:
-  - PayPal: 'paypal', 'card', 'pui'
+  - Paymenter: 'paymenter', 'card', 'pui'
   - Stripe: 'card', 'sepa_debit', 'ideal'
-  - Adyen: 'scheme', 'ideal', 'paypal'
+  - Adyen: 'scheme', 'ideal', 'paymenter'
 
   **Enables:**
   Multiple providers for same
@@ -265,18 +265,18 @@ note as N1
          STATUS='COMPLETED',
          TRANSACTION_TYPE='capture'
 
-  <color:green>**PayPal Payment:**</color>
+  <color:green>**Paymenter Payment:**</color>
   1. Create order:
      INSERT INTO oxorder (OXID='def', PAYMENT_STATE='NOT_FINISHED')
 
-  2. Create PayPal Order:
+  2. Create Paymenter Order:
      Provider returns: PPL-ORDER-456
 
   3. Track transaction:
      INSERT INTO osc_transaction
      VALUES (
        OXORDERID='def',
-       PROVIDER_NAME='paypal',
+       PROVIDER_NAME='paymenter',
        PROVIDER_ORDER_ID='PPL-ORDER-456',
        STATUS='CREATED'
      )
@@ -311,7 +311,7 @@ note as N2
     "metadata": {...}
   }
 
-  <color:green>**PayPal PROVIDER_DATA:**</color>
+  <color:green>**Paymenter PROVIDER_DATA:**</color>
   {
     "pui_payment_reference": "REF-12345",
     "pui_bic": "SOGEDEFF",

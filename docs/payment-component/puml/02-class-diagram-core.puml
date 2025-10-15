@@ -21,16 +21,16 @@ package "Service Layer" <<Rectangle>> #FFF3E0 {
     - orderRequestFactory: OrderRequestFactory
     - patchRequestFactory: PatchRequestFactory
     --
-    + doCreatePayPalOrder(...): Order
-    + doPatchPayPalOrder(...): void
-    + doCapturePayPalOrder(...): Order
+    + doCreatePaymenterOrder(...): Order
+    + doPatchPaymenterOrder(...): void
+    + doCapturePaymenterOrder(...): Order
     + doAuthorizePayment(...): array
     + doExecuteUAPMPayment(...): string
     + doExecutePuiPayment(...): bool
-    + trackPayPalOrder(...): PaymentTransaction
+    + trackPaymenterOrder(...): PaymentTransaction
     + fetchOrderFields(...): Order
     + verify3D(...): bool
-    + isPayPalPayment(...): bool
+    + isPaymenterPayment(...): bool
     + removeTemporaryOrder(): void
     + isOrderExecutionInProgress(): bool
     --
@@ -42,10 +42,10 @@ package "Service Layer" <<Rectangle>> #FFF3E0 {
     - queryBuilderFactory: QueryBuilderFactory
     - config: Config
     --
-    + paypalOrderByOrderIdAndPayPalId(...): PaymentTransaction
-    + paypalOrderByOrderId(...): PaymentTransaction
-    + getShopOrderByPayPalOrderId(...): Order
-    + getShopOrderByPayPalTransactionId(...): Order
+    + paymenterOrderByOrderIdAndPaymenterId(...): PaymentTransaction
+    + paymenterOrderByOrderId(...): PaymentTransaction
+    + getShopOrderByPaymenterOrderId(...): Order
+    + getShopOrderByPaymenterTransactionId(...): Order
     + getPaymenterOrderIdByShopOrderId(...): string
     + fetchCurrentShopOrderId(): string
     + fetchCurrentShopOrder(): Order
@@ -53,7 +53,7 @@ package "Service Layer" <<Rectangle>> #FFF3E0 {
     --
     **100% Reusable**
     Generic data access
-    Rename: PayPal → Payment
+    Rename: Paymenter → Payment
   }
 
   class OrderManager {
@@ -190,7 +190,7 @@ package "Domain Layer" <<Rectangle>> #E8F5E9 {
     + isOrderFinished(): bool
     + isOrderPaid(): bool
     + isWaitForWebhookTimeoutReached(): bool
-    + sendPayPalOrderByEmail(): void
+    + sendPaymenterOrderByEmail(): void
     --
     **90% Reusable**
     State machine pattern generic
@@ -217,12 +217,12 @@ package "Domain Layer" <<Rectangle>> #E8F5E9 {
     --
     **100% Reusable**
     Generic transaction tracking
-    Currently named: PayPalOrder
+    Currently named: PaymenterOrder
   }
 
   class Payment {
     + isUAPMPayment(): bool
-    + isPayPalPayment(): bool
+    + isPaymenterPayment(): bool
     + isDeprecatedPayment(): bool
     --
     **90% Reusable**
@@ -237,7 +237,7 @@ package "Domain Layer" <<Rectangle>> #E8F5E9 {
     + getPaymenterCheckoutDiscount(): float
     + getPaymenterCheckoutItems(): float
     + getPaymenterCheckoutRoundDiff(): float
-    + isVirtualPayPalBasket(): bool
+    + isVirtualPaymenterBasket(): bool
     + isFractionQuantityItemsPresent(): bool
     --
     **100% Reusable**
@@ -286,11 +286,11 @@ end note
 note top of OrderRepository
   **Data Access Layer**
   100% reusable
-  Just rename PayPal→Payment
+  Just rename Paymenter→Payment
 end note
 
 note top of PaymentTransaction
-  **Currently: PayPalOrder**
+  **Currently: PaymenterOrder**
   Rename to PaymentTransaction
   for generic use
 end note

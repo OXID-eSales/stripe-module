@@ -8,9 +8,9 @@
 
 ## Overview
 
-This guide explains how to build payment modules (Stripe, PayPal, Adyen, etc.) on top of the payment component, and why this approach is dramatically faster and more maintainable than building from scratch.
+This guide explains how to build payment modules (Stripe, Paymenter, Adyen, etc.) on top of the payment component, and why this approach is dramatically faster and more maintainable than building from scratch.
 
-**📊 See Visual Architecture:** [puml/07-building-on-component.puml](puml/07-building-on-component.puml) showing how Stripe, PayPal, and Adyen modules build on the component foundation.
+**📊 See Visual Architecture:** [puml/07-building-on-component.puml](puml/07-building-on-component.puml) showing how Stripe, Paymenter, and Adyen modules build on the component foundation.
 
 ---
 
@@ -377,13 +377,13 @@ Total: ~3,000 lines of reusable code
 
 ## Real-World Example: Multiple Providers
 
-### Scenario: Add Stripe, PayPal, and Adyen
+### Scenario: Add Stripe, Paymenter, and Adyen
 
 #### From Scratch
 
 ```
 Stripe:   120 hours
-PayPal:   120 hours
+Paymenter:   120 hours
 Adyen:    120 hours
 -------
 Total:    360 hours
@@ -396,7 +396,7 @@ Each module requires full implementation of database, events, webhooks, etc.
 ```
 Component:  60 hours (one-time)
 Stripe:     40 hours
-PayPal:     35 hours
+Paymenter:     35 hours
 Adyen:      40 hours
 -------
 Total:      175 hours
@@ -486,8 +486,8 @@ $basket = $event->getContext()->getBasket(); // From cache!
 -- Stripe module needs its own table
 CREATE TABLE stripe_transaction (...);
 
--- PayPal module needs its own table
-CREATE TABLE paypal_transaction (...);
+-- Paymenter module needs its own table
+CREATE TABLE paymenter_transaction (...);
 
 -- Adyen module needs its own table
 CREATE TABLE adyen_transaction (...);
@@ -497,7 +497,7 @@ CREATE TABLE adyen_transaction (...);
 ```sql
 -- ONE table for all providers
 CREATE TABLE osc_transaction (
-    provider_name VARCHAR(32),     -- 'stripe', 'paypal', 'adyen'
+    provider_name VARCHAR(32),     -- 'stripe', 'paymenter', 'adyen'
     provider_order_id VARCHAR(128),
     provider_data TEXT,            -- JSON for provider-specific fields
     ...
@@ -604,12 +604,12 @@ composer require osc/payment-component
 #### Phase 2: Migrate Webhooks
 ```php
 // Old: Monolithic webhook handler
-class PayPalWebhookController {
+class PaymenterWebhookController {
     // 200 lines of code
 }
 
 // New: Extend component's base
-class PayPalWebhookHandler extends AbstractWebhookHandler {
+class PaymenterWebhookHandler extends AbstractWebhookHandler {
     // 15 lines of code
 }
 ```
@@ -633,10 +633,10 @@ class OrderController extends AbstractOrderController {
 INSERT INTO osc_transaction
 SELECT
     OXID,
-    'paypal' as provider_name,
-    paypal_order_id as provider_order_id,
+    'paymenter' as provider_name,
+    paymenter_order_id as provider_order_id,
     ...
-FROM paypal_transaction;
+FROM paymenter_transaction;
 ```
 
 **Result: Gradual, risk-free migration**

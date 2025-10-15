@@ -569,7 +569,7 @@ monitoring_platform/
 │   └── measurement: transactions
 │       ├── tags:
 │       │   ├── client_id
-│       │   ├── payment_method (card/paypal/etc)
+│       │   ├── payment_method (card/paymenter/etc)
 │       │   ├── currency (EUR/USD/GBP)
 │       │   ├── status (success/failure)
 │       │   ├── customer_country
