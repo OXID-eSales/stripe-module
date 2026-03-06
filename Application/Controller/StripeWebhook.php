@@ -30,6 +30,12 @@ class StripeWebhook extends FrontendController
      */
     public function createWebhookEndpoint()
     {
+        if (!Registry::getSession()->checkSessionChallenge()) {
+            http_response_code(403);
+            echo json_encode(['code' => 403, 'status' => 'ERROR', 'body' => ['message' => 'Access denied']]);
+            exit();
+        }
+
         $blDeleted = $this->stripeDeleteWebhookEndpoint();
         if (!$blDeleted) {
             echo json_encode([
@@ -100,23 +106,32 @@ class StripeWebhook extends FrontendController
     {
         $sEndpointSecret = Registry::getConfig()->getConfigParam('sStripeWebhookEndpointSecret');
 
-        $sPayload = @file_get_contents('php://input');
-        $sSigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        $sPayload = @file_get_contents('php://input', false, null, 0, 1048576);
+        $sSigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
+        if (empty($sSigHeader)) {
+            http_response_code(400);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Missing Stripe signature header';
+            exit();
+        }
         try {
             $event = Webhook::constructEvent($sPayload, $sSigHeader, $sEndpointSecret);
         } catch(\UnexpectedValueException $oEx) {
             // Invalid payload
             http_response_code(400);
-            echo Registry::getLang()->translateString('STRIPE_WEBHOOK_EVENT_UNEXPECTED').':'.$oEx->getMessage();
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo Registry::getLang()->translateString('STRIPE_WEBHOOK_EVENT_UNEXPECTED');
             exit();
         } catch(\Stripe\Exception\SignatureVerificationException $oEx) {
             // Invalid signature
             http_response_code(400);
-            echo Registry::getLang()->translateString('STRIPE_WEBHOOK_SIGNATURE_FAILED').':'.$oEx->getMessage();
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo Registry::getLang()->translateString('STRIPE_WEBHOOK_SIGNATURE_FAILED');
             exit();
         } catch (\Exception $oEx) {
             http_response_code(400);
-            echo $oEx->getMessage();
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Invalid webhook';
             exit();
         }
 

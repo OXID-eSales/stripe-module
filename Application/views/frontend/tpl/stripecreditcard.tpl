@@ -15,12 +15,12 @@
             <select class="form-control" id="stripe_used_card" name="dynvalue[stripe_used_card]" required="required">
                 <option value="">[{oxmultilang ident="STRIPE_PLEASE_SELECT"}]</option>
                 [{foreach from=$oView->stripeGetUsedCards() item=card}]
-                    <option value="[{$card.id}]">[{$card.title}] ([{$card.expire}])</option>
+                    <option value="[{$card.id|escape}]">[{$card.title|escape}] ([{$card.expire|escape}])</option>
                 [{/foreach}]
                 <option value="new">[{oxmultilang ident="STRIPE_NEW_CARD"}]</option>
             </select>
             [{foreach from=$oView->stripeGetUsedCards() item=card}]
-            <input type="hidden" id="stripe_card_known_holder_[{$card.id}]" name="dynvalue[stripe_card_holder][]" value="[{$card.holder}]" />
+            <input type="hidden" id="stripe_card_known_holder_[{$card.id|escape}]" name="dynvalue[stripe_card_holder][]" value="[{$card.holder|escape}]" />
             [{/foreach}]
         </div>
     </div>

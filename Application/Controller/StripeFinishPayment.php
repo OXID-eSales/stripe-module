@@ -27,8 +27,13 @@ class StripeFinishPayment extends FrontendController
         $sOrderId = Registry::getRequest()->getRequestParameter('id');
         if ($sOrderId) {
             $oOrder = oxNew(Order::class);
-	    $oOrder->load($sOrderId);
+            $oOrder->load($sOrderId);
             if ($oOrder->getId() && $oOrder->stripeIsEligibleForPaymentFinish()) {
+                // Verify ownership: if a user is logged in, they must own the order
+                $oUser = Registry::getSession()->getUser();
+                if ($oUser && $oUser->getId() !== $oOrder->getFieldData('oxuserid')) {
+                    return false;
+                }
                 return $oOrder;
             }
         }

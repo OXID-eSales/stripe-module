@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.8] - 2026-??-??
+
+### Security
+
+- Add owner verification to StripeFinishPayment::getOrder() to prevent IDOR (logged-in users can only access their own orders)
+- Add CSRF protection (checkSessionChallenge) to StripeWebhook::createWebhookEndpoint()
+- Add null check for Stripe signature header in webhook handler
+- Stop exposing exception messages in webhook error responses
+- Add Content-Type: text/plain header to webhook error responses
+- Add request body size limit (1 MB) to webhook endpoint
+- Fix DOM-XSS: replace innerHTML with textContent for error display in stripe_issuers template
+- Add |escape to Stripe API card data in stripecreditcard template (card.id, card.title, card.holder)
+- Replace getRawValue() with ->value in Email headers to prevent potential header injection
+- Use hash_equals() for timing-safe cron secureKey comparison
+- Add SECURITY.md documenting known security considerations and intentionally unfixed items
+
 ## [1.0.7] - 2024-11-29
 
 ### Fixed

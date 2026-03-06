@@ -62,7 +62,7 @@ class Email extends Email_parent
         // create messages
         $oRenderer = $this->stripeGetRenderer();
 
-        $subject = Registry::getLang()->translateString('STRIPE_SECOND_CHANCE_MAIL_SUBJECT', null, false) . " Email.php" . $shop->oxshops__oxname->getRawValue() . " (#" . $oOrder->oxorder__oxordernr->value . ")";
+        $subject = Registry::getLang()->translateString('STRIPE_SECOND_CHANCE_MAIL_SUBJECT', null, false) . " Email.php" . $shop->oxshops__oxname->value . " (#" . $oOrder->oxorder__oxordernr->value . ")";
 
         $this->setViewData("order", $oOrder);
         $this->setViewData("shop", $shop);
@@ -80,10 +80,10 @@ class Email extends Email_parent
 
         $oConfig->setAdminMode(true);
 
-        $fullName = $oOrder->oxorder__oxbillfname->getRawValue() . " Email.php" . $oOrder->oxorder__oxbilllname->getRawValue();
+        $fullName = $oOrder->oxorder__oxbillfname->value . " Email.php" . $oOrder->oxorder__oxbilllname->value;
 
         $this->setRecipient($oOrder->oxorder__oxbillemail->value, $fullName);
-        $this->setReplyTo($shop->oxshops__oxorderemail->value, $shop->oxshops__oxname->getRawValue());
+        $this->setReplyTo($shop->oxshops__oxorderemail->value, $shop->oxshops__oxname->value);
 
         if (defined('OXID_PHP_UNIT')) { // don't send email when unittesting
             return true;

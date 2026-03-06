@@ -32,7 +32,7 @@
 
         bankElement.on('change', function(event) {
             if (event.error) {
-                document.getElementById('[{$sInputName}]_error').innerHTML = event.error;
+                document.getElementById('[{$sInputName}]_error').textContent = event.error;
                 document.getElementById('[{$sInputName}]error_box').style.display = '';
             } else {
                 document.getElementById('[{$sInputName}]_error').innerHTML = '';
