@@ -83,6 +83,7 @@
                     var mode = document.getElementsByName('confselects[sStripeMode]')[0];
                     var url = '[{$oView->stripeGetWebhookCreateUrl()}]';
                     url += '&mode=' + mode.value;
+                    url += '&stoken=[{$oViewConf->getSessionChallengeToken()}]';
                     var xhttp = new XMLHttpRequest();
                     xhttp.onload = function() {
                         var response = JSON.parse(this.responseText);
