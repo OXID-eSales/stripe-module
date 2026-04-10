@@ -4,12 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.4] - 2026-??-??
+## [2.0.4] - 2026-04-10
 
 ### Security
 
 - Add owner verification to StripeFinishPayment::getOrder() to prevent IDOR (logged-in users can only access their own orders)
-- Add CSRF protection (checkSessionChallenge) to StripeWebhook::createWebhookEndpoint()
+- Add CSRF protection (checkSessionChallenge) to webhook endpoint creation
+- Move createWebhookEndpoint() from StripeWebhook (frontend) to ModuleConfiguration (admin) to fix session mismatch causing 403 on webhook creation
 - Add null check for Stripe signature header in webhook handler
 - Stop exposing exception messages in webhook error responses
 - Add Content-Type: text/plain header to webhook error responses

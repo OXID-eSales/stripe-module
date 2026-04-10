@@ -9,6 +9,8 @@ namespace OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin;
 use OxidSolutionCatalysts\Stripe\Application\Helper\Order;
 use OxidSolutionCatalysts\Stripe\Application\Helper\Payment;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use Stripe\WebhookEndpoint;
 
 class ModuleConfiguration extends ModuleConfiguration_parent
@@ -73,13 +75,92 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     }
 
     /**
-     * Check if webhooks are configured in this shop
+     * Returns URL for webhook creation AJAX call (admin controller)
      *
-     * @return bool
+     * @return string
      */
     public function stripeGetWebhookCreateUrl()
     {
-        return Registry::getConfig()->getShopUrl().'?cl=stripeWebhook&fnc=createWebhookEndpoint';
+        return Registry::getConfig()->getShopUrl(0, true) . 'admin/index.php?cl=module_config&fnc=stripeCreateWebhookEndpoint';
+    }
+
+    /**
+     * AJAX endpoint for creating a webhook endpoint on Stripe connected account.
+     * Tries to delete the currently configured one first if any.
+     */
+    public function stripeCreateWebhookEndpoint()
+    {
+        if (!Registry::getSession()->checkSessionChallenge()) {
+            http_response_code(403);
+            echo json_encode(['code' => 403, 'status' => 'ERROR', 'body' => ['message' => 'Access denied']]);
+            exit();
+        }
+
+        $oPaymentHelper = Payment::getInstance();
+
+        // Delete existing webhook endpoint if configured
+        $sConfiguredEndpoint = $oPaymentHelper->getWebhookEndpointId();
+        if (!empty($sConfiguredEndpoint)) {
+            $oExisting = $oPaymentHelper->stripeRetrieveWebhookEndpoint($sConfiguredEndpoint);
+            if ($oExisting && !$oExisting->isDeleted()) {
+                try {
+                    $oPaymentHelper->loadStripeApiWithToken(
+                        $oPaymentHelper->getStripeKey($oPaymentHelper->getStripeMode())
+                    )->webhookEndpoints->delete($sConfiguredEndpoint);
+                } catch (\Exception $oEx) {
+                    Registry::getLogger()->error($oEx);
+                    echo json_encode([
+                        'code' => 400,
+                        'status' => 'ERROR',
+                        'body' => ['message' => Registry::getLang()->translateString('STRIPE_WEBHOOK_CREATE_ERROR_DELETE_FAILED')],
+                    ]);
+                    exit();
+                }
+            }
+            $oPaymentHelper->stripeDeleteWebhookParameter();
+        }
+
+        try {
+            $sMode = Registry::getRequest()->getRequestEscapedParameter('mode') ?? '';
+            $sPrivateKey = $oPaymentHelper->getStripeKey($sMode);
+            $oApi = $oPaymentHelper->loadStripeApiWithToken($sPrivateKey);
+            $sUrl = $oPaymentHelper->getWebhookUrl();
+            $oWebhookEndpoint = $oApi->webhookEndpoints->create([
+                'url' => $sUrl,
+                'enabled_events' => [
+                    'payment_intent.payment_failed',
+                    'payment_intent.succeeded',
+                    'charge.refunded',
+                ],
+                'connect' => true,
+            ]);
+
+            if ($oWebhookEndpoint) {
+                $moduleSettingService = ContainerFactory::getInstance()->getContainer()->get(ModuleSettingBridgeInterface::class);
+                $moduleSettingService->save('sStripeWebhookEndpoint', $oWebhookEndpoint->id, 'stripe');
+                $moduleSettingService->save('sStripeWebhookEndpointSecret', $oWebhookEndpoint->secret, 'stripe');
+
+                echo json_encode([
+                    'code' => 200,
+                    'status' => 'SUCCESS',
+                    'body' => ['endpointId' => $oWebhookEndpoint->id],
+                ]);
+            } else {
+                echo json_encode([
+                    'code' => 400,
+                    'status' => 'ERROR',
+                    'body' => ['message' => Registry::getLang()->translateString('STRIPE_WEBHOOK_CREATE_ERROR')],
+                ]);
+            }
+        } catch (\Exception $oEx) {
+            echo json_encode([
+                'code' => 400,
+                'status' => 'ERROR',
+                'body' => ['message' => Registry::getLang()->translateString('STRIPE_WEBHOOK_CREATE_ERROR') . ':' . $oEx->getMessage()],
+            ]);
+        }
+
+        exit();
     }
 
     /**
