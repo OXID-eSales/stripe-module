@@ -316,7 +316,10 @@ class Payment
      */
     public function getWebhookUrl()
     {
-        return Registry::getConfig()->getCurrentShopUrl().'index.php?cl=stripeWebhook';
+        $config = Registry::getConfig();
+        $frontendUrl = $config->isSsl() ? $config->getSslShopUrl() : $config->getShopUrl(null, false);
+
+        return $frontendUrl . 'index.php?cl=stripeWebhook';
     }
 
     /**
