@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Use frontend shop URL instead of admin URL for webhook endpoint registration
+- Payment date (oxpaid) stayed empty for synchronously completed payments (e.g. credit card with instant capture): the paid-marking was restricted to the webhook, whose update could arrive too early (order not committed yet) or be overwritten by the order finalization on customer return. The transaction is now processed in the checkout/return flow as well, the webhook acts as fallback
+- Orders with an already succeeded payment are no longer eligible for payment finish or second chance mails (Stripe status 'succeeded' was missing in the status blacklist)
 
 ## [2.0.4] - 2026-04-10
 

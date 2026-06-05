@@ -116,6 +116,11 @@ class PaymentGateway extends PaymentGateway_parent
             if (isset($oStripePaymentIntent->next_action) && $oStripePaymentIntent->next_action->type == 'redirect_to_url') {
                 Registry::getSession()->setVariable('stripeIsRedirected', true);
                 Registry::getUtils()->redirect($oStripePaymentIntent->next_action->redirect_to_url->url);
+            } elseif ($oStripePaymentIntent->status == 'succeeded') {
+                // Synchronously completed payments (e.g. credit card with instant capture and no 3DS)
+                // never pass the return handler, so the transaction has to be processed right away.
+                // The webhook may arrive before the transaction id is committed (409) and is only a fallback here.
+                $oStripePaymentModel->getTransactionHandler()->processTransaction($oOrder, 'success');
             }
         } catch(\Exception $exc) {
             $this->_iLastErrorNo = $exc->getCode();

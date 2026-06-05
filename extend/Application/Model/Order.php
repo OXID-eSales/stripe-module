@@ -574,7 +574,9 @@ class Order extends Order_parent
 
         $aStatus = $this->stripeGetPaymentModel()->getTransactionHandler()->processTransaction($this, 'succeeded');
 
-        $aStatusBlacklist = ['paid'];
+        // 'succeeded' is the actual Stripe API status - processTransaction also marks the order
+        // as paid in this case, so it must not be eligible for payment finish or second chance mails
+        $aStatusBlacklist = ['paid', 'succeeded'];
         if ($blSecondChanceEmail === true) {
             $aStatusBlacklist[] = 'canceled';
         }

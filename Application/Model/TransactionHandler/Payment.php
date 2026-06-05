@@ -31,7 +31,11 @@ class Payment extends Base
                 return ['success' => false, 'status' => 'paid', 'error' => 'Currency does not match.'];
             }
 
-            if ($oOrder->stripeIsPaid() === false && $sType == 'webhook') {
+            // Mark the order as paid regardless of the caller (webhook, return handler, sync checkout).
+            // The transaction status was retrieved fresh from the Stripe API, so it can be trusted here.
+            // Otherwise the full save() in finalizeOrder (return mode) can overwrite a concurrent
+            // webhook update of oxpaid with the stale in-memory value (race condition).
+            if ($oOrder->stripeIsPaid() === false) {
                 if ($oOrder->oxorder__oxstorno->value == 1) {
                     $oOrder->stripeUncancelOrder();
                 }
