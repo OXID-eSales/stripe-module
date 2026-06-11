@@ -4,9 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-
-### Fixed
+## [1.0.9] - 2026-06-11
 
 - Payment date (oxpaid) stayed empty for synchronously completed payments (e.g. credit card with instant capture): the paid-marking was restricted to the webhook, whose update could arrive too early (order not committed yet) or be overwritten by the order finalization on customer return. The transaction is now processed in the checkout/return flow as well, the webhook acts as fallback
 - Orders with an already succeeded payment are no longer eligible for payment finish or second chance mails (Stripe status 'succeeded' was missing in the status blacklist)
