@@ -1,0 +1,59 @@
+{% set shop = oEmailView.getShop() %}
+{% set oViewConf = oEmailView.getViewConfig() %}
+
+{% capture assign = "style" %}
+    table.striperefund th, table.striperefund td {
+    border: 1px solid #d4d4d4;
+    font-size: 13px;
+    padding: 5px;
+    white-space: nowrap;
+    }
+
+    table.striperefund {
+    border-collapse: collapse;
+    }
+{% endcapture %}
+
+{% include "email/html/header.html.twig" with { title: ("STRIPE_REFUND_MAIL_TITLE"|translate) ~ " #" ~ order.oxorder__oxordernr.value, style: style } %}
+
+    {% block stripe_email_html_refund_intro %}
+        <p>
+            {% if stripeIsOwnerMail %}
+                {{ translate({ ident: "STRIPE_REFUND_MAIL_INTRO_OWNER" }) }}
+            {% else %}
+                {{ translate({ ident: "STRIPE_REFUND_MAIL_SALUTATION" }) }}
+                {{ order.oxorder__oxbillfname.getRawValue() }} {{ order.oxorder__oxbilllname.getRawValue() }},
+            {% endif %}
+        </p>
+        {% if not stripeIsOwnerMail %}
+            <p>{{ translate({ ident: "STRIPE_REFUND_MAIL_INTRO" }) }}</p>
+        {% endif %}
+    {% endblock %}
+
+    {% block stripe_email_html_refund_details %}
+        <table class="striperefund" border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tbody>
+                <tr valign="top">
+                    <th align="right" class="text-right">{{ translate({ ident: "ORDER_NUMBER", suffix: "COLON" }) }}</th>
+                    <td>{{ order.oxorder__oxordernr.value }}</td>
+                </tr>
+                <tr valign="top">
+                    <th align="right" class="text-right">{{ translate({ ident: "STRIPE_REFUND_MAIL_AMOUNT", suffix: "COLON" }) }}</th>
+                    <td>{{ stripeRefundedAmount|number_format(2, '.', '') }} {{ stripeCurrencyCode }}</td>
+                </tr>
+                <tr valign="top">
+                    <th align="right" class="text-right">{{ translate({ ident: "STRIPE_REFUND_MAIL_ORDER_TOTAL", suffix: "COLON" }) }}</th>
+                    <td>{{ format_price(order.oxorder__oxtotalordersum.value, { currency: currency }) }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <br/>
+    {% endblock %}
+
+    {% block stripe_email_html_refund_note %}
+        {% if not stripeIsOwnerMail %}
+            <p>{{ translate({ ident: "STRIPE_REFUND_MAIL_NOTE" }) }}</p>
+        {% endif %}
+    {% endblock %}
+
+{% include "email/html/footer.html.twig" %}

@@ -1,0 +1,65 @@
+{% set shop = oEmailView.getShop() %}
+{% set oViewConf = oEmailView.getViewConfig() %}
+
+{% capture assign = "style" %}
+    table.stripecancel th, table.stripecancel td {
+    border: 1px solid #d4d4d4;
+    font-size: 13px;
+    padding: 5px;
+    white-space: nowrap;
+    }
+
+    table.stripecancel {
+    border-collapse: collapse;
+    }
+{% endcapture %}
+
+{% include "email/html/header.html.twig" with { title: ("STRIPE_CANCEL_MAIL_TITLE"|translate) ~ " #" ~ order.oxorder__oxordernr.value, style: style } %}
+
+    {% block stripe_email_html_cancel_intro %}
+        <p>
+            {% if stripeIsOwnerMail %}
+                {{ translate({ ident: "STRIPE_CANCEL_MAIL_INTRO_OWNER" }) }}
+            {% else %}
+                {{ translate({ ident: "STRIPE_CANCEL_MAIL_SALUTATION" }) }}
+                {{ order.oxorder__oxbillfname.getRawValue() }} {{ order.oxorder__oxbilllname.getRawValue() }},
+            {% endif %}
+        </p>
+        {% if not stripeIsOwnerMail %}
+            <p>{{ translate({ ident: "STRIPE_CANCEL_MAIL_INTRO" }) }}</p>
+        {% endif %}
+    {% endblock %}
+
+    {% block stripe_email_html_cancel_details %}
+        <table class="stripecancel" border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tbody>
+                <tr valign="top">
+                    <th align="right" class="text-right">{{ translate({ ident: "ORDER_NUMBER", suffix: "COLON" }) }}</th>
+                    <td>{{ order.oxorder__oxordernr.value }}</td>
+                </tr>
+                <tr valign="top">
+                    <th align="right" class="text-right">{{ translate({ ident: "STRIPE_CANCEL_MAIL_ORDER_TOTAL", suffix: "COLON" }) }}</th>
+                    <td>{{ format_price(order.oxorder__oxtotalordersum.value, { currency: currency }) }}</td>
+                </tr>
+                {% if stripeRefundedAmount is not null %}
+                    <tr valign="top">
+                        <th align="right" class="text-right">{{ translate({ ident: "STRIPE_CANCEL_MAIL_REFUNDED", suffix: "COLON" }) }}</th>
+                        <td>{{ stripeRefundedAmount|number_format(2, '.', '') }} {{ stripeCurrencyCode }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <br/>
+    {% endblock %}
+
+    {% block stripe_email_html_cancel_note %}
+        {% if not stripeIsOwnerMail %}
+            {% if stripeRefundedAmount is not null %}
+                <p>{{ translate({ ident: "STRIPE_REFUND_MAIL_NOTE" }) }}</p>
+            {% else %}
+                <p>{{ translate({ ident: "STRIPE_CANCEL_MAIL_NOTE_NO_REFUND" }) }}</p>
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+{% include "email/html/footer.html.twig" %}

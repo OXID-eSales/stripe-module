@@ -8,6 +8,7 @@ namespace OxidSolutionCatalysts\Stripe\Application\Controller\Admin;
 
 use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
 use OxidSolutionCatalysts\Stripe\Application\Model\RequestLog;
+use OxidSolutionCatalysts\Stripe\Core\RefundMailService;
 use OxidEsales\Eshop\Application\Controller\Admin\AdminDetailsController;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
@@ -101,6 +102,19 @@ class OrderRefund extends AdminDetailsController
                 $oRequestLog->logRequest($aParams, $oResponse, $this->getOrder()->getId(), Registry::getConfig()->getShopId());
                 $this->markOrderAsFullyRefunded();
                 $this->_blSuccessfulRefund = true;
+
+                // Stripe accepted the refund, so this is the point where a
+                // confirmation mail may go out; the service decides whether one is
+                // sent at all and to whom
+                $oRefundedOrder = $this->getOrder();
+                if ($oRefundedOrder instanceof Order) {
+                    $oMailService = oxNew(RefundMailService::class);
+                    $oMailService->sendRefundMail(
+                        $oRefundedOrder,
+                        $this->getRefundAmount(),
+                        $this->getOrderCurrency($oRefundedOrder)
+                    );
+                }
             } else {
                 $this->setErrorMessage(Registry::getLang()->translateString('STRIPE_REFUND_FAILED'));
                 $this->_blSuccessfulRefund = false;
@@ -270,17 +284,42 @@ class OrderRefund extends AdminDetailsController
     }
 
     /**
+     * Currency code of an order. getFieldData() is untyped, so anything that is
+     * not a plain value yields an empty string instead of being cast.
+     *
+     * @param Order $oOrder
+     * @return string
+     */
+    protected function getOrderCurrency(Order $oOrder)
+    {
+        $mCurrency = $oOrder->getFieldData('oxcurrency');
+
+        return is_scalar($mCurrency) ? (string)$mCurrency : '';
+    }
+
+    /**
+     * Amount to be refunded: the remaining refundable amount when the merchant
+     * asked for it, the order total otherwise.
+     *
+     * @return float
+     */
+    protected function getRefundAmount()
+    {
+        if (!empty(Registry::getRequest()->getRequestEscapedParameter('refundRemaining'))) {
+            return (float)$this->getRemainingRefundableAmount();
+        }
+
+        return (float)$this->getOrder()->oxorder__oxtotalordersum->value;
+    }
+
+    /**
      * Generate request parameter array
      *
      * @return array
      */
     protected function getRefundParameters()
     {
-        $dAmount = $this->getOrder()->oxorder__oxtotalordersum->value;
-        if (!empty(Registry::getRequest()->getRequestEscapedParameter('refundRemaining'))) {
-            $dAmount = $this->getRemainingRefundableAmount();
-        }
-        $aParams = ["amount" => PaymentHelper::getInstance()->priceInCent($dAmount)];
+        $aParams = ["amount" => PaymentHelper::getInstance()->priceInCent($this->getRefundAmount())];
 
         $sReason = Registry::getRequest()->getRequestEscapedParameter('refund_reason');
         if (!empty($sReason)) {
