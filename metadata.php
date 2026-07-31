@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Application\Model\Payment as OxPayment;
 use OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration as OxModuleConfiguration;
 use OxidEsales\Eshop\Application\Controller\Admin\ModuleMain as OxModuleMain;
 use OxidEsales\Eshop\Application\Controller\Admin\PaymentMain as OxPaymentMain;
+use OxidEsales\Eshop\Application\Controller\Admin\OrderList as OxOrderList;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderMain as OxOrderMain;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderOverview as OxOrderOverView;
 use OxidEsales\Eshop\Application\Controller\PaymentController as OxPaymentController;
@@ -33,6 +34,7 @@ use OxidSolutionCatalysts\Stripe\extend\Application\Model\Payment;
 use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleConfiguration;
 use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\ModuleMain;
 use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\PaymentMain;
+use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderList;
 use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderMain;
 use OxidSolutionCatalysts\Stripe\extend\Application\Controller\Admin\OrderOverview;
 use OxidSolutionCatalysts\Stripe\extend\Application\Controller\PaymentController;
@@ -57,7 +59,7 @@ $aModule = [
         'en' => 'This module integrates STRIPE as payment provider in your OXID Shop.',
     ],
     'thumbnail'     => 'stripe_logo.png',
-    'version'       => '1.0.9',
+    'version'       => '1.1.0',
     'author'        => 'OXID eSales AG',
     'url'           => 'https://www.oxid-esales.com',
     'email'         => 'info@oxid-esales.com',
@@ -69,6 +71,7 @@ $aModule = [
         OxModuleConfiguration::class => ModuleConfiguration::class,
         OxModuleMain::class => ModuleMain::class,
         OxPaymentMain::class => PaymentMain::class,
+        OxOrderList::class => OrderList::class,
         OxOrderMain::class => OrderMain::class,
         OxOrderOverView::class => OrderOverview::class,
         OxPaymentController::class => PaymentController::class,
@@ -92,6 +95,10 @@ $aModule = [
         'stripecreditcard.tpl' => 'osc/stripe/Application/views/frontend/tpl/stripecreditcard.tpl',
         'stripe_order_refund.tpl' => 'osc/stripe/Application/views/admin/tpl/stripe_order_refund.tpl',
         'stripe_second_chance.tpl' => 'osc/stripe/Application/views/email/tpl/stripe_second_chance.tpl',
+        'stripe_refund_html.tpl' => 'osc/stripe/Application/views/email/tpl/stripe_refund_html.tpl',
+        'stripe_refund_plain.tpl' => 'osc/stripe/Application/views/email/tpl/stripe_refund_plain.tpl',
+        'stripe_cancel_html.tpl' => 'osc/stripe/Application/views/email/tpl/stripe_cancel_html.tpl',
+        'stripe_cancel_plain.tpl' => 'osc/stripe/Application/views/email/tpl/stripe_cancel_plain.tpl',
         'stripe_module_main.tpl' => 'osc/stripe/Application/views/admin/tpl/stripe_module_main.tpl',
         'stripe_connect.tpl' => 'osc/stripe/Application/views/admin/tpl/stripe_connect.tpl',
     ],
@@ -119,6 +126,8 @@ $aModule = [
         ['group' => 'STRIPE_GENERAL',           'name' => 'blStripeRemoveByBillingCountry',     'type' => 'bool',       'value' => '1',         'position' => 35],
         ['group' => 'STRIPE_GENERAL',           'name' => 'blStripeRemoveByBasketCurrency',     'type' => 'bool',       'value' => '1',         'position' => 36],
         ['group' => 'STRIPE_GENERAL',           'name' => 'blStripeProvideCustomerEmailAddress','type' => 'bool',       'value' => '0',         'position' => 37],
+        ['group' => 'STRIPE_GENERAL',           'name' => 'sStripeRefundMailRecipient',         'type' => 'select',     'value' => '0',         'position' => 38, 'constraints' => '0|1|2|3'],
+        ['group' => 'STRIPE_GENERAL',           'name' => 'sStripeCancelMailRecipient',         'type' => 'select',     'value' => '0',         'position' => 39, 'constraints' => '0|1|2|3'],
         ['group' => 'STRIPE_STATUS_MAPPING',    'name' => 'sStripeStatusPending',               'type' => 'select',     'value' => '',          'position' => 50],
         ['group' => 'STRIPE_STATUS_MAPPING',    'name' => 'sStripeStatusProcessing',            'type' => 'select',     'value' => '',          'position' => 60],
         ['group' => 'STRIPE_STATUS_MAPPING',    'name' => 'sStripeStatusCancelled',             'type' => 'select',     'value' => '',          'position' => 70],

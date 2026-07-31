@@ -1,0 +1,32 @@
+[{assign var="shop" value=$oEmailView->getShop()}]
+[{assign var="oViewConf" value=$oEmailView->getViewConfig()}]
+[{block name="stripe_email_plain_cancel_intro"}]
+[{if $stripeIsOwnerMail}]
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_INTRO_OWNER"}]
+[{else}]
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_SALUTATION"}] [{$order->oxorder__oxbillfname->getRawValue()}] [{$order->oxorder__oxbilllname->getRawValue()}],
+
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_INTRO"}]
+[{/if}]
+[{/block}]
+
+[{block name="stripe_email_plain_cancel_details"}]
+[{oxmultilang ident="ORDER_NUMBER" suffix="COLON"}] [{$order->oxorder__oxordernr->value}]
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_ORDER_TOTAL" suffix="COLON"}] [{$order->oxorder__oxtotalordersum->value|string_format:"%.2f"}] [{$order->oxorder__oxcurrency->value}]
+[{if $stripeRefundedAmount !== null}]
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_REFUNDED" suffix="COLON"}] [{$stripeRefundedAmount|string_format:"%.2f"}] [{$stripeCurrencyCode}]
+[{/if}]
+[{/block}]
+
+[{block name="stripe_email_plain_cancel_note"}]
+[{if !$stripeIsOwnerMail}]
+[{if $stripeRefundedAmount !== null}]
+[{oxmultilang ident="STRIPE_REFUND_MAIL_NOTE"}]
+[{else}]
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_NOTE_NO_REFUND"}]
+[{/if}]
+[{/if}]
+[{/block}]
+
+[{$shop->oxshops__oxname->getRawValue()}]
+[{$shop->oxshops__oxurl->value}]

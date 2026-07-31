@@ -45,4 +45,25 @@ $aLang = [
     'STRIPE_ERROR_ORDER_CONFIG_PUBKEY'          => 'Bitte konfigurieren Sie den ver&ouml;ffentlichbaren Stripe-Schl&uuml;ssel, um diese Zahlungsmethode zu verwenden.',
     'STRIPE_WEBHOOK_CREATE_ERROR'               => 'Der Webhook-Endpunkt konnte nicht erstellt werden.',
     'STRIPE_WEBHOOK_CREATE_ERROR_DELETE_FAILED' => 'Der Webhook-Endpunkt konnte nicht erstellt werden. Das Löschen des vorhandenen WH-Endpunkts ist fehlgeschlagen.',
+    'STRIPE_REFUND_MAIL_TITLE'                => 'Rückerstattung zu Ihrer Bestellung',
+    'STRIPE_REFUND_MAIL_SUBJECT'              => 'Rückerstattung zu Ihrer Bestellung %s',
+    'STRIPE_REFUND_MAIL_SUBJECT_OWNER'        => 'Stripe: Rückerstattung zur Bestellung %s veranlasst',
+    'STRIPE_REFUND_MAIL_SALUTATION'           => 'Guten Tag',
+    'STRIPE_REFUND_MAIL_INTRO'                => 'wir haben eine Rückerstattung über Stripe für Sie veranlasst.',
+    'STRIPE_REFUND_MAIL_INTRO_OWNER'          => 'Für die folgende Bestellung wurde über Stripe eine Rückerstattung '
+        . 'veranlasst.',
+    'STRIPE_REFUND_MAIL_AMOUNT'               => 'Erstatteter Betrag',
+    'STRIPE_REFUND_MAIL_ORDER_TOTAL'          => 'Bestellwert',
+    'STRIPE_REFUND_MAIL_NOTE'                 => 'Die Gutschrift erfolgt über Stripe auf das von Ihnen bei Stripe '
+        . 'verwendete Zahlungsmittel. Wie lange das dauert, hängt von Ihrem Zahlungsmittel und Ihrer Bank ab.',
+    'STRIPE_CANCEL_MAIL_TITLE'                => 'Stornierung Ihrer Bestellung',
+    'STRIPE_CANCEL_MAIL_SUBJECT'              => 'Stornierung Ihrer Bestellung %s',
+    'STRIPE_CANCEL_MAIL_SUBJECT_OWNER'        => 'Stripe: Bestellung %s storniert',
+    'STRIPE_CANCEL_MAIL_SALUTATION'           => 'Guten Tag',
+    'STRIPE_CANCEL_MAIL_INTRO'                => 'Ihre Bestellung wurde storniert.',
+    'STRIPE_CANCEL_MAIL_INTRO_OWNER'          => 'Die folgende Bestellung wurde storniert.',
+    'STRIPE_CANCEL_MAIL_ORDER_TOTAL'          => 'Bestellwert',
+    'STRIPE_CANCEL_MAIL_REFUNDED'             => 'Erstatteter Betrag',
+    'STRIPE_CANCEL_MAIL_NOTE_NO_REFUND'       => 'Sollte für diese Bestellung bereits eine Zahlung erfolgt sein, '
+        . 'erhalten Sie die Rückerstattung in einer separaten Nachricht bestätigt.',
 ];
