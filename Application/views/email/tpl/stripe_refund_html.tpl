@@ -39,7 +39,7 @@
                 </tr>
                 <tr valign="top">
                     <th align="right" class="text-right">[{oxmultilang ident="STRIPE_REFUND_MAIL_AMOUNT" suffix="COLON"}]</th>
-                    <td>[{$stripeRefundedAmount|string_format:"%.2f"}] [{$stripeCurrencyCode}]</td>
+                    <td>[{oxprice price=$stripeRefundedAmount currency=$currency}]</td>
                 </tr>
                 <tr valign="top">
                     <th align="right" class="text-right">[{oxmultilang ident="STRIPE_REFUND_MAIL_ORDER_TOTAL" suffix="COLON"}]</th>

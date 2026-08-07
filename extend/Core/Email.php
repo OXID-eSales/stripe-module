@@ -103,10 +103,12 @@ class Email extends Email_parent
         $blWasAdmin = $oConfig->isAdmin();
         $oConfig->setAdminMode(false);
 
-        $this->setBody($this->stripeRenderTemplate($oRenderer, $this->_sStripeSecondChanceTemplate));
-        $this->setSubject($subject);
-
-        $oConfig->setAdminMode($blWasAdmin);
+        try {
+            $this->setBody($this->stripeRenderTemplate($oRenderer, $this->_sStripeSecondChanceTemplate));
+            $this->setSubject($subject);
+        } finally {
+            $oConfig->setAdminMode($blWasAdmin);
+        }
 
         $fullName = $oOrder->oxorder__oxbillfname->value . " " . $oOrder->oxorder__oxbilllname->value;
 
@@ -227,12 +229,28 @@ class Email extends Email_parent
         $dRefundedAmount,
         $sCurrency
     ) {
-        $shop = $this->_getShop();
+        // The customer is written to in the language they ordered in. The shop owner
+        // keeps the language the backend is running in, because that copy is read
+        // next to the order there - so only the customer mail switches the language.
+        // Core\Email::sendSendedNowMail() handles its backend triggered mail the same
+        // way, including loading the shop in that language: the shop name and the
+        // sender texts are translatable too.
+        $iMailLanguage = $blToOwner ? null : $this->stripeOrderLanguage($oOrder);
+
+        $shop = $iMailLanguage === null ? $this->_getShop() : $this->_getShop($iMailLanguage);
         $this->_setMailParams($shop);
 
         $oRenderer = $this->stripeGetRenderer();
 
-        $sTranslatedSubject = Registry::getLang()->translateString($sSubjectIdent, null, false);
+        $oLang = Registry::getLang();
+        $iPreviousTplLanguage = (int)$oLang->getTplLanguage();
+        $iPreviousBaseLanguage = (int)$oLang->getBaseLanguage();
+        if ($iMailLanguage !== null) {
+            $oLang->setTplLanguage($iMailLanguage);
+            $oLang->setBaseLanguage($iMailLanguage);
+        }
+
+        $sTranslatedSubject = $oLang->translateString($sSubjectIdent, null, false);
         $sSubject = sprintf(
             is_string($sTranslatedSubject) ? $sTranslatedSubject : '',
             $oOrder->oxorder__oxordernr->value
@@ -241,6 +259,8 @@ class Email extends Email_parent
         $this->setViewData("order", $oOrder);
         $this->setViewData("shop", $shop);
         $this->setViewData("subject", $sSubject);
+        // the templates format both amounts with the order currency
+        $this->setViewData("currency", $oOrder->getOrderCurrency());
         $this->setViewData("stripeRefundedAmount", $dRefundedAmount);
         $this->setViewData("stripeCurrencyCode", $sCurrency);
         $this->setViewData("stripeIsOwnerMail", $blToOwner);
@@ -252,12 +272,20 @@ class Email extends Email_parent
         $blWasAdmin = $oConfig->isAdmin();
         $oConfig->setAdminMode(false);
 
-        $this->setBody($this->stripeRenderTemplate($oRenderer, $sHtmlTemplate));
-        $this->setAltBody($this->stripeRenderTemplate($oRenderer, $sPlainTemplate));
-
-        $oConfig->setAdminMode($blWasAdmin);
-
-        $this->setSubject($sSubject);
+        try {
+            $this->setBody($this->stripeRenderTemplate($oRenderer, $sHtmlTemplate));
+            $this->setAltBody($this->stripeRenderTemplate($oRenderer, $sPlainTemplate));
+            $this->setSubject($sSubject);
+        } finally {
+            // A failing template must not leave the shop behind in frontend mode or
+            // in the order language: the admin page that triggered the mail is
+            // rendered after this and would lose its templates and translations.
+            $oConfig->setAdminMode($blWasAdmin);
+            if ($iMailLanguage !== null) {
+                $oLang->setTplLanguage($iPreviousTplLanguage);
+                $oLang->setBaseLanguage($iPreviousBaseLanguage);
+            }
+        }
 
         if ($blToOwner) {
             $this->setRecipient(
@@ -278,6 +306,20 @@ class Email extends Email_parent
         }
 
         return $this->send();
+    }
+
+    /**
+     * Language the order was placed in. getFieldData() is untyped, so anything
+     * that is not a number falls back to the shop default language.
+     *
+     * @param object $oOrder
+     * @return int
+     */
+    protected function stripeOrderLanguage($oOrder)
+    {
+        $mLanguage = $oOrder->getFieldData('oxlang');
+
+        return is_numeric($mLanguage) ? (int)$mLanguage : 0;
     }
 
     /**

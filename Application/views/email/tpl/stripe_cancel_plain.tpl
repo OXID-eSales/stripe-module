@@ -12,9 +12,9 @@
 
 [{block name="stripe_email_plain_cancel_details"}]
 [{oxmultilang ident="ORDER_NUMBER" suffix="COLON"}] [{$order->oxorder__oxordernr->value}]
-[{oxmultilang ident="STRIPE_CANCEL_MAIL_ORDER_TOTAL" suffix="COLON"}] [{$order->oxorder__oxtotalordersum->value|string_format:"%.2f"}] [{$order->oxorder__oxcurrency->value}]
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_ORDER_TOTAL" suffix="COLON"}] [{oxprice price=$order->oxorder__oxtotalordersum->value currency=$currency}]
 [{if $stripeRefundedAmount !== null}]
-[{oxmultilang ident="STRIPE_CANCEL_MAIL_REFUNDED" suffix="COLON"}] [{$stripeRefundedAmount|string_format:"%.2f"}] [{$stripeCurrencyCode}]
+[{oxmultilang ident="STRIPE_CANCEL_MAIL_REFUNDED" suffix="COLON"}] [{oxprice price=$stripeRefundedAmount currency=$currency}]
 [{/if}]
 [{/block}]
 

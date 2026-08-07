@@ -44,7 +44,7 @@
                 [{if $stripeRefundedAmount !== null}]
                     <tr valign="top">
                         <th align="right" class="text-right">[{oxmultilang ident="STRIPE_CANCEL_MAIL_REFUNDED" suffix="COLON"}]</th>
-                        <td>[{$stripeRefundedAmount|string_format:"%.2f"}] [{$stripeCurrencyCode}]</td>
+                        <td>[{oxprice price=$stripeRefundedAmount currency=$currency}]</td>
                     </tr>
                 [{/if}]
             </tbody>
