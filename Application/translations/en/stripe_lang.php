@@ -43,12 +43,13 @@ $aLang = [
     'STRIPE_REFUND_MAIL_SUBJECT'              => 'Refund for your order %s',
     'STRIPE_REFUND_MAIL_SUBJECT_OWNER'        => 'Stripe: refund issued for order %s',
     'STRIPE_REFUND_MAIL_SALUTATION'           => 'Dear',
-    'STRIPE_REFUND_MAIL_INTRO'                => 'we have issued a refund for you via Stripe.',
-    'STRIPE_REFUND_MAIL_INTRO_OWNER'          => 'A refund has been issued via Stripe for the following order.',
+    'STRIPE_REFUND_MAIL_INTRO'                => 'we have issued a refund for you.',
+    'STRIPE_REFUND_MAIL_INTRO_OWNER'          => 'A refund has been issued for the following order (Stripe Payment '
+        . 'Provider).',
     'STRIPE_REFUND_MAIL_AMOUNT'               => 'Refunded amount',
     'STRIPE_REFUND_MAIL_ORDER_TOTAL'          => 'Order total',
-    'STRIPE_REFUND_MAIL_NOTE'                 => 'Stripe credits the amount to the payment method you used at '
-        . 'Stripe. How long this takes depends on that payment method and your bank.',
+    'STRIPE_REFUND_MAIL_NOTE'                 => 'The refund has been credited to the payment method you originally '
+        . 'used. When the amount becomes available depends on your payment method and your bank.',
     'STRIPE_CANCEL_MAIL_TITLE'                => 'Cancellation of your order',
     'STRIPE_CANCEL_MAIL_SUBJECT'              => 'Cancellation of your order %s',
     'STRIPE_CANCEL_MAIL_SUBJECT_OWNER'        => 'Stripe: order %s cancelled',

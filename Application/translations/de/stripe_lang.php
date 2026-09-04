@@ -43,13 +43,13 @@ $aLang = [
     'STRIPE_REFUND_MAIL_SUBJECT'              => 'Rückerstattung zu Ihrer Bestellung %s',
     'STRIPE_REFUND_MAIL_SUBJECT_OWNER'        => 'Stripe: Rückerstattung zur Bestellung %s veranlasst',
     'STRIPE_REFUND_MAIL_SALUTATION'           => 'Guten Tag',
-    'STRIPE_REFUND_MAIL_INTRO'                => 'wir haben eine Rückerstattung über Stripe für Sie veranlasst.',
-    'STRIPE_REFUND_MAIL_INTRO_OWNER'          => 'Für die folgende Bestellung wurde über Stripe eine Rückerstattung '
-        . 'veranlasst.',
+    'STRIPE_REFUND_MAIL_INTRO'                => 'wir haben eine Rückerstattung für Sie veranlasst.',
+    'STRIPE_REFUND_MAIL_INTRO_OWNER'          => 'Für die folgende Bestellung wurde eine Rückerstattung veranlasst '
+        . '(Stripe Payment Provider).',
     'STRIPE_REFUND_MAIL_AMOUNT'               => 'Erstatteter Betrag',
     'STRIPE_REFUND_MAIL_ORDER_TOTAL'          => 'Bestellwert',
-    'STRIPE_REFUND_MAIL_NOTE'                 => 'Die Gutschrift erfolgt über Stripe auf das von Ihnen bei Stripe '
-        . 'verwendete Zahlungsmittel. Wie lange das dauert, hängt von Ihrem Zahlungsmittel und Ihrer Bank ab.',
+    'STRIPE_REFUND_MAIL_NOTE'                 => 'Die Rückerstattung wurde Ihrer ursprünglich verwendeten Zahlungsart '
+        . 'gutgeschrieben. Die Wertstellung hängt von Ihrem Zahlungsmittel und Ihrer Bank ab.',
     'STRIPE_CANCEL_MAIL_TITLE'                => 'Stornierung Ihrer Bestellung',
     'STRIPE_CANCEL_MAIL_SUBJECT'              => 'Stornierung Ihrer Bestellung %s',
     'STRIPE_CANCEL_MAIL_SUBJECT_OWNER'        => 'Stripe: Bestellung %s storniert',
