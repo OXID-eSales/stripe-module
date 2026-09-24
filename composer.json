@@ -12,7 +12,7 @@
       "target-directory": "osc/stripe"
     }
   },
-  "conflicts": {
+  "conflict": {
     "oxid-esales/oxideshop-ce": "<6.10 | ^7.0"
   },
   "require": {

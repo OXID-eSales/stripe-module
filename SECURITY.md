@@ -2,23 +2,35 @@
 
 This document describes known security considerations that have been reviewed and intentionally left unfixed, either because they require architectural changes, have very low practical risk, or are mitigated by other factors.
 
-## Session Hijacking via stripeReinitializePayment (Second Chance Feature)
+## Session Hijacking via stripeReinitializePayment (Second Chance Feature) - FIXED
 
-**File:** `extend/Application/Model/Order.php` (method `stripeReinitializePayment`)
-**Risk:** High (architectural)
+**File:** `extend/Application/Model/Order.php` (method `stripeReinitializePayment`),
+`Application/Controller/StripeFinishPayment.php`
+**Status:** fixed - see the security entry in the CHANGELOG
 
-The "Second Chance" email feature sends a URL containing the order ID to customers who have not completed their Stripe payment. When this URL is accessed, `stripeReinitializePayment()` sets `Registry::getSession()->setVariable('usr', ...)` — effectively logging in the visitor as the order's owner.
+The "Second Chance" email feature sends a URL containing the order id to customers who have not
+completed their Stripe payment. Opening that URL used to call `stripeReinitializePayment()`, which
+wrote the order owner's id into the session variable `usr` - the variable `User::loadActiveUser()`
+reads to decide who is signed in. Anybody holding the link, or an order id obtained some other way,
+was therefore signed in as that customer without ever entering a password, with full access to the
+account: order history, addresses, and placing orders in the customer's name. Changing the account
+email or password was not possible (the shop asks for the current password for both), so the account
+could not be taken over permanently, but everything inside the session was exposed.
 
-**Current partial fix:** Owner verification has been added to `StripeFinishPayment::getOrder()` so that logged-in users can only access their own orders. However, unauthenticated users (the primary use case for Second Chance emails) can still access any eligible order by ID.
+**Fix:** the auto sign-in is gone. `stripeReinitializePayment()` returns false when no user is signed
+in, and `StripeFinishPayment::getOrder()` now requires a signed-in user who owns the order - the
+previous check only compared ownership *if* somebody happened to be signed in, which left the
+unauthenticated case, the actual use case of the second chance mail, wide open. Visitors who are not
+signed in are sent to the login page and can use the link again afterwards.
 
-**Remaining risk:** An attacker who obtains or guesses an order ID (32-character hex) for an unfinished Stripe order could:
-1. Access `?cl=stripeFinishPayment&id=ORDER_ID`
-2. Be logged in as the order's owner via the session variable
-3. Access the victim's account data in another browser tab
+**Known consequence:** guest orders (accounts without a password) can no longer use the second chance
+link, because there is no account to sign in to. Supporting those again needs the signed token
+described below.
 
-**Mitigation:** Order IDs are 32-character hex strings (128-bit entropy) which are practically unguessable. The order must also be in `NOT_FINISHED` status with an unpaid Stripe payment. The window of vulnerability is limited to the time between order creation and payment completion.
-
-**Recommendation for future improvement:** Replace the order ID in Second Chance URLs with a signed, time-limited token (e.g., HMAC of order ID + timestamp + secret). This would prevent any access without the token from the email.
+**Still recommended:** replace the order id in second chance URLs with a signed, time-limited token
+(HMAC of order id + timestamp + secret). That would remove the remaining reliance on the order id
+being unguessable, close the gap for guest orders, and give the link an expiry - today an order that
+is never paid stays eligible indefinitely.
 
 ## Session Tokens in Redirect URLs
 
