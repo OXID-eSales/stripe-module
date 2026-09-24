@@ -29,9 +29,13 @@ class StripeFinishPayment extends FrontendController
             $oOrder = oxNew(Order::class);
             $oOrder->load($sOrderId);
             if ($oOrder->getId() && $oOrder->stripeIsEligibleForPaymentFinish()) {
-                // Verify ownership: if a user is logged in, they must own the order
+                // The visitor has to be signed in AND has to own the order. Being signed in is
+                // not optional here: the link travels by email and carries nothing but the order
+                // id, so anybody holding it would otherwise finish a stranger's payment - and,
+                // before this was fixed, be signed in as that customer on the way (see the
+                // security entry in the CHANGELOG).
                 $oUser = Registry::getSession()->getUser();
-                if ($oUser && $oUser->getId() !== $oOrder->getFieldData('oxuserid')) {
+                if (!$oUser || $oUser->getId() !== $oOrder->getFieldData('oxuserid')) {
                     return false;
                 }
                 return $oOrder;
@@ -45,6 +49,14 @@ class StripeFinishPayment extends FrontendController
      */
     public function render()
     {
+        if (!Registry::getSession()->getUser()) {
+            // Nobody is signed in: send the customer to the login page rather than to the
+            // basket, so the second chance link still leads somewhere useful - they sign in
+            // and open the link from the email again.
+            Registry::getUtils()->redirect(Registry::getConfig()->getSslShopUrl() . "?cl=account");
+            return;
+        }
+
         $sRedirectUrl = Registry::getConfig()->getSslShopUrl()."?cl=basket";
 
         $oOrder = $this->getOrder();

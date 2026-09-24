@@ -618,7 +618,9 @@ class Order extends Order_parent
     /**
      * Starts a new payment with Stripe
      *
-     * @return integer
+     * Requires a signed-in user; returns false without touching the payment when there is none.
+     *
+     * @return integer|false
      */
     public function stripeReinitializePayment()
     {
@@ -628,10 +630,13 @@ class Order extends Order_parent
 
         $oUser = $this->getUser();
         if (!$oUser) {
-            $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
-            $oUser->load($this->oxorder__oxuserid->value);
-            $this->setUser($oUser);
-            Registry::getSession()->setVariable('usr', $this->oxorder__oxuserid->value);
+            // Never sign anybody in here. This used to load the order's owner and write their
+            // id into the session variable 'usr' - the very variable User::loadActiveUser()
+            // reads to decide who is logged in. Anybody holding the second chance link, which
+            // contains nothing but the order id, was therefore signed in as that customer
+            // without ever entering a password. The caller makes sure only the signed-in owner
+            // of the order gets this far; without a user there is nothing to re-initialize.
+            return false;
         }
 
         $this->blStripeReinitializePaymentMode = true;
