@@ -7,7 +7,7 @@
 
 namespace OxidSolutionCatalysts\Stripe\Core;
 
-use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\Stripe\Application\Helper\Payment as PaymentHelper;
 
 /**
  * Reads the module settings for the refund / cancellation confirmation mails.
@@ -37,7 +37,7 @@ class RefundMailConfig
      */
     public function getRefundMailRecipient(): string
     {
-        return $this->sanitize(Registry::getConfig()->getConfigParam(self::SETTING_REFUND_RECIPIENT));
+        return $this->sanitize($this->getSetting(self::SETTING_REFUND_RECIPIENT));
     }
 
     /**
@@ -45,7 +45,20 @@ class RefundMailConfig
      */
     public function getCancelMailRecipient(): string
     {
-        return $this->sanitize(Registry::getConfig()->getConfigParam(self::SETTING_CANCEL_RECIPIENT));
+        return $this->sanitize($this->getSetting(self::SETTING_CANCEL_RECIPIENT));
+    }
+
+    /**
+     * Module settings live in the module configuration since OXID 7, not in the
+     * shop config any more: Config::getConfigParam() returns null for them, which
+     * sanitize() turned into "no mail" - silently, whatever the merchant chose.
+     *
+     * @param string $name
+     * @return mixed
+     */
+    protected function getSetting(string $name)
+    {
+        return PaymentHelper::getInstance()->getShopConfVar($name);
     }
 
     /**

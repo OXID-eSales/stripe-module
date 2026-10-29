@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\Stripe\Core;
 
 use OxidEsales\Eshop\Application\Model\Order;
+use OxidEsales\Eshop\Core\Email as ShopEmail;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\Stripe\extend\Core\Email;
 use Psr\Log\LogLevel;
@@ -159,8 +160,12 @@ class RefundMailService
         $recipientName = $recipient === RefundMailConfig::MAIL_RECIPIENT_OWNER ? 'shop owner' : 'customer';
 
         try {
+            // Instantiate the shop class, not the module class: oxNew() on a module
+            // extension starts building the extension chain from the middle, which
+            // fails on the first call of a request and otherwise skips the other
+            // modules extending the mailer.
             /** @var Email $mailer */
-            $mailer = oxNew(Email::class);
+            $mailer = oxNew(ShopEmail::class);
             $sent = $send($mailer);
 
             $this->log(
